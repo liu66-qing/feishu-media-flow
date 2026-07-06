@@ -1,0 +1,20 @@
+{
+  "status": "success",
+  "timestamp": "2026-07-06T00:26:35.176808",
+  "content_id": "CNT-RISK-018",
+  "data": {
+    "risk_level": "medium",
+    "hits": [
+      {
+        "word": "顶级",
+        "type": "absolute_claims",
+        "location": "title",
+        "context": "社团招新顶级话术模板"
+      }
+    ],
+    "llm_concerns": [],
+    "suggestions": [
+      "建议弱化「顶级」这类绝对化表达，改成更客观、可验证的说法。"
+    ]
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "status": "success",
+  "timestamp": "2026-07-06T00:24:17.747074",
+  "content_id": "CNT-RISK-012",
+  "data": {
+    "risk_level": "medium",
+    "hits": [
+      {
+        "word": "保证",
+        "type": "absolute_claims",
+        "location": "body",
+        "context": "只要照着这个流程执行，就能保证报名人数明显增加。"
+      }
+    ],
+    "llm_concerns": [],
+    "suggestions": [
+      "建议弱化「保证」这类绝对化表达，改成更客观、可验证的说法。"
+    ]
+  }
+}

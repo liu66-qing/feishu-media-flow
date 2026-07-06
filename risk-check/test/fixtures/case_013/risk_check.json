@@ -1,0 +1,20 @@
+{
+  "status": "success",
+  "timestamp": "2026-07-06T00:24:20.147367",
+  "content_id": "CNT-RISK-013",
+  "data": {
+    "risk_level": "medium",
+    "hits": [
+      {
+        "word": "第一",
+        "type": "absolute_claims",
+        "location": "title",
+        "context": "这个模板让招新转化率第一"
+      }
+    ],
+    "llm_concerns": [],
+    "suggestions": [
+      "建议弱化「第一」这类绝对化表达，改成更客观、可验证的说法。"
+    ]
+  }
+}
