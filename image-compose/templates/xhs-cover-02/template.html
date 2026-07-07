@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width={{width}}, height={{height}}">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&display=swap');
+  
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    width: {{width}}px;
+    height: {{height}}px;
+    overflow: hidden;
+    font-family: 'Noto Sans SC', 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  }
+  
+  .container {
+    width: 100%;
+    height: 100%;
+    background-color: {{bg_color}};
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  
+  /* 背景装饰圆 */
+  .bg-circle {
+    position: absolute;
+    border-radius: 50%;
+    background-color: {{accent_color}};
+    opacity: 0.06;
+  }
+  .bg-circle-1 { width: 400px; height: 400px; top: -100px; right: -80px; }
+  .bg-circle-2 { width: 300px; height: 300px; bottom: -60px; left: -60px; }
+  
+  .card {
+    background: #FFFFFF;
+    border-radius: 24px;
+    padding: 80px 70px;
+    width: 860px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .tag {
+    display: inline-block;
+    background-color: {{bg_color}};
+    color: #FFFFFF;
+    font-size: 24px;
+    font-weight: 700;
+    padding: 8px 24px;
+    border-radius: 20px;
+    margin-bottom: 40px;
+    letter-spacing: 1px;
+  }
+  
+  .title {
+    color: #1a1a1a;
+    font-size: 64px;
+    font-weight: 900;
+    text-align: center;
+    line-height: 1.4;
+    letter-spacing: 2px;
+    max-width: 720px;
+    word-break: break-all;
+    overflow-wrap: break-word;
+  }
+  
+  .divider {
+    width: 50px;
+    height: 3px;
+    background-color: {{bg_color}};
+    margin: 36px 0;
+    border-radius: 2px;
+  }
+  
+  .subtitle {
+    color: #666666;
+    font-size: 32px;
+    font-weight: 400;
+    text-align: center;
+    line-height: 1.5;
+    max-width: 680px;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="bg-circle bg-circle-1"></div>
+    <div class="bg-circle bg-circle-2"></div>
+    <div class="card">
+      <div class="tag">干货分享</div>
+      <div class="title" id="title">{{title}}</div>
+      <div class="divider"></div>
+      <div class="subtitle">{{subtitle}}</div>
+    </div>
+  </div>
+  
+  <script>
+    (function() {
+      const title = document.getElementById('title');
+      const maxWidth = 720;
+      const maxHeight = 400;
+      let fontSize = 64;
+      
+      function fits() {
+        return title.scrollWidth <= maxWidth && title.scrollHeight <= maxHeight;
+      }
+      
+      while (!fits() && fontSize > 36) {
+        fontSize -= 2;
+        title.style.fontSize = fontSize + 'px';
+      }
+    })();
+  </script>
+</body>
+</html>

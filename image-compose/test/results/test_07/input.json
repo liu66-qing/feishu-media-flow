@@ -1,0 +1,16 @@
+{
+  "content_id": "CNT-20260707-007",
+  "job_id": "JOB-20260707-007",
+  "image_mode": "ai_bg",
+  "template_name": "xhs-cover-01",
+  "variables": {
+    "title": "宇宙级浪漫告白文案",
+    "subtitle": "用星星的名义说爱你",
+    "accent_color": "#FFFFFF",
+    "ai_prompt": "神秘宇宙星空背景，深蓝色调，璀璨星云，银河，繁星点点，浪漫唯美氛围，电影级质感，无文字，无水印，高清竖构图"
+  },
+  "output_size": {
+    "width": 1080,
+    "height": 1350
+  }
+}

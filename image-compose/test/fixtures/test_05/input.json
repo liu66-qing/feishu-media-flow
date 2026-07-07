@@ -1,0 +1,15 @@
+{
+  "content_id": "CNT-20260705-005",
+  "job_id": "JOB-20260705-005",
+  "template_name": "xhs-cover-01",
+  "variables": {
+    "title": "这个标题超级超级长用来测试自动换行和字号缩放功能是否正常工作的情况下的表现效果如何呢",
+    "subtitle": "长标题压力测试",
+    "bg_color": "#F39C12",
+    "accent_color": "#FFFFFF"
+  },
+  "output_size": {
+    "width": 1080,
+    "height": 1350
+  }
+}

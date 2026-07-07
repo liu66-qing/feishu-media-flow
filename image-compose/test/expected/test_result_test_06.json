@@ -1,0 +1,20 @@
+{
+  "test_name": "test_06",
+  "success": true,
+  "duration_seconds": 229.8,
+  "output_images": [
+    {
+      "name": "ai_bg.png",
+      "size_kb": 4966.0
+    },
+    {
+      "name": "xhs-cover-03.png",
+      "size_kb": 1550.0
+    }
+  ],
+  "image_mode_used": "ai_bg",
+  "template_used": "xhs-cover-03",
+  "ai_prompt_used": "小红书封面背景图，掌控情绪的人才能掌控人生，氛围感摄影风格，无文字，无水印，高质量，竖构图，主题：5个心理学技巧",
+  "ai_fallback_reason": null,
+  "error": null
+}

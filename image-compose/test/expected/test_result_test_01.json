@@ -1,0 +1,16 @@
+{
+  "test_name": "test_01",
+  "success": true,
+  "duration_seconds": 1.9,
+  "output_images": [
+    {
+      "name": "xhs-cover-01.png",
+      "size_kb": 25.0
+    }
+  ],
+  "image_mode_used": "template",
+  "template_used": "xhs-cover-01",
+  "ai_prompt_used": null,
+  "ai_fallback_reason": null,
+  "error": null
+}

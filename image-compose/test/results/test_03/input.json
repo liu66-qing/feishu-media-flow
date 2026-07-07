@@ -1,0 +1,15 @@
+{
+  "content_id": "CNT-20260705-003",
+  "job_id": "JOB-20260705-003",
+  "template_name": "xhs-cover-03",
+  "variables": {
+    "title": "校园秋日限定｜银杏大道拍照攻略",
+    "subtitle": "最佳拍摄时间：下午3-5点",
+    "bg_color": "#2C3E50",
+    "accent_color": "#FFFFFF"
+  },
+  "output_size": {
+    "width": 1080,
+    "height": 1350
+  }
+}

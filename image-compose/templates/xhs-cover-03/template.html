@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width={{width}}, height={{height}}">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&display=swap');
+  
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    width: {{width}}px;
+    height: {{height}}px;
+    overflow: hidden;
+    font-family: 'Noto Sans SC', 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  }
+  
+  .container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  
+  .bg {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: {{bg_color}};
+    background-image: url('{{bg_image}}');
+    background-size: cover;
+    background-position: center;
+  }
+  
+  /* 渐变遮罩：底部深顶部浅，确保文字可读 */
+  .overlay {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      to bottom,
+      rgba(0,0,0,0) 0%,
+      rgba(0,0,0,0.15) 40%,
+      rgba(0,0,0,0.55) 100%
+    );
+  }
+  
+  .content {
+    position: relative;
+    z-index: 1;
+    padding: 0 60px 100px;
+    text-align: center;
+    width: 100%;
+  }
+  
+  .title {
+    color: #FFFFFF;
+    font-size: 68px;
+    font-weight: 900;
+    text-align: center;
+    line-height: 1.4;
+    letter-spacing: 2px;
+    max-width: 960px;
+    margin: 0 auto;
+    word-break: break-all;
+    overflow-wrap: break-word;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.3);
+  }
+  
+  .divider {
+    width: 50px;
+    height: 3px;
+    background-color: #FFFFFF;
+    opacity: 0.5;
+    margin: 32px auto;
+    border-radius: 2px;
+  }
+  
+  .subtitle {
+    color: rgba(255,255,255,0.85);
+    font-size: 34px;
+    font-weight: 400;
+    text-align: center;
+    line-height: 1.5;
+    max-width: 800px;
+    margin: 0 auto;
+    text-shadow: 0 1px 6px rgba(0,0,0,0.2);
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="bg"></div>
+    <div class="overlay"></div>
+    <div class="content">
+      <div class="title" id="title">{{title}}</div>
+      <div class="divider"></div>
+      <div class="subtitle">{{subtitle}}</div>
+    </div>
+  </div>
+  
+  <script>
+    (function() {
+      const title = document.getElementById('title');
+      const maxWidth = 960;
+      const maxHeight = 450;
+      let fontSize = 68;
+      
+      function fits() {
+        return title.scrollWidth <= maxWidth && title.scrollHeight <= maxHeight;
+      }
+      
+      while (!fits() && fontSize > 36) {
+        fontSize -= 2;
+        title.style.fontSize = fontSize + 'px';
+      }
+    })();
+  </script>
+</body>
+</html>

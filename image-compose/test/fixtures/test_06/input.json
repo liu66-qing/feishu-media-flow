@@ -1,0 +1,15 @@
+{
+  "content_id": "CNT-20260707-006",
+  "job_id": "JOB-20260707-006",
+  "image_mode": "ai_bg",
+  "template_name": "xhs-cover-01",
+  "variables": {
+    "title": "掌控情绪的人才能掌控人生",
+    "subtitle": "5个心理学技巧",
+    "accent_color": "#FFFFFF"
+  },
+  "output_size": {
+    "width": 1080,
+    "height": 1350
+  }
+}

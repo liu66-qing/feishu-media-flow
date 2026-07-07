@@ -1,0 +1,4 @@
+2026-07-07 20:37:35,067 [INFO] Starting image-compose, job_dir: test\results\test_01
+2026-07-07 20:37:35,068 [INFO] Template: xhs-cover-01, Content ID: CNT-20260705-001, Image Mode: template
+2026-07-07 20:37:35,069 [INFO] Capturing screenshot to test\results\test_01\output\xhs-cover-01.png
+2026-07-07 20:37:37,027 [INFO] Image compose completed successfully: test\results\test_01\output\xhs-cover-01.png

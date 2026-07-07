@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width={{width}}, height={{height}}">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap');
+  
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    width: {{width}}px;
+    height: {{height}}px;
+    overflow: hidden;
+    font-family: 'Noto Sans SC', 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  }
+  
+  .container {
+    width: 100%;
+    height: 100%;
+    background-color: #F8F8F4;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 70px;
+    position: relative;
+  }
+  
+  /* 左上角引号装饰 */
+  .quote-mark {
+    position: absolute;
+    top: 60px;
+    left: 60px;
+    font-size: 160px;
+    font-weight: 900;
+    color: {{bg_color}};
+    opacity: 0.12;
+    line-height: 1;
+    font-family: Georgia, serif;
+  }
+  
+  .label {
+    display: inline-block;
+    background-color: {{bg_color}};
+    color: #FFFFFF;
+    font-size: 22px;
+    font-weight: 700;
+    padding: 6px 20px;
+    border-radius: 4px;
+    margin-bottom: 50px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  
+  .title {
+    color: #1a1a1a;
+    font-size: 56px;
+    font-weight: 900;
+    text-align: center;
+    line-height: 1.5;
+    letter-spacing: 1px;
+    max-width: 900px;
+    word-break: break-all;
+    overflow-wrap: break-word;
+    margin-bottom: 40px;
+  }
+  
+  .divider {
+    width: 40px;
+    height: 3px;
+    background-color: {{bg_color}};
+    margin-bottom: 40px;
+    border-radius: 2px;
+  }
+  
+  .subtitle {
+    color: #555555;
+    font-size: 32px;
+    font-weight: 400;
+    text-align: center;
+    line-height: 1.6;
+    max-width: 820px;
+  }
+  
+  /* 底部装饰线 */
+  .bottom-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 8px;
+    background-color: {{bg_color}};
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="quote-mark">"</div>
+    <div class="label">笔记</div>
+    <div class="title" id="title">{{title}}</div>
+    <div class="divider"></div>
+    <div class="subtitle">{{subtitle}}</div>
+    <div class="bottom-bar"></div>
+  </div>
+  
+  <script>
+    (function() {
+      const title = document.getElementById('title');
+      const maxWidth = 900;
+      const maxHeight = 500;
+      let fontSize = 56;
+      
+      function fits() {
+        return title.scrollWidth <= maxWidth && title.scrollHeight <= maxHeight;
+      }
+      
+      while (!fits() && fontSize > 30) {
+        fontSize -= 2;
+        title.style.fontSize = fontSize + 'px';
+      }
+    })();
+  </script>
+</body>
+</html>

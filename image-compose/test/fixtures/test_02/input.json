@@ -1,0 +1,15 @@
+{
+  "content_id": "CNT-20260705-002",
+  "job_id": "JOB-20260705-002",
+  "template_name": "xhs-cover-02",
+  "variables": {
+    "title": "大学四年最后悔没做的5件事",
+    "subtitle": "大一看到就好了",
+    "bg_color": "#4ECDC4",
+    "accent_color": "#FFFFFF"
+  },
+  "output_size": {
+    "width": 1080,
+    "height": 1350
+  }
+}

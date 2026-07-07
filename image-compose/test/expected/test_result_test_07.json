@@ -1,0 +1,20 @@
+{
+  "test_name": "test_07",
+  "success": true,
+  "duration_seconds": 80.1,
+  "output_images": [
+    {
+      "name": "ai_bg.png",
+      "size_kb": 5712.7
+    },
+    {
+      "name": "xhs-cover-03.png",
+      "size_kb": 1762.4
+    }
+  ],
+  "image_mode_used": "ai_bg",
+  "template_used": "xhs-cover-03",
+  "ai_prompt_used": "神秘宇宙星空背景，深蓝色调，璀璨星云，银河，繁星点点，浪漫唯美氛围，电影级质感，无文字，无水印，高清竖构图",
+  "ai_fallback_reason": null,
+  "error": null
+}

@@ -1,0 +1,15 @@
+{
+  "content_id": "CNT-20260705-001",
+  "job_id": "JOB-20260705-001",
+  "template_name": "xhs-cover-01",
+  "variables": {
+    "title": "招新别只会摆摊",
+    "subtitle": "3个方法翻倍转化率",
+    "bg_color": "#FF6B6B",
+    "accent_color": "#FFFFFF"
+  },
+  "output_size": {
+    "width": 1080,
+    "height": 1350
+  }
+}

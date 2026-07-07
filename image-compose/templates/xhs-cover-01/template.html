@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width={{width}}, height={{height}}">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&display=swap');
+  
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    width: {{width}}px;
+    height: {{height}}px;
+    overflow: hidden;
+    font-family: 'Noto Sans SC', 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  }
+  
+  .container {
+    width: 100%;
+    height: 100%;
+    background-color: {{bg_color}};
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 60px;
+    position: relative;
+  }
+  
+  /* 顶部装饰线 */
+  .deco-line {
+    position: absolute;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 4px;
+    background-color: {{accent_color}};
+    opacity: 0.4;
+    border-radius: 2px;
+  }
+  
+  .title {
+    color: {{accent_color}};
+    font-size: 72px;
+    font-weight: 900;
+    text-align: center;
+    line-height: 1.4;
+    letter-spacing: 2px;
+    max-width: 900px;
+    word-break: break-all;
+    overflow-wrap: break-word;
+  }
+  
+  .divider {
+    width: 60px;
+    height: 3px;
+    background-color: {{accent_color}};
+    opacity: 0.3;
+    margin: 40px 0;
+    border-radius: 2px;
+  }
+  
+  .subtitle {
+    color: {{accent_color}};
+    font-size: 36px;
+    font-weight: 400;
+    text-align: center;
+    opacity: 0.7;
+    letter-spacing: 1px;
+    max-width: 800px;
+    line-height: 1.5;
+  }
+  
+  /* 底部装饰 */
+  .bottom-deco {
+    position: absolute;
+    bottom: 50px;
+    display: flex;
+    gap: 8px;
+  }
+  .bottom-deco span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: {{accent_color}};
+    opacity: 0.25;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="deco-line"></div>
+    <div class="title" id="title">{{title}}</div>
+    <div class="divider"></div>
+    <div class="subtitle">{{subtitle}}</div>
+    <div class="bottom-deco">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+  
+  <script>
+    // 文字适配：自动换行 + 字号缩放
+    (function() {
+      const title = document.getElementById('title');
+      const maxWidth = 900;
+      const maxHeight = 500;
+      let fontSize = 72;
+      
+      function fits() {
+        return title.scrollWidth <= maxWidth && title.scrollHeight <= maxHeight;
+      }
+      
+      // 先尝试缩小字号（最多到40px）
+      while (!fits() && fontSize > 40) {
+        fontSize -= 2;
+        title.style.fontSize = fontSize + 'px';
+      }
+      
+      // 如果还是不行，继续缩小到最小32px
+      while (!fits() && fontSize > 32) {
+        fontSize -= 1;
+        title.style.fontSize = fontSize + 'px';
+      }
+    })();
+  </script>
+</body>
+</html>

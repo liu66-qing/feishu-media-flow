@@ -1,0 +1,128 @@
+{
+  "timestamp": "2026-07-07T20:26:48.026098",
+  "total_tests": 7,
+  "passed": 7,
+  "failed": 0,
+  "results": [
+    {
+      "test_name": "test_01",
+      "success": true,
+      "duration_seconds": 1.9,
+      "output_images": [
+        {
+          "name": "xhs-cover-01.png",
+          "size_kb": 25.0
+        }
+      ],
+      "image_mode_used": "template",
+      "template_used": "xhs-cover-01",
+      "ai_prompt_used": null,
+      "ai_fallback_reason": null,
+      "error": null
+    },
+    {
+      "test_name": "test_02",
+      "success": true,
+      "duration_seconds": 1.8,
+      "output_images": [
+        {
+          "name": "xhs-cover-02.png",
+          "size_kb": 39.6
+        }
+      ],
+      "image_mode_used": "template",
+      "template_used": "xhs-cover-02",
+      "ai_prompt_used": null,
+      "ai_fallback_reason": null,
+      "error": null
+    },
+    {
+      "test_name": "test_03",
+      "success": true,
+      "duration_seconds": 1.9,
+      "output_images": [
+        {
+          "name": "xhs-cover-03.png",
+          "size_kb": 87.7
+        }
+      ],
+      "image_mode_used": "template",
+      "template_used": "xhs-cover-03",
+      "ai_prompt_used": null,
+      "ai_fallback_reason": null,
+      "error": null
+    },
+    {
+      "test_name": "test_04",
+      "success": true,
+      "duration_seconds": 1.8,
+      "output_images": [
+        {
+          "name": "xhs-card-01.png",
+          "size_kb": 37.3
+        }
+      ],
+      "image_mode_used": "template",
+      "template_used": "xhs-card-01",
+      "ai_prompt_used": null,
+      "ai_fallback_reason": null,
+      "error": null
+    },
+    {
+      "test_name": "test_05",
+      "success": true,
+      "duration_seconds": 1.8,
+      "output_images": [
+        {
+          "name": "xhs-cover-01.png",
+          "size_kb": 74.0
+        }
+      ],
+      "image_mode_used": "template",
+      "template_used": "xhs-cover-01",
+      "ai_prompt_used": null,
+      "ai_fallback_reason": null,
+      "error": null
+    },
+    {
+      "test_name": "test_06",
+      "success": true,
+      "duration_seconds": 229.8,
+      "output_images": [
+        {
+          "name": "ai_bg.png",
+          "size_kb": 4966.0
+        },
+        {
+          "name": "xhs-cover-03.png",
+          "size_kb": 1550.0
+        }
+      ],
+      "image_mode_used": "ai_bg",
+      "template_used": "xhs-cover-03",
+      "ai_prompt_used": "小红书封面背景图，掌控情绪的人才能掌控人生，氛围感摄影风格，无文字，无水印，高质量，竖构图，主题：5个心理学技巧",
+      "ai_fallback_reason": null,
+      "error": null
+    },
+    {
+      "test_name": "test_07",
+      "success": true,
+      "duration_seconds": 80.1,
+      "output_images": [
+        {
+          "name": "ai_bg.png",
+          "size_kb": 5712.7
+        },
+        {
+          "name": "xhs-cover-03.png",
+          "size_kb": 1762.4
+        }
+      ],
+      "image_mode_used": "ai_bg",
+      "template_used": "xhs-cover-03",
+      "ai_prompt_used": "神秘宇宙星空背景，深蓝色调，璀璨星云，银河，繁星点点，浪漫唯美氛围，电影级质感，无文字，无水印，高清竖构图",
+      "ai_fallback_reason": null,
+      "error": null
+    }
+  ]
+}

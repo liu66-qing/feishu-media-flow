@@ -1,0 +1,15 @@
+{
+  "content_id": "CNT-20260705-004",
+  "job_id": "JOB-20260705-004",
+  "template_name": "xhs-card-01",
+  "variables": {
+    "title": "考研还是就业？我用这张表想清楚了",
+    "subtitle": "适合大三纠结的同学",
+    "bg_color": "#6C5CE7",
+    "accent_color": "#FFFFFF"
+  },
+  "output_size": {
+    "width": 1080,
+    "height": 1350
+  }
+}

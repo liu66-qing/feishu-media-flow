@@ -1,0 +1,13 @@
+{
+  "status": "success",
+  "timestamp": "2026-07-07T20:21:32.617414",
+  "data": {
+    "image_path": "Y:\\TYUT\\Skills\\image-compose\\test\\results\\test_02\\output\\xhs-cover-02.png",
+    "width": 1080,
+    "height": 1350,
+    "template_used": "xhs-cover-02",
+    "image_mode_used": "template",
+    "ai_fallback_reason": null,
+    "ai_prompt_used": null
+  }
+}

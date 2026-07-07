@@ -1,0 +1,13 @@
+{
+  "status": "success",
+  "timestamp": "2026-07-07T20:37:37.026913",
+  "data": {
+    "image_path": "test\\results\\test_01\\output\\xhs-cover-01.png",
+    "width": 1080,
+    "height": 1350,
+    "template_used": "xhs-cover-01",
+    "image_mode_used": "template",
+    "ai_fallback_reason": null,
+    "ai_prompt_used": null
+  }
+}
