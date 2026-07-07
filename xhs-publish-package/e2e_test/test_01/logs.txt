@@ -1,0 +1,11 @@
+2026-07-07 20:59:06,691 [INFO] Starting skill, job_dir: e2e_test\test_01
+2026-07-07 20:59:06,692 [INFO] 成功加载 input.json
+2026-07-07 20:59:06,692 [INFO] 输入数据验证通过
+2026-07-07 20:59:06,693 [INFO] 创建发布包目录: e2e_test\test_01\publish_package
+2026-07-07 20:59:06,694 [INFO] 生成 title.txt: e2e_test\test_01\publish_package\title.txt
+2026-07-07 20:59:06,696 [INFO] 生成 body.txt: e2e_test\test_01\publish_package\body.txt
+2026-07-07 20:59:06,697 [INFO] 生成 hashtags.txt: e2e_test\test_01\publish_package\hashtags.txt
+2026-07-07 20:59:06,698 [INFO] 生成 checklist.md: e2e_test\test_01\publish_package\checklist.md
+2026-07-07 20:59:06,700 [INFO] 生成 manifest.json: e2e_test\test_01\publish_package\manifest.json
+2026-07-07 20:59:06,703 [INFO] [1/1] 复制图片: e2e_test\test_01\output\cover.png -> e2e_test\test_01\publish_package\assets\cover.png
+2026-07-07 20:59:06,704 [INFO] Skill completed successfully

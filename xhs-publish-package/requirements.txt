@@ -1,0 +1,2 @@
+# xhs-publish-package - 小红书发布包打包工具
+# 无外部依赖，纯 Python 标准库实现

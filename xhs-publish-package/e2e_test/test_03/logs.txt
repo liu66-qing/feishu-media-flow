@@ -1,0 +1,25 @@
+2026-07-07 20:59:06,960 [INFO] Starting skill, job_dir: e2e_test\test_03
+2026-07-07 20:59:06,961 [INFO] 成功加载 input.json
+2026-07-07 20:59:06,961 [INFO] 输入数据验证通过
+2026-07-07 20:59:06,963 [INFO] 创建发布包目录: e2e_test\test_03\publish_package
+2026-07-07 20:59:06,964 [INFO] 生成 title.txt: e2e_test\test_03\publish_package\title.txt
+2026-07-07 20:59:06,965 [INFO] 生成 body.txt: e2e_test\test_03\publish_package\body.txt
+2026-07-07 20:59:06,966 [INFO] 生成 hashtags.txt: e2e_test\test_03\publish_package\hashtags.txt
+2026-07-07 20:59:06,967 [INFO] 生成 checklist.md: e2e_test\test_03\publish_package\checklist.md
+2026-07-07 20:59:06,968 [INFO] 生成 manifest.json: e2e_test\test_03\publish_package\manifest.json
+2026-07-07 20:59:06,970 [INFO] [1/2] 复制图片: e2e_test\test_03\output\cover.png -> e2e_test\test_03\publish_package\assets\cover.png
+2026-07-07 20:59:06,971 [WARNING] [2/2] 图片文件不存在: e2e_test\test_03\output\not_exists.png，创建占位文件: e2e_test\test_03\publish_package\assets\not_exists.png.missing
+2026-07-07 20:59:06,972 [INFO] Skill completed successfully
+2026-07-07 20:59:49,981 [INFO] Starting skill, job_dir: e2e_test\test_03
+2026-07-07 20:59:49,982 [INFO] 成功加载 input.json
+2026-07-07 20:59:49,982 [INFO] 输入数据验证通过
+2026-07-07 20:59:49,982 [INFO] 目录已存在，删除重建: e2e_test\test_03\publish_package
+2026-07-07 20:59:50,432 [INFO] 创建发布包目录: e2e_test\test_03\publish_package
+2026-07-07 20:59:50,433 [INFO] 生成 title.txt: e2e_test\test_03\publish_package\title.txt
+2026-07-07 20:59:50,434 [INFO] 生成 body.txt: e2e_test\test_03\publish_package\body.txt
+2026-07-07 20:59:50,435 [INFO] 生成 hashtags.txt: e2e_test\test_03\publish_package\hashtags.txt
+2026-07-07 20:59:50,437 [INFO] 生成 checklist.md: e2e_test\test_03\publish_package\checklist.md
+2026-07-07 20:59:50,439 [INFO] 生成 manifest.json: e2e_test\test_03\publish_package\manifest.json
+2026-07-07 20:59:50,441 [INFO] [1/2] 复制图片: e2e_test\test_03\output\cover.png -> e2e_test\test_03\publish_package\assets\cover.png
+2026-07-07 20:59:50,442 [WARNING] [2/2] 图片文件不存在: e2e_test\test_03\output\not_exists.png，创建占位文件: e2e_test\test_03\publish_package\assets\not_exists.png.missing
+2026-07-07 20:59:50,443 [INFO] Skill completed successfully

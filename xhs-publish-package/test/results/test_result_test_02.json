@@ -1,0 +1,28 @@
+{
+  "test_dir": "Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_02",
+  "test_name": "test_02",
+  "timestamp": "2026-07-06T16:24:03.605889",
+  "success": true,
+  "output_files": [
+    "xhs_publish_package.json"
+  ],
+  "error": null,
+  "logs": "2026-07-06 16:24:03,708 [INFO] Starting skill, job_dir: Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_02\n2026-07-06 16:24:03,708 [INFO] 成功加载 input.json\n2026-07-06 16:24:03,708 [INFO] 输入数据验证通过\n2026-07-06 16:24:03,710 [INFO] 创建发布包目录: Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_02\\publish_package\n2026-07-06 16:24:03,711 [INFO] 生成 title.txt: Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_02\\publish_package\\title.txt\n2026-07-06 16:24:03,712 [INFO] 生成 body.txt: Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_02\\publish_package\\body.txt\n2026-07-06 16:24:03,713 [INFO] 生成 hashtags.txt: Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_02\\publish_package\\hashtags.txt\n2026-07-06 16:24:03,714 [INFO] 生成 checklist.md: Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_02\\publish_package\\checklist.md\n2026-07-06 16:24:03,715 [INFO] 生成 manifest.json: Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_02\\publish_package\\manifest.json\n2026-07-06 16:24:03,715 [INFO] assets 数组为空，不复制任何资源\n2026-07-06 16:24:03,716 [INFO] Skill completed successfully\n",
+  "result_data": {
+    "status": "success",
+    "timestamp": "2026-07-06T16:24:03.715333",
+    "data": {
+      "publish_package_path": "Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_02\\publish_package",
+      "files_count": 5
+    }
+  },
+  "publish_package_files": [
+    "body.txt",
+    "checklist.md",
+    "hashtags.txt",
+    "manifest.json",
+    "title.txt"
+  ],
+  "assets_files": [],
+  "logs_content": "2026-07-06 16:24:03,708 [INFO] Starting skill, job_dir: Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_02\n2026-07-06 16:24:03,708 [INFO] 成功加载 input.json\n2026-07-06 16:24:03,708 [INFO] 输入数据验证通过\n2026-07-06 16:24:03,710 [INFO] 创建发布包目录: Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_02\\publish_package\n2026-07-06 16:24:03,711 [INFO] 生成 title.txt: Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_02\\publish_package\\title.txt\n2026-07-06 16:24:03,712 [INFO] 生成 body.txt: Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_02\\publish_package\\body.txt\n2026-07-06 16:24:03,713 [INFO] 生成 hashtags.txt: Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_02\\publish_package\\hashtags.txt\n2026-07-06 16:24:03,714 [INFO] 生成 checklist.md: Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_02\\publish_package\\checklist.md\n2026-07-06 16:24:03,715 [INFO] 生成 manifest.json: Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_02\\publish_package\\manifest.json\n2026-07-06 16:24:03,715 [INFO] assets 数组为空，不复制任何资源\n2026-07-06 16:24:03,716 [INFO] Skill completed successfully\n"
+}

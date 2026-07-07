@@ -1,0 +1,33 @@
+{
+  "test_dir": "Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_05",
+  "test_name": "test_05",
+  "timestamp": "2026-07-06T16:24:03.985205",
+  "success": true,
+  "output_files": [
+    "xhs_publish_package.json"
+  ],
+  "error": null,
+  "logs": "2026-07-06 16:24:04,084 [INFO] Starting skill, job_dir: Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_05\n2026-07-06 16:24:04,085 [INFO] 成功加载 input.json\n2026-07-06 16:24:04,085 [INFO] 输入数据验证通过\n2026-07-06 16:24:04,086 [INFO] 创建发布包目录: Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_05\\publish_package\n2026-07-06 16:24:04,087 [INFO] 生成 title.txt: Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_05\\publish_package\\title.txt\n2026-07-06 16:24:04,088 [INFO] 生成 body.txt: Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_05\\publish_package\\body.txt\n2026-07-06 16:24:04,089 [INFO] 生成 hashtags.txt: Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_05\\publish_package\\hashtags.txt\n2026-07-06 16:24:04,090 [INFO] 生成 checklist.md: Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_05\\publish_package\\checklist.md\n2026-07-06 16:24:04,091 [INFO] 生成 manifest.json: Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_05\\publish_package\\manifest.json\n2026-07-06 16:24:04,093 [INFO] [1/2] 复制图片: Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_05\\cover.png -> Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_05\\publish_package\\assets\\cover.png\n2026-07-06 16:24:04,094 [WARNING] [2/2] 图片文件不存在: Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_05\\missing_image.png，创建占位文件: Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_05\\publish_package\\assets\\missing_image.png.missing\n2026-07-06 16:24:04,095 [INFO] Skill completed successfully\n",
+  "result_data": {
+    "status": "success",
+    "timestamp": "2026-07-06T16:24:04.094835",
+    "data": {
+      "publish_package_path": "Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_05\\publish_package",
+      "files_count": 6
+    }
+  },
+  "publish_package_files": [
+    "body.txt",
+    "checklist.md",
+    "hashtags.txt",
+    "manifest.json",
+    "title.txt",
+    "cover.png",
+    "missing_image.png.missing"
+  ],
+  "assets_files": [
+    "cover.png",
+    "missing_image.png.missing"
+  ],
+  "logs_content": "2026-07-06 16:24:04,084 [INFO] Starting skill, job_dir: Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_05\n2026-07-06 16:24:04,085 [INFO] 成功加载 input.json\n2026-07-06 16:24:04,085 [INFO] 输入数据验证通过\n2026-07-06 16:24:04,086 [INFO] 创建发布包目录: Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_05\\publish_package\n2026-07-06 16:24:04,087 [INFO] 生成 title.txt: Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_05\\publish_package\\title.txt\n2026-07-06 16:24:04,088 [INFO] 生成 body.txt: Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_05\\publish_package\\body.txt\n2026-07-06 16:24:04,089 [INFO] 生成 hashtags.txt: Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_05\\publish_package\\hashtags.txt\n2026-07-06 16:24:04,090 [INFO] 生成 checklist.md: Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_05\\publish_package\\checklist.md\n2026-07-06 16:24:04,091 [INFO] 生成 manifest.json: Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_05\\publish_package\\manifest.json\n2026-07-06 16:24:04,093 [INFO] [1/2] 复制图片: Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_05\\cover.png -> Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_05\\publish_package\\assets\\cover.png\n2026-07-06 16:24:04,094 [WARNING] [2/2] 图片文件不存在: Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_05\\missing_image.png，创建占位文件: Y:\\TYUT\\Skills\\xhs-publish-package\\test\\fixtures\\test_05\\publish_package\\assets\\missing_image.png.missing\n2026-07-06 16:24:04,095 [INFO] Skill completed successfully\n"
+}

@@ -1,0 +1,8 @@
+{
+  "status": "success",
+  "timestamp": "2026-07-06T17:04:27.792206",
+  "data": {
+    "publish_package_path": "test\\fixtures\\test_01\\publish_package",
+    "files_count": 7
+  }
+}

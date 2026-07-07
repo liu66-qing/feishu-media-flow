@@ -1,0 +1,14 @@
+2026-07-06 16:24:03,831 [INFO] Starting skill, job_dir: Y:\TYUT\Skills\xhs-publish-package\test\fixtures\test_03
+2026-07-06 16:24:03,832 [INFO] 成功加载 input.json
+2026-07-06 16:24:03,832 [INFO] 输入数据验证通过
+2026-07-06 16:24:03,834 [INFO] 创建发布包目录: Y:\TYUT\Skills\xhs-publish-package\test\fixtures\test_03\publish_package
+2026-07-06 16:24:03,835 [INFO] 生成 title.txt: Y:\TYUT\Skills\xhs-publish-package\test\fixtures\test_03\publish_package\title.txt
+2026-07-06 16:24:03,836 [INFO] 生成 body.txt: Y:\TYUT\Skills\xhs-publish-package\test\fixtures\test_03\publish_package\body.txt
+2026-07-06 16:24:03,837 [INFO] 生成 hashtags.txt: Y:\TYUT\Skills\xhs-publish-package\test\fixtures\test_03\publish_package\hashtags.txt
+2026-07-06 16:24:03,838 [INFO] 生成 checklist.md: Y:\TYUT\Skills\xhs-publish-package\test\fixtures\test_03\publish_package\checklist.md
+2026-07-06 16:24:03,839 [INFO] 生成 manifest.json: Y:\TYUT\Skills\xhs-publish-package\test\fixtures\test_03\publish_package\manifest.json
+2026-07-06 16:24:03,841 [INFO] [1/4] 复制图片: Y:\TYUT\Skills\xhs-publish-package\test\fixtures\test_03\cover.png -> Y:\TYUT\Skills\xhs-publish-package\test\fixtures\test_03\publish_package\assets\cover.png
+2026-07-06 16:24:03,843 [INFO] [2/4] 复制图片: Y:\TYUT\Skills\xhs-publish-package\test\fixtures\test_03\card_01.png -> Y:\TYUT\Skills\xhs-publish-package\test\fixtures\test_03\publish_package\assets\card_01.png
+2026-07-06 16:24:03,844 [INFO] [3/4] 复制图片: Y:\TYUT\Skills\xhs-publish-package\test\fixtures\test_03\card_02.png -> Y:\TYUT\Skills\xhs-publish-package\test\fixtures\test_03\publish_package\assets\card_02.png
+2026-07-06 16:24:03,846 [INFO] [4/4] 复制图片: Y:\TYUT\Skills\xhs-publish-package\test\fixtures\test_03\card_03.png -> Y:\TYUT\Skills\xhs-publish-package\test\fixtures\test_03\publish_package\assets\card_03.png
+2026-07-06 16:24:03,847 [INFO] Skill completed successfully
