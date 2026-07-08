@@ -14,10 +14,27 @@ PROMPTS_DIR = SKILL_DIR / "prompts"
 OUTPUT_NAME = "content-generate-xhs.json"
 REQUIRED_FIELDS = ("content_id", "job_id", "topic")
 
+# Load platform constraints
+_CONSTRAINTS_FILE = SKILL_DIR.parent / "app" / "prompts" / "platform_constraints.json"
+_XHS_CONSTRAINTS = {}
+if _CONSTRAINTS_FILE.exists():
+    import json as _json
+    _XHS_CONSTRAINTS = _json.loads(_CONSTRAINTS_FILE.read_text(encoding="utf-8")).get("xhs", {})
+
 SYSTEM_PROMPT = (
-    "你是小红书内容共创编辑。整体风格年轻、真诚、不油腻，像真人分享经验。"
-    "不要使用“建议”“一定”“绝对”这三个词，不要编造材料里没有的事实。"
-    "所有回答必须是一个 JSON object。"
+    "你是小红书内容共创编辑。整体风格年轻、真诚、不油腻，像真人分享经验。\n"
+    '不要使用"建议""一定""绝对"这三个词，不要编造材料里没有的事实。\n'
+    "所有回答必须是一个 JSON object。\n\n"
+    "## 平台约束\n"
+    f"- 标题：最多{_XHS_CONSTRAINTS.get('title_max_length', 20)}字\n"
+    f"- 正文：{_XHS_CONSTRAINTS.get('body_min_length', 400)}-{_XHS_CONSTRAINTS.get('body_max_length', 900)}字\n"
+    f"- 封面文案：最多{_XHS_CONSTRAINTS.get('cover_text_max_length', 15)}字\n"
+    f"- 标签：最多{_XHS_CONSTRAINTS.get('max_tags', 10)}个\n"
+    f"- 禁用词：{'、'.join(_XHS_CONSTRAINTS.get('forbidden_words', []))}\n\n"
+    "## 风格要求\n"
+    f"{_XHS_CONSTRAINTS.get('style_guide', '')}\n\n"
+    "## 内容结构\n"
+    f"{_XHS_CONSTRAINTS.get('content_structure', '')}"
 )
 
 

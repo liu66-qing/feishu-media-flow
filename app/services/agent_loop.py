@@ -27,6 +27,7 @@ from app.services.critic import Critic
 from app.services.llm import call_llm
 from app.services.notifier import FeishuNotifier
 from app.services.planner import Planner
+from app.services.publisher import Publisher, PublishPayload
 from app.services.skill_runner import SkillRunner
 
 logger = logging.getLogger(__name__)
@@ -47,6 +48,7 @@ class AgentLoop:
         self.planner = Planner()
         self.critic = Critic()
         self.runner = SkillRunner(settings)
+        self.publisher = Publisher(settings)
 
     # ------------------------------------------------------------------
     # Global tick (called by cron or /agent/tick endpoint)
@@ -83,6 +85,7 @@ class AgentLoop:
             DraftStatus.COMPOSING_IMAGE.value: self._handle_composing_image,
             DraftStatus.PACKAGING.value: self._handle_packaging,
             DraftStatus.PUBLISH_APPROVED.value: self._handle_publish_approved,
+            DraftStatus.SCHEDULED.value: self._handle_scheduled,
         }
 
         handler = handlers.get(status)
@@ -251,6 +254,87 @@ class AgentLoop:
         """Admin approved publish → schedule it."""
         await self._update_item_status(record, DraftStatus.SCHEDULED.value)
         return {"action": "scheduled"}
+
+    async def _handle_scheduled(self, record: dict) -> dict:
+        """Scheduled content → auto-publish via social-auto-upload."""
+        fields = record.get("fields", {})
+        platform = fields.get("platform", "xhs")
+        content = _parse_json_field(fields.get("content_payload", "{}"))
+        package = _parse_json_field(fields.get("package_result", "{}"))
+        image_result = _parse_json_field(fields.get("image_result", "{}"))
+
+        # Determine account name from accounts table or default
+        account = await self._get_account_for_platform(platform)
+        if not account:
+            logger.error("No account configured for platform %s", platform)
+            await self._notify_publish_failure(record, "No account configured")
+            return {"action": "publish_failed", "reason": "no_account"}
+
+        # Build image paths from package or image result
+        image_paths = package.get("asset_paths", [])
+        if not image_paths:
+            cover = image_result.get("cover_path", "")
+            cards = image_result.get("card_paths", [])
+            image_paths = ([cover] if cover else []) + cards
+
+        payload = PublishPayload(
+            platform=platform,
+            account=account,
+            title=content.get("title", content.get("selected_title", "")),
+            body=content.get("body", ""),
+            tags=content.get("hashtags", []),
+            image_paths=image_paths,
+        )
+
+        await self._update_item_status(record, DraftStatus.PUBLISHING.value)
+        result = self.publisher.publish(payload)
+
+        if result.success:
+            await self._update_item_status(record, DraftStatus.PUBLISHED.value)
+            await self.notifier.notify_admins(
+                f"✅ 发布成功\n平台：{platform}\n标题：{payload.title}"
+            )
+            return {"action": "published"}
+        else:
+            await self._update_item_status(record, DraftStatus.FAILED.value)
+            await self._notify_publish_failure(record, result.message)
+            return {"action": "publish_failed", "reason": result.message}
+
+    async def _get_account_for_platform(self, platform: str) -> str | None:
+        """Look up configured account name from accounts table."""
+        try:
+            records = await self.bitable.list_records("accounts")
+            for r in records:
+                f = r.get("fields", {})
+                if f.get("platform") == platform and f.get("status") == "active":
+                    return f.get("account_name", "")
+        except Exception:
+            pass
+        return None
+
+    async def _notify_publish_failure(self, record: dict, error: str) -> None:
+        """Send failure notification to admins via Feishu with retry option."""
+        fields = record.get("fields", {})
+        card = {
+            "config": {"wide_screen_mode": True},
+            "header": {"template": "red", "title": {"tag": "plain_text", "content": "❌ 发布失败"}},
+            "elements": [
+                {"tag": "div", "text": {"tag": "lark_md", "content": (
+                    f"**平台**：{fields.get('platform', '')}\n"
+                    f"**标题**：{fields.get('topic', '')}\n"
+                    f"**错误**：{error[:300]}"
+                )}},
+                {"tag": "action", "actions": [
+                    {"tag": "button", "text": {"tag": "plain_text", "content": "重试发布"}, "type": "primary",
+                     "value": {"action": "retry_publish", "content_id": fields.get("content_id", "")}},
+                    {"tag": "button", "text": {"tag": "plain_text", "content": "人工接管"}, "type": "default",
+                     "value": {"action": "manual_takeover", "content_id": fields.get("content_id", "")}},
+                ]},
+            ],
+        }
+        chat_id = self.settings.feishu_default_chat_id
+        if chat_id:
+            await self.notifier.send_card(chat_id, card)
 
     # ------------------------------------------------------------------
     # Generation & Revision

@@ -1,0 +1,42 @@
+{
+  "xhs": {
+    "platform_name": "小红书",
+    "title_max_length": 20,
+    "body_min_length": 400,
+    "body_max_length": 900,
+    "cover_text_max_length": 15,
+    "max_tags": 10,
+    "tag_format": "no_hash_prefix",
+    "image_spec": {"width": 1080, "height": 1350, "format": "png"},
+    "style_guide": "年轻真诚分享感，像闺蜜聊天。多用emoji分段，开头要hook。不要说教语气，不要'建议''一定'。段落短（2-3句），多分段。标题要有数字或情绪词。",
+    "content_structure": "hook开头(1句) → 痛点共鸣(1段) → 干货要点(3-5点，emoji分段) → 个人体验/总结(1段) → 互动引导(1句)",
+    "forbidden_words": ["建议", "一定", "绝对", "千万", "必须"],
+    "hashtag_style": "热门话题词，2-5字短词为主"
+  },
+  "douyin": {
+    "platform_name": "抖音",
+    "title_max_length": 30,
+    "body_min_length": 100,
+    "body_max_length": 500,
+    "max_tags": 5,
+    "tag_format": "hash_prefix",
+    "image_spec": {"width": 1080, "height": 1920, "format": "png"},
+    "style_guide": "短平快节奏，前3秒抓眼球。口语化表达，像跟朋友说话。可以用反转/悬念/争议性开头。",
+    "content_structure": "悬念开头(1句) → 核心内容(3-5句) → 总结金句(1句)",
+    "forbidden_words": [],
+    "hashtag_style": "热搜词+领域词，#前缀"
+  },
+  "wechat": {
+    "platform_name": "微信公众号",
+    "title_max_length": 64,
+    "body_min_length": 800,
+    "body_max_length": 2500,
+    "max_tags": 3,
+    "tag_format": "no_hash_prefix",
+    "image_spec": {"width": 900, "height": 500, "format": "png"},
+    "style_guide": "深度长文风格，专业但不学术。有观点有论据，逻辑清晰。可以用小标题分节。语气成熟稳重，适合转发到朋友圈。",
+    "content_structure": "引子(1段) → 现象/问题(1段) → 分析/方法(2-3节,有小标题) → 总结观点(1段) → 互动引导(1句)",
+    "forbidden_words": [],
+    "hashtag_style": "不需要hashtag，公众号靠标题和摘要"
+  }
+}
