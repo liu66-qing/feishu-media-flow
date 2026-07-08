@@ -19,6 +19,12 @@ async def feishu_webhook(
 ) -> dict:
     settings = get_settings()
     body = await request.body()
+    payload = await request.json()
+
+    # url_verification (challenge) comes without signature headers
+    if payload.get("type") == "url_verification":
+        return {"challenge": payload.get("challenge")}
+
     if not verify_webhook_signature(
         x_lark_request_timestamp,
         x_lark_request_nonce,
@@ -27,11 +33,6 @@ async def feishu_webhook(
         x_lark_signature,
     ):
         raise HTTPException(status_code=401, detail="invalid feishu signature")
-    payload = await request.json()
-    if payload.get("type") == "url_verification":
-        if not verify_event_token(payload, settings.feishu_verification_token):
-            raise HTTPException(status_code=401, detail="invalid verification token")
-        return {"challenge": payload.get("challenge")}
     if not verify_event_token(payload.get("header", {}), settings.feishu_verification_token):
         raise HTTPException(status_code=401, detail="invalid event token")
 
@@ -51,20 +52,42 @@ async def feishu_webhook(
 
 
 async def _handle_message(event: dict, workflow: WorkflowService) -> dict:
+    from app.services.notifier import FeishuNotifier
+
+    settings = get_settings()
+    notifier = FeishuNotifier(settings)
     message = event.get("message", {})
+    message_id = message.get("message_id", "")
+    chat_id = message.get("chat_id", "")
     content = message.get("content", "")
     text = _extract_text(content)
     command = parse_command(text)
     if command is None:
         return {"status": "ignored", "reason": "not a command"}
+
     if command.name in {"状态", "status"}:
-        return await workflow.status_summary()
+        result = await workflow.status_summary()
+        card = result.get("card")
+        if card and chat_id:
+            await notifier.send_card(chat_id, card)
+        elif message_id:
+            await notifier.reply_text(message_id, "系统运行中，暂无详细状态。")
+        return result
+
     if command.name in {"新建", "create"}:
         if len(command.args) < 2:
+            if message_id:
+                await notifier.reply_text(message_id, "用法：/新建 平台 选题\n例如：/新建 小红书 如何高效学习")
             return {"status": "error", "message": "用法：/新建 平台 选题"}
         platform = _parse_platform(command.args[0])
         topic = " ".join(command.args[1:])
-        return await workflow.create_content_from_topic(platform, topic)
+        if message_id:
+            await notifier.reply_text(message_id, f"收到！正在为你生成 {platform.value} 内容：{topic}")
+        result = await workflow.create_content_from_topic(platform, topic)
+        return result
+
+    if message_id:
+        await notifier.reply_text(message_id, f"未知命令：/{command.name}\n支持：/状态、/新建 平台 选题")
     return {"status": "ignored", "reason": f"unknown command {command.name}"}
 
 
