@@ -40,6 +40,7 @@ def test_create_command_dry_runs_missing_skill(monkeypatch, tmp_path) -> None:
     assert data["content"]["platform"] == "xhs"
     assert data["content"]["status"] == "pending_review"
     assert data["skill_result"]["data"]["dry_run"] is True
+    assert data["risk_result"]["status"] == "skipped"
 
 
 def test_card_action_approve(monkeypatch, tmp_path) -> None:
