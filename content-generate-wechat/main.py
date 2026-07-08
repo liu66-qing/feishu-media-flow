@@ -437,7 +437,7 @@ def generate_wechat_content(input_data):
 def run(job_dir):
     job_dir = Path(job_dir)
     input_path = job_dir / "input.json"
-    output_path = job_dir / "content_generate_wechat.json"
+    output_path = job_dir / "content-generate-wechat.json"
     logs_path = job_dir / "logs.txt"
     error_path = job_dir / "error.json"
 
