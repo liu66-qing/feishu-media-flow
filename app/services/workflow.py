@@ -68,7 +68,17 @@ class WorkflowService:
         # Step 4: notify
         chat_id = self.settings.feishu_default_chat_id
         if chat_id and status == ContentStatus.PENDING_REVIEW:
-            await self.notifier.send_card(chat_id, build_review_card([item]))
+            if platform == Platform.WECHAT:
+                # Send wechat article card with collapsible full text
+                from app.services.cards import build_wechat_article_card
+                title = result.get("selected_title", topic)
+                summary = result.get("summary", "")
+                body_md = result.get("body_md", "")
+                hashtags = result.get("hashtags", [])
+                card = build_wechat_article_card(title, summary, body_md, hashtags)
+                await self.notifier.send_card(chat_id, card)
+            else:
+                await self.notifier.send_card(chat_id, build_review_card([item]))
         elif status == ContentStatus.FAILED:
             await self.notifier.notify_admins(
                 f"**内容被风控拦截**\n选题：{topic}\n原因：{risk_result.get('data', {}).get('reason', 'unknown')}"

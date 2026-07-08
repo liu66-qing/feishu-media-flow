@@ -92,3 +92,45 @@ def build_schedule_card(items: list[dict]) -> dict:
         "elements": elements,
     }
 
+
+def build_wechat_article_card(title: str, summary: str, body_md: str, hashtags: list[str] | None = None) -> dict:
+    """Build a collapsible card for WeChat article content, easy to copy."""
+    elements = []
+
+    # Title and summary always visible
+    elements.append({"tag": "div", "text": {"tag": "lark_md", "content": f"**标题：**{title}"}})
+    if summary:
+        elements.append({"tag": "div", "text": {"tag": "lark_md", "content": f"**摘要：**{summary}"}})
+    elements.append({"tag": "hr"})
+
+    # Body in collapsible panel
+    # Feishu card collapsible uses "collapsible_panel"
+    body_preview = body_md[:150] + "..." if len(body_md) > 150 else body_md
+    elements.append(
+        {
+            "tag": "collapsible_panel",
+            "expanded": False,
+            "header": {
+                "title": {"tag": "plain_text", "content": "📄 展开查看全文（可选中复制）"},
+            },
+            "vertical_spacing": "8px",
+            "elements": [
+                {"tag": "div", "text": {"tag": "lark_md", "content": body_md}},
+            ],
+        }
+    )
+
+    if hashtags:
+        elements.append({"tag": "div", "text": {"tag": "lark_md", "content": f"**标签：**{' '.join(hashtags)}"}})
+
+    elements.append({"tag": "hr"})
+    elements.append(
+        {"tag": "div", "text": {"tag": "lark_md", "content": "💡 展开全文后长按选中即可复制到公众号编辑器"}}
+    )
+
+    return {
+        "config": {"wide_screen_mode": True},
+        "header": {"template": "purple", "title": {"tag": "plain_text", "content": "📝 公众号文章已生成"}},
+        "elements": elements,
+    }
+
