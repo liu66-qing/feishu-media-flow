@@ -108,7 +108,13 @@ async def _handle_card_action(event: dict, workflow: WorkflowService) -> dict:
     operator = event.get("operator", {}).get("open_id", "")
     action = action_value.get("action")
     raw_ids = action_value.get("content_ids", [])
-    content_ids = json.loads(raw_ids) if isinstance(raw_ids, str) else raw_ids
+    # value may be double-encoded JSON string from card button
+    if isinstance(raw_ids, str):
+        content_ids = json.loads(raw_ids)
+    else:
+        content_ids = raw_ids
+    if isinstance(content_ids, str):
+        content_ids = [content_ids]
 
     # Legacy bulk approve
     if action == "approve_all":
