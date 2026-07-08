@@ -35,10 +35,12 @@ class WorkflowService:
             materials=[],
         )
 
-        # Step 1: generate content
+        # Step 1: generate content (run in thread to avoid blocking event loop)
+        import asyncio
+
         skill_name = self._skill_for_platform(platform)
         try:
-            result = self.runner.run(skill_name, job)
+            result = await asyncio.to_thread(self.runner.run, skill_name, job)
         except FileNotFoundError:
             result = dry_run_skill_result(job, skill_name)
 

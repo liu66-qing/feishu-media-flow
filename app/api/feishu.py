@@ -83,8 +83,18 @@ async def _handle_message(event: dict, workflow: WorkflowService) -> dict:
         topic = " ".join(command.args[1:])
         if message_id:
             await notifier.reply_text(message_id, f"收到！正在为你生成 {platform.value} 内容：{topic}")
-        result = await workflow.create_content_from_topic(platform, topic)
-        return result
+
+        import asyncio
+
+        async def _run_generation() -> None:
+            try:
+                await workflow.create_content_from_topic(platform, topic)
+                await notifier.send_text(chat_id, f"✅ 内容生成完成：{topic}")
+            except Exception as e:
+                await notifier.send_text(chat_id, f"❌ 生成失败：{e}")
+
+        asyncio.create_task(_run_generation())
+        return {"status": "accepted", "topic": topic}
 
     if message_id:
         await notifier.reply_text(message_id, f"未知命令：/{command.name}\n支持：/状态、/新建 平台 选题")
