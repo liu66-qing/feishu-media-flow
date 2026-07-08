@@ -77,11 +77,65 @@ class WorkflowService:
         return {"content": item.model_dump(mode="json"), "skill_result": result, "risk_result": risk_result}
 
     async def approve(self, content_ids: list[str], operator_open_id: str) -> dict:
+        import asyncio
+
         for cid in content_ids:
             await self._update_content_status(cid, ContentStatus.APPROVED)
         message = f"审批通过：{', '.join(content_ids)}\n操作人：{operator_open_id or 'unknown'}"
         await self.notifier.notify_admins(message)
+
+        # Trigger image compose in background for each approved content
+        for cid in content_ids:
+            asyncio.create_task(self._compose_image_for_content(cid))
+
         return {"status": "approved", "content_ids": content_ids}
+
+    async def _compose_image_for_content(self, content_id: str) -> None:
+        """Run image-compose skill after approval."""
+        import asyncio
+        import json
+
+        # Find the generation output by scanning job dirs
+        jobs_dir = self.settings.data_dir / "jobs"
+        gen_data = None
+        if jobs_dir.exists():
+            for job_dir in sorted(jobs_dir.iterdir(), key=lambda p: p.stat().st_mtime, reverse=True):
+                output_file = job_dir / "content-generate-xhs.json"
+                if output_file.exists():
+                    data = json.loads(output_file.read_text(encoding="utf-8"))
+                    if data.get("content_id") == content_id:
+                        gen_data = data
+                        break
+
+        if not gen_data:
+            await self.notifier.notify_admins(f"⚠️ 图文合成跳过：找不到 {content_id} 的生成结果")
+            return
+
+        # Build image-compose input
+        title = gen_data.get("selected_title", gen_data.get("topic", ""))
+        cover_text = gen_data.get("cover_text", "")
+        compose_job = SkillJob(
+            content_id=content_id,
+            job_id=f"JOB-IMG-{content_id[4:]}",
+            platform=Platform.XHS,
+            topic=title,
+            column="",
+            materials=[],
+            template_name="xhs-cover-01",
+            variables={
+                "title": cover_text or title,
+                "subtitle": title if cover_text else "",
+                "bg_color": "#FF6B6B",
+                "accent_color": "#FFFFFF",
+            },
+        )
+
+        try:
+            result = await asyncio.to_thread(self.runner.run, "image-compose", compose_job)
+            image_path = result.get("data", {}).get("image_path", "")
+            await self.notifier.notify_admins(f"🎨 封面图生成完成：{content_id}\n路径：{image_path}")
+        except Exception as e:
+            await self.notifier.notify_admins(f"❌ 图文合成失败：{content_id}\n{e}")
 
     async def status_summary(self) -> dict:
         try:
