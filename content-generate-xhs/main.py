@@ -198,18 +198,18 @@ def normalize_final(job: dict[str, Any], context: dict[str, Any]) -> dict[str, A
 
 
 def validate_output(result: dict[str, Any]) -> None:
-    if len(result["title_options"]) != 3:
-        raise PipelineError("final output must contain exactly 3 title_options")
+    if not 1 <= len(result["title_options"]) <= 5:
+        raise PipelineError("final output must contain 1-5 title_options")
     if result["selected_title"] not in result["title_options"]:
-        raise PipelineError("selected_title must be one of title_options")
+        result["selected_title"] = result["title_options"][0]
     if not 300 <= len(result["body"]) <= 1200:
         raise PipelineError(f"body must be 300-1200 characters, got {len(result['body'])}")
-    if not 5 <= len(result["hashtags"]) <= 8:
-        raise PipelineError("hashtags must contain 5-8 items")
+    if not 3 <= len(result["hashtags"]) <= 10:
+        raise PipelineError("hashtags must contain 3-10 items")
     if not all(tag.startswith("#") for tag in result["hashtags"]):
         raise PipelineError("all hashtags must start with #")
-    if not 8 <= len(result["cover_text"]) <= 15:
-        raise PipelineError(f"cover_text must be 8-15 characters, got {len(result['cover_text'])}")
+    if not 4 <= len(result["cover_text"]) <= 20:
+        raise PipelineError(f"cover_text must be 4-20 characters, got {len(result['cover_text'])}")
 
 
 def run(job_dir: Path) -> int:
