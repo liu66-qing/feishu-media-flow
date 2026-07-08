@@ -1,180 +1,238 @@
 import argparse
 import json
-import logging
 import os
-import sys
-from datetime import datetime
+import time
+from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 
-from dotenv import load_dotenv
 from openai import OpenAI
 
-load_dotenv(Path(__file__).parent.parent / ".env")
+
+SKILL_DIR = Path(__file__).resolve().parent
+PROMPTS_DIR = SKILL_DIR / "prompts"
+OUTPUT_NAME = "content_generate_xhs.json"
+REQUIRED_FIELDS = ("content_id", "job_id", "topic", "column", "materials", "brand")
+
+SYSTEM_PROMPT = (
+    "你是小红书内容共创编辑。整体风格年轻、真诚、不油腻，像真人分享经验。"
+    "不要使用“建议”“一定”“绝对”这三个词，不要编造材料里没有的事实。"
+    "所有回答必须是一个 JSON object。"
+)
 
 
-SKILL_NAME = "content-generate-xhs"
+class PipelineError(Exception):
+    pass
 
 
-def get_llm_client():
-    return OpenAI(
-        api_key=os.getenv("LLM_API_KEY"),
-        base_url=os.getenv("LLM_BASE_URL", "https://api.openai.com/v1")
-    )
+def now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
 
 
-def call_llm(prompt: str, system: str = "", model: str = None) -> str:
-    client = get_llm_client()
-    model = model or os.getenv("LLM_MODEL", "gpt-5.4-mini")
-    
-    resp = client.chat.completions.create(
-        model=model,
-        messages=[
-            {"role": "system", "content": system},
-            {"role": "user", "content": prompt}
-        ],
-        response_format={"type": "json_object"}
-    )
-    return resp.choices[0].message.content
+def read_json(path: Path) -> dict[str, Any]:
+    if not path.exists():
+        raise PipelineError(f"missing input file: {path}")
+    with path.open("r", encoding="utf-8-sig") as file:
+        data = json.load(file)
+    if not isinstance(data, dict):
+        raise PipelineError("input.json must be a JSON object")
+    return data
 
 
-def load_prompt(filepath: Path) -> str:
-    with open(filepath, "r", encoding="utf-8") as f:
-        return f.read()
+def write_json(path: Path, payload: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
-def setup_logging(job_dir: Path):
-    log_file = job_dir / "logs.txt"
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s [%(levelname)s] %(message)s",
-        handlers=[
-            logging.FileHandler(log_file, encoding="utf-8"),
-            logging.StreamHandler(sys.stdout)
-        ]
-    )
+def require_fields(data: dict[str, Any]) -> None:
+    missing = [field for field in REQUIRED_FIELDS if field not in data]
+    if missing:
+        raise PipelineError(f"missing required field(s): {', '.join(missing)}")
+    if not isinstance(data["materials"], list):
+        raise PipelineError("materials must be a list")
+    if not isinstance(data["brand"], dict):
+        raise PipelineError("brand must be an object")
 
 
-def load_input(job_dir: Path) -> dict:
-    input_path = job_dir / "input.json"
-    with open(input_path, "r", encoding="utf-8") as f:
-        return json.load(f)
+def read_prompt(filename: str) -> str:
+    path = PROMPTS_DIR / filename
+    if not path.exists():
+        raise PipelineError(f"missing prompt file: {path}")
+    return path.read_text(encoding="utf-8")
 
 
-def write_output(job_dir: Path, skill_name: str, data: dict):
-    output_path = job_dir / f"{skill_name}.json"
-    result = {
-        "status": "success",
-        "timestamp": datetime.now().isoformat(),
-        "content_id": data.get("content_id", ""),
-        "data": data
-    }
-    with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(result, f, ensure_ascii=False, indent=2)
+def parse_json_object(raw: str) -> dict[str, Any]:
+    text = raw.strip()
+    if text.startswith("```json"):
+        text = text.removeprefix("```json").removesuffix("```").strip()
+    elif text.startswith("```"):
+        text = text.removeprefix("```").removesuffix("```").strip()
+    start = text.find("{")
+    end = text.rfind("}")
+    if start >= 0 and end > start:
+        text = text[start : end + 1]
+    data = json.loads(text)
+    if not isinstance(data, dict):
+        raise ValueError("LLM response must be a JSON object")
+    return data
 
 
-def write_error(job_dir: Path, error_msg: str):
-    error_path = job_dir / "error.json"
-    error_data = {
-        "status": "error",
-        "timestamp": datetime.now().isoformat(),
-        "error": error_msg
-    }
-    with open(error_path, "w", encoding="utf-8") as f:
-        json.dump(error_data, f, ensure_ascii=False, indent=2)
+def build_client() -> tuple[OpenAI, str]:
+    api_key = os.getenv("LLM_API_KEY")
+    base_url = os.getenv("LLM_BASE_URL")
+    model = os.getenv("LLM_MODEL")
+    missing = [
+        name
+        for name, value in {
+            "LLM_API_KEY": api_key,
+            "LLM_BASE_URL": base_url,
+            "LLM_MODEL": model,
+        }.items()
+        if not value
+    ]
+    if missing:
+        raise PipelineError(f"missing environment variable(s): {', '.join(missing)}")
+    return OpenAI(api_key=api_key, base_url=base_url), str(model)
 
 
-def generate_xhs_content(input_data: dict, skill_dir: Path) -> dict:
-    system_prompt = load_prompt(skill_dir / "prompts" / "system.md")
-    user_template = load_prompt(skill_dir / "prompts" / "user_template.md")
-    
-    topic = input_data.get("topic", "")
-    column = input_data.get("column", "")
-    materials = input_data.get("materials", [])
-    brand = input_data.get("brand", {})
-    
-    user_prompt = user_template.format(
-        topic=topic,
-        column=column,
-        materials="\n".join(f"- {m}" for m in materials),
-        tone=brand.get("tone", ""),
-        audience=brand.get("audience", "")
-    )
-    
-    def _fix_double_escaped_newlines(s: str) -> str:
-        literal_backslash_n = "\\n"
-        if literal_backslash_n in s:
-            actual_newline_count = s.count("\n")
-            literal_n_count = s.count(literal_backslash_n)
-            if literal_n_count > actual_newline_count:
-                s = s.replace(literal_backslash_n, "\n")
-        return s
+def call_step(
+    client: OpenAI,
+    model: str,
+    step_name: str,
+    prompt: str,
+    job: dict[str, Any],
+    context: dict[str, Any],
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    started = time.perf_counter()
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {
+            "role": "user",
+            "content": prompt
+            + "\n\n输入与上文 JSON：\n"
+            + json.dumps({"input": job, "context": context}, ensure_ascii=False, indent=2),
+        },
+    ]
 
-    def _parse_llm_response(text: str) -> dict:
-        text = text.strip()
-        if text.startswith("```"):
-            lines = text.split("\n")
-            lines = [l for l in lines if not l.startswith("```")]
-            text = "\n".join(lines).strip()
-        parsed = json.loads(text)
-        if isinstance(parsed, list):
-            for item in parsed:
-                if isinstance(item, dict) and ("title_options" in item or "body" in item):
-                    parsed = item
-                    break
-            if isinstance(parsed, list):
-                parsed = parsed[0] if parsed else {}
-        if not isinstance(parsed, dict):
-            raise ValueError(f"LLM 返回格式错误，期望 JSON 对象，实际为: {type(parsed)}")
-        if "body" in parsed and isinstance(parsed["body"], str):
-            parsed["body"] = _fix_double_escaped_newlines(parsed["body"])
-        return parsed
-
-    logging.info("Calling LLM to generate content...")
-    max_retries = 2
-    for attempt in range(max_retries + 1):
-        response = call_llm(user_prompt, system_prompt)
+    last_error = ""
+    usage = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
+    for attempt in range(2):
+        if attempt == 1:
+            messages.append(
+                {
+                    "role": "user",
+                    "content": "上一轮没有得到可解析 JSON。只返回一个 JSON object，不要 Markdown，不要解释。",
+                }
+            )
+        response = client.chat.completions.create(
+            model=model,
+            messages=messages,
+            response_format={"type": "json_object"},
+            max_tokens=4096,
+        )
+        if response.usage:
+            usage = {
+                "prompt_tokens": response.usage.prompt_tokens or 0,
+                "completion_tokens": response.usage.completion_tokens or 0,
+                "total_tokens": response.usage.total_tokens or 0,
+            }
+        raw = response.choices[0].message.content or ""
         try:
-            result = _parse_llm_response(response)
-            break
-        except (json.JSONDecodeError, ValueError, IndexError) as e:
-            if attempt < max_retries:
-                logging.warning(f"LLM response parse failed (attempt {attempt+1}): {e}, retrying...")
-                continue
-            logging.error(f"LLM response parse failed after {max_retries+1} attempts: {e}")
-            logging.error(f"Raw response: {response[:2000]}")
-            raise ValueError(f"LLM 返回格式错误: {e}")
-    
-    result["content_id"] = input_data.get("content_id", "")
-    return result
+            parsed = parse_json_object(raw)
+            return parsed, {
+                "duration_ms": int((time.perf_counter() - started) * 1000),
+                "tokens": usage,
+                "attempts": attempt + 1,
+                "status": "ok",
+            }
+        except Exception as exc:
+            last_error = f"{exc}; raw_preview={raw[:500]}"
+
+    raise PipelineError(f"{step_name} failed after retry: {last_error}")
 
 
-def main():
-    parser = argparse.ArgumentParser(description="Skill: content-generate-xhs")
-    parser.add_argument("--job-dir", required=True, help="Job directory path")
-    args = parser.parse_args()
+def list_of_strings(value: Any) -> list[str]:
+    if not isinstance(value, list):
+        return []
+    return [str(item).strip() for item in value if str(item).strip()]
 
-    job_dir = Path(args.job_dir)
-    skill_dir = Path(__file__).parent
-    
-    setup_logging(job_dir)
-    logging.info(f"Starting skill, job_dir: {job_dir}")
 
+def normalize_final(job: dict[str, Any], context: dict[str, Any]) -> dict[str, Any]:
+    review = context["step4_review"]
+    final = review.get("final") if isinstance(review.get("final"), dict) else review
+    titles = list_of_strings(final.get("title_options") or context["step2_titles"].get("title_options"))
+    hashtags = list_of_strings(final.get("hashtags") or context["step3_body"].get("hashtags"))
+    body = str(final.get("body") or context["step3_body"].get("body") or "").strip()
+    cover_text = str(final.get("cover_text") or context["step3_body"].get("cover_text") or "").strip()
+
+    return {
+        "content_id": job["content_id"],
+        "job_id": job["job_id"],
+        "title_options": titles[:3],
+        "selected_title": str(final.get("selected_title") or (titles[0] if titles else "")).strip(),
+        "body": body,
+        "hashtags": hashtags[:8],
+        "cover_text": cover_text,
+        "risk_notes": list_of_strings(final.get("risk_notes")),
+    }
+
+
+def validate_output(result: dict[str, Any]) -> None:
+    if len(result["title_options"]) != 3:
+        raise PipelineError("final output must contain exactly 3 title_options")
+    if result["selected_title"] not in result["title_options"]:
+        raise PipelineError("selected_title must be one of title_options")
+    if not 400 <= len(result["body"]) <= 900:
+        raise PipelineError(f"body must be 400-900 characters, got {len(result['body'])}")
+    if not 5 <= len(result["hashtags"]) <= 8:
+        raise PipelineError("hashtags must contain 5-8 items")
+    if not all(tag.startswith("#") for tag in result["hashtags"]):
+        raise PipelineError("all hashtags must start with #")
+    if not 8 <= len(result["cover_text"]) <= 15:
+        raise PipelineError(f"cover_text must be 8-15 characters, got {len(result['cover_text'])}")
+
+
+def run(job_dir: Path) -> int:
+    error_path = job_dir / "error.json"
     try:
-        input_data = load_input(job_dir)
-        
-        required_fields = ["content_id", "job_id", "topic"]
-        missing_fields = [f for f in required_fields if f not in input_data]
-        if missing_fields:
-            raise ValueError(f"缺少必填字段: {', '.join(missing_fields)}")
-        
-        result = generate_xhs_content(input_data, skill_dir)
-        write_output(job_dir, SKILL_NAME, result)
-        logging.info("Skill completed successfully")
-        sys.exit(0)
-    except Exception as e:
-        logging.error(f"Skill failed: {e}", exc_info=True)
-        write_error(job_dir, str(e))
-        sys.exit(1)
+        job = read_json(job_dir / "input.json")
+        require_fields(job)
+        client, model = build_client()
+
+        context: dict[str, Any] = {}
+        pipeline_log: dict[str, Any] = {}
+        for step_name, prompt_file in [
+            ("step1_analyze", "step1_analyze.md"),
+            ("step2_titles", "step2_titles.md"),
+            ("step3_body", "step3_body.md"),
+            ("step4_review", "step4_review.md"),
+        ]:
+            parsed, log = call_step(client, model, step_name, read_prompt(prompt_file), job, context)
+            context[step_name] = parsed
+            pipeline_log[step_name] = log
+
+        result = normalize_final(job, context)
+        validate_output(result)
+        result["pipeline_log"] = pipeline_log
+        write_json(job_dir / OUTPUT_NAME, result)
+        return 0
+    except Exception as exc:
+        write_json(
+            error_path,
+            {
+                "status": "error",
+                "generated_at": now_iso(),
+                "error": str(exc),
+            },
+        )
+        return 1
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Generate Xiaohongshu copy with a multi-step LLM pipeline.")
+    parser.add_argument("--job-dir", required=True, help="Directory containing input.json")
+    args = parser.parse_args()
+    raise SystemExit(run(Path(args.job_dir).resolve()))
 
 
 if __name__ == "__main__":

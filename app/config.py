@@ -16,7 +16,6 @@ class Settings(BaseSettings):
     feishu_app_secret: str = ""
     feishu_verification_token: str = ""
     feishu_encrypt_key: str = ""
-    feishu_webhook_secret: str = ""
     feishu_admin_open_ids: str = ""
     feishu_default_chat_id: str = ""
 
@@ -27,11 +26,16 @@ class Settings(BaseSettings):
     feishu_table_publish_logs: str = ""
     feishu_table_config: str = ""
 
-    skill_root: Path = Path("skills/media-workflow/scripts")
+    skill_root: Path = Path(".")
     skill_timeout_seconds: int = Field(default=120, ge=1)
 
     wechat_app_id: str = ""
     wechat_app_secret: str = ""
+
+    llm_api_key: str = ""
+    llm_base_url: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+    llm_model: str = "qwen-plus"
+    dashscope_api_key: str = ""
 
     @property
     def admin_open_ids(self) -> list[str]:

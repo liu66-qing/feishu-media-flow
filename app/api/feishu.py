@@ -23,7 +23,7 @@ async def feishu_webhook(
         x_lark_request_timestamp,
         x_lark_request_nonce,
         body,
-        settings.feishu_webhook_secret,
+        settings.feishu_encrypt_key,
         x_lark_signature,
     ):
         raise HTTPException(status_code=401, detail="invalid feishu signature")
@@ -73,8 +73,62 @@ async def _handle_card_action(event: dict, workflow: WorkflowService) -> dict:
     operator = event.get("operator", {}).get("open_id", "")
     action = action_value.get("action")
     content_ids = action_value.get("content_ids", [])
+
+    # Legacy bulk approve
     if action == "approve_all":
         return await workflow.approve(content_ids, operator)
+
+    # Agent loop: topic approval
+    if action == "approve_topic":
+        from app.services.agent_loop import AgentLoop
+        settings = get_settings()
+        agent = AgentLoop(settings)
+        topic_id = action_value.get("topic_id", "")
+        return await agent.advance_item(topic_id, reason="topic_approved")
+
+    if action == "reject_topic":
+        from app.services.agent_loop import AgentLoop
+        settings = get_settings()
+        agent = AgentLoop(settings)
+        topic_id = action_value.get("topic_id", "")
+        # Mark as rejected
+        from app.services.bitable import BitableClient
+        bitable = BitableClient(settings)
+        try:
+            records = await bitable.list_records("content")
+            for r in records:
+                if r.get("fields", {}).get("content_id") == topic_id:
+                    await bitable.update_record("content", r["record_id"], {"status": "rejected"})
+                    break
+        except Exception:
+            pass
+        return {"status": "rejected", "topic_id": topic_id}
+
+    # Agent loop: publish approval
+    if action == "approve_publish":
+        from app.services.agent_loop import AgentLoop
+        settings = get_settings()
+        agent = AgentLoop(settings)
+        content_id = action_value.get("content_id", "")
+        return await agent.advance_item(content_id, reason="publish_approved")
+
+    if action == "reject_publish":
+        from app.services.agent_loop import AgentLoop
+        settings = get_settings()
+        agent = AgentLoop(settings)
+        content_id = action_value.get("content_id", "")
+        from app.services.bitable import BitableClient
+        bitable = BitableClient(settings)
+        try:
+            records = await bitable.list_records("content")
+            for r in records:
+                if r.get("fields", {}).get("content_id") == content_id:
+                    await bitable.update_record("content", r["record_id"], {"status": "rejected"})
+                    break
+        except Exception:
+            pass
+        return {"status": "rejected", "content_id": content_id}
+
     return {"status": "ignored", "action": action}
 
 
