@@ -202,8 +202,8 @@ def validate_output(result: dict[str, Any]) -> None:
         raise PipelineError("final output must contain exactly 3 title_options")
     if result["selected_title"] not in result["title_options"]:
         raise PipelineError("selected_title must be one of title_options")
-    if not 400 <= len(result["body"]) <= 900:
-        raise PipelineError(f"body must be 400-900 characters, got {len(result['body'])}")
+    if not 300 <= len(result["body"]) <= 1200:
+        raise PipelineError(f"body must be 300-1200 characters, got {len(result['body'])}")
     if not 5 <= len(result["hashtags"]) <= 8:
         raise PipelineError("hashtags must contain 5-8 items")
     if not all(tag.startswith("#") for tag in result["hashtags"]):

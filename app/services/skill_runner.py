@@ -32,7 +32,7 @@ class SkillRunner:
         output_file = job_dir / f"{skill_name}.json"
         if completed.returncode != 0:
             error_file = job_dir / "error.json"
-            detail = error_file.read_text(encoding="utf-8") if error_file.exists() else completed.stderr
+            detail = error_file.read_text(encoding="utf-8") if error_file.exists() else (completed.stderr or completed.stdout or f"exit code {completed.returncode}")
             raise RuntimeError(f"Skill {skill_name} failed: {detail}")
         if not output_file.exists():
             raise RuntimeError(f"Skill {skill_name} did not create {output_file.name}")
