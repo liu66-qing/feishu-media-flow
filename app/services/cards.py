@@ -69,3 +69,26 @@ def build_status_card(title: str, message: str, template: str = "blue") -> dict:
         "elements": [{"tag": "div", "text": {"tag": "lark_md", "content": message}}],
     }
 
+
+def build_schedule_card(items: list[dict]) -> dict:
+    """Build a card showing the publish schedule from bitable records."""
+    elements = []
+    if not items:
+        elements.append({"tag": "div", "text": {"tag": "lark_md", "content": "当前没有排期内容"}})
+    else:
+        rows = []
+        for item in items:
+            topic = item.get("topic", "未知")
+            platform = item.get("platform", "")
+            scheduled_at = item.get("scheduled_at", "待定")
+            status = item.get("status", "")
+            rows.append(f"| {platform} | {topic} | {scheduled_at} | {status} |")
+        table = "| 平台 | 选题 | 排期时间 | 状态 |\n|---|---|---|---|\n" + "\n".join(rows)
+        elements.append({"tag": "div", "text": {"tag": "lark_md", "content": table}})
+
+    return {
+        "config": {"wide_screen_mode": True},
+        "header": {"template": "green", "title": {"tag": "plain_text", "content": "📅 发布排期表"}},
+        "elements": elements,
+    }
+

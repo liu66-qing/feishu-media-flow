@@ -74,6 +74,15 @@ async def _handle_message(event: dict, workflow: WorkflowService) -> dict:
             await notifier.reply_text(message_id, "系统运行中，暂无详细状态。")
         return result
 
+    if command.name in {"排期", "schedule"}:
+        result = await workflow.get_schedule()
+        card = result.get("card")
+        if card and chat_id:
+            await notifier.send_card(chat_id, card)
+        elif message_id:
+            await notifier.reply_text(message_id, "暂无排期内容")
+        return result
+
     if command.name in {"新建", "create"}:
         if len(command.args) < 2:
             if message_id:
@@ -97,7 +106,7 @@ async def _handle_message(event: dict, workflow: WorkflowService) -> dict:
         return {"status": "accepted", "topic": topic}
 
     if message_id:
-        await notifier.reply_text(message_id, f"未知命令：/{command.name}\n支持：/状态、/新建 平台 选题")
+        await notifier.reply_text(message_id, f"未知命令：/{command.name}\n支持：/状态、/新建 平台 选题、/排期")
     return {"status": "ignored", "reason": f"unknown command {command.name}"}
 
 

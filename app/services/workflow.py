@@ -134,8 +134,77 @@ class WorkflowService:
             result = await asyncio.to_thread(self.runner.run, "image-compose", compose_job)
             image_path = result.get("data", {}).get("image_path", "")
             await self.notifier.notify_admins(f"🎨 封面图生成完成：{content_id}\n路径：{image_path}")
+            # Auto-schedule: set to publish next available slot
+            await self._schedule_content(content_id)
         except Exception as e:
             await self.notifier.notify_admins(f"❌ 图文合成失败：{content_id}\n{e}")
+
+    async def _schedule_content(self, content_id: str) -> None:
+        """Mark content as scheduled and notify with schedule card."""
+        from datetime import datetime, timedelta, timezone
+
+        # Default: schedule 1 hour from now
+        scheduled_at = datetime.now(timezone.utc) + timedelta(hours=1)
+        try:
+            records = await self.bitable.list_records("content")
+            for r in records:
+                if r.get("fields", {}).get("content_id") == content_id:
+                    await self.bitable.update_record("content", r["record_id"], {
+                        "status": ContentStatus.SCHEDULED.value,
+                        "scheduled_at": scheduled_at.isoformat(),
+                    })
+                    break
+        except Exception as e:
+            logger.warning("schedule update failed: %s", e)
+
+        await self.notifier.notify_admins(
+            f"📅 已排期：{content_id}\n发布时间：{scheduled_at.strftime('%Y-%m-%d %H:%M')} UTC"
+        )
+        # Send schedule card to group
+        await self._send_schedule_card()
+
+    async def _send_schedule_card(self) -> None:
+        """Fetch all scheduled items from bitable and send schedule card."""
+        from app.services.cards import build_schedule_card
+
+        try:
+            records = await self.bitable.list_records("content")
+            scheduled_items = []
+            for r in records:
+                fields = r.get("fields", {})
+                if fields.get("status") in ("scheduled", "approved", "pending_review"):
+                    scheduled_items.append({
+                        "topic": fields.get("topic", ""),
+                        "platform": fields.get("platform", ""),
+                        "scheduled_at": fields.get("scheduled_at", "待定"),
+                        "status": fields.get("status", ""),
+                    })
+            chat_id = self.settings.feishu_default_chat_id
+            if chat_id:
+                card = build_schedule_card(scheduled_items)
+                await self.notifier.send_card(chat_id, card)
+        except Exception as e:
+            logger.warning("send schedule card failed: %s", e)
+
+    async def get_schedule(self) -> dict:
+        """Return schedule card for /排期 command."""
+        from app.services.cards import build_schedule_card
+
+        try:
+            records = await self.bitable.list_records("content")
+            scheduled_items = []
+            for r in records:
+                fields = r.get("fields", {})
+                if fields.get("status") in ("scheduled", "approved", "pending_review"):
+                    scheduled_items.append({
+                        "topic": fields.get("topic", ""),
+                        "platform": fields.get("platform", ""),
+                        "scheduled_at": fields.get("scheduled_at", "待定"),
+                        "status": fields.get("status", ""),
+                    })
+            return {"status": "ok", "card": build_schedule_card(scheduled_items)}
+        except Exception:
+            return {"status": "ok", "card": build_schedule_card([])}
 
     async def status_summary(self) -> dict:
         try:
