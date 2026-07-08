@@ -102,10 +102,13 @@ async def _handle_message(event: dict, workflow: WorkflowService) -> dict:
 
 
 async def _handle_card_action(event: dict, workflow: WorkflowService) -> dict:
+    import json
+
     action_value = event.get("action", {}).get("value", {}) or event.get("action_value", {})
     operator = event.get("operator", {}).get("open_id", "")
     action = action_value.get("action")
-    content_ids = action_value.get("content_ids", [])
+    raw_ids = action_value.get("content_ids", [])
+    content_ids = json.loads(raw_ids) if isinstance(raw_ids, str) else raw_ids
 
     # Legacy bulk approve
     if action == "approve_all":
