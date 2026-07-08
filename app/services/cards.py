@@ -1,45 +1,54 @@
+import json as _json
+
 from app.models import ContentItem
 
 
 def build_review_card(items: list[ContentItem]) -> dict:
     elements = []
     for item in items:
-        body_preview = ""
+        title = ""
+        body = ""
+        hashtags = ""
+        cover = ""
         if item.payload and isinstance(item.payload, dict):
             gen = item.payload.get("generation", {})
             if isinstance(gen, dict):
-                data = gen.get("data", gen)
-                body_preview = str(data.get("body", "") or data.get("topic", ""))[:200]
+                title = gen.get("selected_title", "") or ""
+                body = gen.get("body", "") or ""
+                tags = gen.get("hashtags", [])
+                hashtags = " ".join(tags) if isinstance(tags, list) else ""
+                cover = gen.get("cover_text", "") or ""
+
+        content_parts = [f"**选题：{item.topic}**"]
+        if title:
+            content_parts.append(f"**标题：**{title}")
+        if body:
+            preview = body[:300] + ("..." if len(body) > 300 else "")
+            content_parts.append(f"**正文预览：**\n{preview}")
+        if hashtags:
+            content_parts.append(f"**标签：**{hashtags}")
+        if cover:
+            content_parts.append(f"**封面文案：**{cover}")
 
         elements.append(
-            {
-                "tag": "div",
-                "text": {
-                    "tag": "lark_md",
-                    "content": (
-                        f"**{item.topic}**\n"
-                        f"平台：{item.platform.value if hasattr(item.platform, 'value') else item.platform}\n"
-                        f"状态：{item.status.value if hasattr(item.status, 'value') else item.status}"
-                        + (f"\n\n> {body_preview}..." if body_preview else "")
-                    ),
-                },
-            }
+            {"tag": "div", "text": {"tag": "lark_md", "content": "\n".join(content_parts)}}
         )
+        elements.append({"tag": "hr"})
+
     content_ids = [item.content_id for item in items]
-    import json as _json
     elements.append(
         {
             "tag": "action",
             "actions": [
                 {
                     "tag": "button",
-                    "text": {"tag": "plain_text", "content": "通过"},
+                    "text": {"tag": "plain_text", "content": "通过发布"},
                     "type": "primary",
                     "value": {"action": "approve_all", "content_ids": _json.dumps(content_ids)},
                 },
                 {
                     "tag": "button",
-                    "text": {"tag": "plain_text", "content": "拒绝"},
+                    "text": {"tag": "plain_text", "content": "打回修改"},
                     "type": "danger",
                     "value": {"action": "reject_all", "content_ids": _json.dumps(content_ids)},
                 },
