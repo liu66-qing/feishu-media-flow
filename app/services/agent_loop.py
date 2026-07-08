@@ -18,6 +18,7 @@ from app.models import (
     DraftStatus,
     Platform,
     PlatformDraft,
+    SkillJob,
     TopicBrief,
     TopicStatus,
 )
@@ -79,6 +80,8 @@ class AgentLoop:
             DraftStatus.GENERATING.value: self._handle_generating,
             DraftStatus.CRITIQUING.value: self._handle_critiquing,
             DraftStatus.PASSED.value: self._handle_passed,
+            DraftStatus.COMPOSING_IMAGE.value: self._handle_composing_image,
+            DraftStatus.PACKAGING.value: self._handle_packaging,
             DraftStatus.PUBLISH_APPROVED.value: self._handle_publish_approved,
         }
 
@@ -196,10 +199,53 @@ class AgentLoop:
         return {"action": "critiqued", "decision": feedback.decision, "score": feedback.scores.total}
 
     async def _handle_passed(self, record: dict) -> dict:
-        """Content passed critic → send publish approval card to admin."""
-        await self._send_publish_approval_card(record, None)
-        await self._update_item_status(record, DraftStatus.AWAITING_PUBLISH_APPROVAL.value)
-        return {"action": "awaiting_publish_approval"}
+        """Content passed critic → XHS goes to image compose, others to publish approval."""
+        fields = record.get("fields", {})
+        platform = fields.get("platform", "xhs")
+
+        if platform == Platform.XHS.value:
+            await self._update_item_status(record, DraftStatus.COMPOSING_IMAGE.value)
+            await self._compose_image(record)
+            return {"action": "composing_image"}
+        else:
+            await self._send_publish_approval_card(record, None)
+            await self._update_item_status(record, DraftStatus.AWAITING_PUBLISH_APPROVAL.value)
+            return {"action": "awaiting_publish_approval"}
+
+    async def _handle_composing_image(self, record: dict) -> dict:
+        """Run image-compose skill for XHS cover/cards."""
+        fields = record.get("fields", {})
+        await self._compose_image(record)
+        return {"action": "image_composed"}
+
+    async def _handle_packaging(self, record: dict) -> dict:
+        """Run xhs-publish-package to assemble final publish bundle."""
+        fields = record.get("fields", {})
+        content = _parse_json_field(fields.get("content_payload", "{}"))
+        image_result = _parse_json_field(fields.get("image_result", "{}"))
+
+        job = SkillJob(
+            content_id=fields.get("content_id", ""),
+            job_id=f"JOB-{uuid4().hex[:8]}",
+            title=content.get("title", content.get("selected_title", "")),
+            body=content.get("body", ""),
+            hashtags=content.get("hashtags", []),
+            cover_image=image_result.get("cover_path", ""),
+            card_images=image_result.get("card_paths", []),
+        )
+
+        try:
+            result = self.runner.run("xhs-publish-package", job)
+            await self.bitable.update_record("content", record["record_id"], {
+                "status": DraftStatus.AWAITING_PUBLISH_APPROVAL.value,
+                "package_result": _safe_json_str(result.get("data", {})),
+            })
+            await self._send_publish_approval_card(record, None)
+        except Exception as e:
+            logger.error("Packaging failed for %s: %s", record.get("record_id"), e)
+            await self._update_item_status(record, DraftStatus.FAILED.value)
+
+        return {"action": "packaged"}
 
     async def _handle_publish_approved(self, record: dict) -> dict:
         """Admin approved publish → schedule it."""
@@ -212,7 +258,6 @@ class AgentLoop:
 
     async def _generate_draft(self, draft_id: str, platform: Platform, topic: str, fields: dict) -> None:
         """Call the appropriate generation skill."""
-        from app.models import SkillJob
         from app.services.skill_runner import dry_run_skill_result
 
         job = SkillJob(
@@ -278,6 +323,36 @@ class AgentLoop:
             })
         except Exception as e:
             logger.error("Revision failed for %s: %s", record.get("record_id"), e)
+
+    async def _compose_image(self, record: dict) -> None:
+        """Call image-compose skill, then advance to packaging."""
+        fields = record.get("fields", {})
+        content = _parse_json_field(fields.get("content_payload", "{}"))
+        title = content.get("title", content.get("selected_title", ""))
+
+        job = SkillJob(
+            content_id=fields.get("content_id", ""),
+            job_id=f"JOB-{uuid4().hex[:8]}",
+            template_name="xhs-cover-01",
+            variables={
+                "title": title[:20] if title else "untitled",
+                "subtitle": content.get("cover_text", ""),
+                "bg_color": "#FF6B6B",
+                "accent_color": "#FFFFFF",
+            },
+            output_size={"width": 1080, "height": 1350},
+        )
+
+        try:
+            result = self.runner.run("image-compose", job)
+            await self.bitable.update_record("content", record["record_id"], {
+                "status": DraftStatus.PACKAGING.value,
+                "image_result": _safe_json_str(result.get("data", {})),
+            })
+        except Exception as e:
+            logger.error("Image compose failed for %s: %s", record.get("record_id"), e)
+            # Fall through to packaging without images
+            await self._update_item_status(record, DraftStatus.PACKAGING.value)
 
     # ------------------------------------------------------------------
     # Feishu cards (human checkpoints)
@@ -345,7 +420,13 @@ class AgentLoop:
             records = await self.bitable.list_records("content")
             for r in records:
                 status = r.get("fields", {}).get("status", "")
-                if status in (DraftStatus.GENERATING.value, DraftStatus.CRITIQUING.value, DraftStatus.PASSED.value):
+                if status in (
+                    DraftStatus.GENERATING.value,
+                    DraftStatus.CRITIQUING.value,
+                    DraftStatus.PASSED.value,
+                    DraftStatus.COMPOSING_IMAGE.value,
+                    DraftStatus.PACKAGING.value,
+                ):
                     await self.advance_item(r.get("record_id", ""), reason="tick")
                     advanced += 1
         except Exception as e:

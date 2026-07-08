@@ -32,6 +32,8 @@ class DraftStatus(StrEnum):
     CRITIQUING = "critiquing"
     REVISING = "revising"
     PASSED = "passed"
+    COMPOSING_IMAGE = "composing_image"
+    PACKAGING = "packaging"
     AWAITING_PUBLISH_APPROVAL = "awaiting_publish_approval"
     PUBLISH_APPROVED = "publish_approved"
     SCHEDULED = "scheduled"
@@ -122,12 +124,18 @@ class PlatformDraft(BaseModel):
 
 
 class SkillJob(BaseModel):
+    model_config = {"extra": "allow"}
+
     content_id: str
     job_id: str
-    platform: Platform
-    topic: str
+    platform: Platform = Platform.XHS
+    topic: str = ""
     column: str = ""
     materials: list[dict[str, Any]] = Field(default_factory=list)
+    brand: dict[str, Any] = Field(default_factory=dict)
+    template_name: str = ""
+    variables: dict[str, Any] = Field(default_factory=dict)
+    output_size: dict[str, Any] = Field(default_factory=lambda: {"width": 1080, "height": 1350})
 
 
 class SkillResult(BaseModel):

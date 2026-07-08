@@ -11,8 +11,8 @@ from openai import OpenAI
 
 SKILL_DIR = Path(__file__).resolve().parent
 PROMPTS_DIR = SKILL_DIR / "prompts"
-OUTPUT_NAME = "content_generate_xhs.json"
-REQUIRED_FIELDS = ("content_id", "job_id", "topic", "column", "materials", "brand")
+OUTPUT_NAME = "content-generate-xhs.json"
+REQUIRED_FIELDS = ("content_id", "job_id", "topic")
 
 SYSTEM_PROMPT = (
     "你是小红书内容共创编辑。整体风格年轻、真诚、不油腻，像真人分享经验。"
@@ -48,6 +48,9 @@ def require_fields(data: dict[str, Any]) -> None:
     missing = [field for field in REQUIRED_FIELDS if field not in data]
     if missing:
         raise PipelineError(f"missing required field(s): {', '.join(missing)}")
+    data.setdefault("materials", [])
+    data.setdefault("brand", {})
+    data.setdefault("column", "")
     if not isinstance(data["materials"], list):
         raise PipelineError("materials must be a list")
     if not isinstance(data["brand"], dict):
