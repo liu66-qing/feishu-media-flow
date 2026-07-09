@@ -142,6 +142,7 @@ class WorkflowService:
             column="",
             materials=[],
             template_name="xhs-cover-01",
+            image_mode="ai_bg" if use_ai_image else "template",
             variables=variables,
         )
 
