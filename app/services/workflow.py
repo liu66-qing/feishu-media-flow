@@ -86,21 +86,22 @@ class WorkflowService:
 
         return {"content": item.model_dump(mode="json"), "skill_result": result, "risk_result": risk_result}
 
-    async def approve(self, content_ids: list[str], operator_open_id: str) -> dict:
+    async def approve(self, content_ids: list[str], operator_open_id: str, use_ai_image: bool = False) -> dict:
         import asyncio
 
         for cid in content_ids:
             await self._update_content_status(cid, ContentStatus.APPROVED)
-        message = f"审批通过：{', '.join(content_ids)}\n操作人：{operator_open_id or 'unknown'}"
+        mode = "AI生图" if use_ai_image else "模板图"
+        message = f"审批通过（{mode}）：{', '.join(content_ids)}\n操作人：{operator_open_id or 'unknown'}"
         await self.notifier.notify_admins(message)
 
         # Trigger image compose in background for each approved content
         for cid in content_ids:
-            asyncio.create_task(self._compose_image_for_content(cid))
+            asyncio.create_task(self._compose_image_for_content(cid, use_ai_image=use_ai_image))
 
         return {"status": "approved", "content_ids": content_ids}
 
-    async def _compose_image_for_content(self, content_id: str) -> None:
+    async def _compose_image_for_content(self, content_id: str, use_ai_image: bool = False) -> None:
         """Run image-compose skill after approval."""
         import asyncio
         import json
@@ -124,6 +125,15 @@ class WorkflowService:
         # Build image-compose input
         title = gen_data.get("selected_title", gen_data.get("topic", ""))
         cover_text = gen_data.get("cover_text", "")
+        variables = {
+            "title": cover_text or title,
+            "subtitle": title if cover_text else "",
+            "bg_color": "#FF6B6B",
+            "accent_color": "#FFFFFF",
+        }
+        if use_ai_image:
+            variables["ai_background"] = True
+            variables["ai_prompt"] = cover_text or title
         compose_job = SkillJob(
             content_id=content_id,
             job_id=f"JOB-IMG-{content_id[4:]}",
@@ -132,12 +142,7 @@ class WorkflowService:
             column="",
             materials=[],
             template_name="xhs-cover-01",
-            variables={
-                "title": cover_text or title,
-                "subtitle": title if cover_text else "",
-                "bg_color": "#FF6B6B",
-                "accent_color": "#FFFFFF",
-            },
+            variables=variables,
         )
 
         try:

@@ -129,6 +129,10 @@ async def _handle_card_action(event: dict, workflow: WorkflowService) -> dict:
     if action == "approve_all":
         return await workflow.approve(content_ids, operator)
 
+    # Approve with AI-generated background image
+    if action == "approve_ai_image":
+        return await workflow.approve(content_ids, operator, use_ai_image=True)
+
     # Agent loop: topic approval
     if action == "approve_topic":
         from app.services.agent_loop import AgentLoop

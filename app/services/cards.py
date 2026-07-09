@@ -28,7 +28,7 @@ def build_review_card(items: list[ContentItem]) -> dict:
         if hashtags:
             content_parts.append(f"**标签：**{hashtags}")
         if cover:
-            content_parts.append(f"**封面文案：**{cover}")
+            content_parts.append(f"**🎨 封面生图描述：**{cover}")
 
         elements.append(
             {"tag": "div", "text": {"tag": "lark_md", "content": "\n".join(content_parts)}}
@@ -42,8 +42,14 @@ def build_review_card(items: list[ContentItem]) -> dict:
             "actions": [
                 {
                     "tag": "button",
-                    "text": {"tag": "plain_text", "content": "通过发布"},
+                    "text": {"tag": "plain_text", "content": "通过 + AI生图"},
                     "type": "primary",
+                    "value": {"action": "approve_ai_image", "content_ids": _json.dumps(content_ids)},
+                },
+                {
+                    "tag": "button",
+                    "text": {"tag": "plain_text", "content": "通过 + 模板图"},
+                    "type": "default",
                     "value": {"action": "approve_all", "content_ids": _json.dumps(content_ids)},
                 },
                 {
