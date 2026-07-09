@@ -70,7 +70,7 @@ def build_status_card(title: str, message: str, template: str = "blue") -> dict:
     }
 
 
-def build_schedule_card(items: list[dict]) -> dict:
+def build_schedule_card(items: list[dict], bitable_app_token: str = "") -> dict:
     """Build a card showing the publish schedule from bitable records."""
     elements = []
     if not items:
@@ -85,6 +85,11 @@ def build_schedule_card(items: list[dict]) -> dict:
             rows.append(f"| {platform} | {topic} | {scheduled_at} | {status} |")
         table = "| 平台 | 选题 | 排期时间 | 状态 |\n|---|---|---|---|\n" + "\n".join(rows)
         elements.append({"tag": "div", "text": {"tag": "lark_md", "content": table}})
+
+    if bitable_app_token:
+        link = f"https://feishu.cn/base/{bitable_app_token}"
+        elements.append({"tag": "hr"})
+        elements.append({"tag": "div", "text": {"tag": "lark_md", "content": f"[📊 查看完整排期表]({link})"}})
 
     return {
         "config": {"wide_screen_mode": True},

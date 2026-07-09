@@ -143,7 +143,17 @@ class WorkflowService:
         try:
             result = await asyncio.to_thread(self.runner.run, "image-compose", compose_job)
             image_path = result.get("data", {}).get("image_path", "")
-            await self.notifier.notify_admins(f"🎨 封面图生成完成：{content_id}\n路径：{image_path}")
+            # Upload image to Feishu and send as card
+            chat_id = self.settings.feishu_default_chat_id
+            if image_path and chat_id:
+                image_key = await self.notifier.upload_image(image_path)
+                if image_key:
+                    title = gen_data.get("selected_title", gen_data.get("topic", ""))
+                    await self.notifier.send_image_card(chat_id, image_key, title, content_id)
+                else:
+                    await self.notifier.notify_admins(f"🎨 封面图生成完成但上传失败：{content_id}\n路径：{image_path}")
+            else:
+                await self.notifier.notify_admins(f"🎨 封面图生成完成：{content_id}\n路径：{image_path}")
             # Auto-schedule: set to publish next available slot
             await self._schedule_content(content_id)
         except Exception as e:
@@ -191,7 +201,7 @@ class WorkflowService:
                     })
             chat_id = self.settings.feishu_default_chat_id
             if chat_id:
-                card = build_schedule_card(scheduled_items)
+                card = build_schedule_card(scheduled_items, self.settings.feishu_bitable_app_token)
                 await self.notifier.send_card(chat_id, card)
         except Exception as e:
             logger.warning("send schedule card failed: %s", e)
@@ -212,7 +222,7 @@ class WorkflowService:
                         "scheduled_at": fields.get("scheduled_at", "待定"),
                         "status": fields.get("status", ""),
                     })
-            return {"status": "ok", "card": build_schedule_card(scheduled_items)}
+            return {"status": "ok", "card": build_schedule_card(scheduled_items, self.settings.feishu_bitable_app_token)}
         except Exception:
             return {"status": "ok", "card": build_schedule_card([])}
 
