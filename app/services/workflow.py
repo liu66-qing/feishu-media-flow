@@ -24,7 +24,7 @@ class WorkflowService:
         self.runner = runner or SkillRunner(settings)
         self.bitable = bitable or BitableClient(settings)
 
-    async def create_content_from_topic(self, platform: Platform, topic: str, column: str = "") -> dict:
+    async def create_content_from_topic(self, platform: Platform, topic: str, column: str = "", chat_id: str = "") -> dict:
         content_id = f"CNT-{uuid4().hex[:12]}"
         job = SkillJob(
             content_id=content_id,
@@ -66,8 +66,8 @@ class WorkflowService:
         await self._persist_content(item)
 
         # Step 4: notify
-        chat_id = self.settings.feishu_default_chat_id
-        if chat_id and status == ContentStatus.PENDING_REVIEW:
+        notify_chat_id = chat_id or self.settings.feishu_default_chat_id
+        if notify_chat_id and status == ContentStatus.PENDING_REVIEW:
             if platform == Platform.WECHAT:
                 # Send wechat article card with collapsible full text
                 from app.services.cards import build_wechat_article_card
@@ -76,9 +76,9 @@ class WorkflowService:
                 body_md = result.get("body_md", "")
                 hashtags = result.get("hashtags", [])
                 card = build_wechat_article_card(title, summary, body_md, hashtags)
-                await self.notifier.send_card(chat_id, card)
+                await self.notifier.send_card(notify_chat_id, card)
             else:
-                await self.notifier.send_card(chat_id, build_review_card([item]))
+                await self.notifier.send_card(notify_chat_id, build_review_card([item]))
         elif status == ContentStatus.FAILED:
             await self.notifier.notify_admins(
                 f"**内容被风控拦截**\n选题：{topic}\n原因：{risk_result.get('data', {}).get('reason', 'unknown')}"

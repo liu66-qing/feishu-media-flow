@@ -97,7 +97,7 @@ async def _handle_message(event: dict, workflow: WorkflowService) -> dict:
 
         async def _run_generation() -> None:
             try:
-                await workflow.create_content_from_topic(platform, topic)
+                await workflow.create_content_from_topic(platform, topic, chat_id=chat_id)
                 await notifier.send_text(chat_id, f"✅ 内容生成完成：{topic}")
             except Exception as e:
                 await notifier.send_text(chat_id, f"❌ 生成失败：{e}")
