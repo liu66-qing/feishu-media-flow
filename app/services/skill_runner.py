@@ -21,9 +21,18 @@ class SkillRunner:
         job_dir = self.settings.data_dir / "jobs" / f"{job.job_id}-{uuid4().hex[:8]}"
         job_dir.mkdir(parents=True, exist_ok=True)
         (job_dir / "input.json").write_text(job.model_dump_json(indent=2), encoding="utf-8")
+        import os
+        env = os.environ.copy()
+        env["LLM_API_KEY"] = self.settings.llm_api_key
+        env["LLM_BASE_URL"] = self.settings.llm_base_url
+        env["LLM_MODEL"] = self.settings.llm_model
+        env["DATA_DIR"] = str(self.settings.data_dir)
+        if self.settings.dashscope_api_key:
+            env["DASHSCOPE_API_KEY"] = self.settings.dashscope_api_key
         completed = subprocess.run(
             [sys.executable, str(main_py), "--job-dir", str(job_dir)],
             cwd=str(skill_dir),
+            env=env,
             text=True,
             capture_output=True,
             timeout=self.settings.skill_timeout_seconds,
