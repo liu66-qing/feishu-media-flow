@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: {{width}}px;
+    height: {{height}}px;
+    overflow: hidden;
+    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  }
+
+  .container {
+    width: 100%;
+    height: 100%;
+    background: #FFF9F0;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+  }
+
+  /* 顶部色块 */
+  .top-band {
+    width: 100%;
+    height: 280px;
+    background: {{bg_color}};
+    border-radius: 0 0 40px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .top-emoji {
+    font-size: 80px;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+  }
+
+  /* 中间主内容区 */
+  .main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 50px 70px;
+  }
+
+  .title {
+    color: #2D2D2D;
+    font-size: 64px;
+    font-weight: 900;
+    text-align: center;
+    line-height: 1.4;
+    letter-spacing: 2px;
+    position: relative;
+  }
+
+  /* 标题下划线高亮效果 */
+  .title::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    height: 16px;
+    background: {{bg_color}}66;
+    border-radius: 8px;
+    z-index: -1;
+  }
+
+  .subtitle {
+    margin-top: 40px;
+    color: #666;
+    font-size: 30px;
+    font-weight: 500;
+    text-align: center;
+    line-height: 1.6;
+    padding: 0 20px;
+  }
+
+  /* 底部标签栏 */
+  .bottom-tags {
+    width: 100%;
+    padding: 30px 60px 50px;
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    background: {{bg_color}}33;
+    border: 2px solid {{bg_color}};
+    border-radius: 20px;
+    padding: 8px 22px;
+    font-size: 24px;
+    color: #444;
+    font-weight: 500;
+  }
+
+  /* 散落贴纸装饰 */
+  .sticker-1 {
+    position: absolute;
+    top: 300px;
+    right: 50px;
+    font-size: 44px;
+    transform: rotate(12deg);
+    opacity: 0.85;
+  }
+
+  .sticker-2 {
+    position: absolute;
+    bottom: 180px;
+    left: 45px;
+    font-size: 38px;
+    transform: rotate(-8deg);
+    opacity: 0.75;
+  }
+
+  .sticker-3 {
+    position: absolute;
+    top: 220px;
+    left: 60px;
+    font-size: 32px;
+    transform: rotate(5deg);
+    opacity: 0.6;
+  }
+
+  /* 纸胶带装饰 */
+  .tape {
+    position: absolute;
+    top: 260px;
+    left: 50%;
+    transform: translateX(-50%) rotate(-2deg);
+    width: 120px;
+    height: 28px;
+    background: {{bg_color}}88;
+    border-radius: 4px;
+    opacity: 0.7;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="top-band">
+      <div class="top-emoji">📚</div>
+    </div>
+
+    <div class="tape"></div>
+
+    <div class="sticker-1">💭</div>
+    <div class="sticker-2">📌</div>
+    <div class="sticker-3">✏️</div>
+
+    <div class="main-content">
+      <div class="title" id="title">{{title}}</div>
+      <div class="subtitle" id="subtitle">{{subtitle}}</div>
+    </div>
+
+    <div class="bottom-tags">
+      <span class="tag">干货分享</span>
+      <span class="tag">收藏慢看</span>
+      <span class="tag">建议码住</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      var title = document.getElementById('title');
+      var fontSize = 64;
+      while ((title.scrollWidth > 880 || title.scrollHeight > 350) && fontSize > 34) {
+        fontSize -= 2;
+        title.style.fontSize = fontSize + 'px';
+      }
+      var sub = document.getElementById('subtitle');
+      if (!sub.textContent.trim()) sub.style.display = 'none';
+    })();
+  </script>
+</body>
+</html>
