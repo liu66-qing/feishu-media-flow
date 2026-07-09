@@ -171,7 +171,7 @@ def load_env_config() -> dict:
         load_dotenv(env_path)
     api_key = os.getenv("LLM_API_KEY", "")
     base_url = os.getenv("LLM_BASE_URL", "")
-    model = os.getenv("LLM_MODEL", "qwen-image-2.0-pro-2026-06-22")
+    model = os.getenv("IMAGE_MODEL", "wanx2.1-t2i-turbo")
 
     if base_url:
         if "/compatible-mode/" in base_url:
@@ -183,7 +183,7 @@ def load_env_config() -> dict:
     else:
         api_base = "https://dashscope.aliyuncs.com/api/v1"
 
-    endpoint = api_base.rstrip("/") + "/services/aigc/multimodal-generation/generation"
+    endpoint = api_base.rstrip("/") + "/services/aigc/text2image/image-synthesis"
 
     return {
         "api_key": api_key,
@@ -267,17 +267,11 @@ def generate_ai_background(title: str, subtitle: str, ai_prompt: str,
     request_body = {
         "model": model,
         "input": {
-            "messages": [
-                {
-                    "role": "user",
-                    "content": [{"text": prompt}]
-                }
-            ]
+            "prompt": prompt
         },
         "parameters": {
-            "result_format": "message",
-            "n": 1,
-            "watermark": False
+            "size": "768*1024",
+            "n": 1
         }
     }
 
@@ -287,28 +281,40 @@ def generate_ai_background(title: str, subtitle: str, ai_prompt: str,
             data = json.dumps(request_body).encode("utf-8")
             headers = {
                 "Content-Type": "application/json",
-                "Authorization": f"Bearer {api_key}"
+                "Authorization": f"Bearer {api_key}",
+                "X-DashScope-Async": "enable"
             }
             req = urllib.request.Request(endpoint, data=data, headers=headers, method="POST")
 
-            with urllib.request.urlopen(req, timeout=120) as resp:
+            with urllib.request.urlopen(req, timeout=30) as resp:
                 result = json.loads(resp.read().decode("utf-8"))
 
-            choices = result.get("output", {}).get("choices", [])
-            if not choices:
-                raise Exception(
-                    f"API 返回无 choices 字段: {json.dumps(result, ensure_ascii=False)[:300]}"
-                )
+            # Async task: poll for result
+            task_id = result.get("output", {}).get("task_id")
+            if not task_id:
+                raise Exception(f"No task_id in response: {json.dumps(result, ensure_ascii=False)[:300]}")
 
-            image_url = None
-            for choice in choices:
-                msg = choice.get("message", {})
-                for item in msg.get("content", []):
-                    if isinstance(item, dict) and "image" in item:
-                        image_url = item["image"]
+            logging.info(f"AI image task submitted: {task_id}, polling...")
+            import time
+            task_url = env_config["endpoint"].replace("/services/aigc/text2image/image-synthesis", f"/tasks/{task_id}")
+            poll_headers = {"Authorization": f"Bearer {api_key}"}
+
+            for _ in range(60):
+                time.sleep(2)
+                poll_req = urllib.request.Request(task_url, headers=poll_headers, method="GET")
+                with urllib.request.urlopen(poll_req, timeout=15) as poll_resp:
+                    task_result = json.loads(poll_resp.read().decode("utf-8"))
+
+                task_status = task_result.get("output", {}).get("task_status", "")
+                if task_status == "SUCCEEDED":
+                    results_list = task_result.get("output", {}).get("results", [])
+                    if results_list:
+                        image_url = results_list[0].get("url")
                         break
-                if image_url:
-                    break
+                elif task_status == "FAILED":
+                    raise Exception(f"Task failed: {json.dumps(task_result, ensure_ascii=False)[:300]}")
+            else:
+                raise Exception("AI image generation timed out (120s)")
 
             if not image_url:
                 raise Exception(
