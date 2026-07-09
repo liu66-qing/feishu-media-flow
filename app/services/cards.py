@@ -87,7 +87,7 @@ def build_schedule_card(items: list[dict], bitable_app_token: str = "") -> dict:
         elements.append({"tag": "div", "text": {"tag": "lark_md", "content": table}})
 
     if bitable_app_token:
-        link = f"https://feishu.cn/base/{bitable_app_token}"
+        link = f"https://zcn1pye3srj4.feishu.cn/base/{bitable_app_token}"
         elements.append({"tag": "hr"})
         elements.append({"tag": "div", "text": {"tag": "lark_md", "content": f"[📊 查看完整排期表]({link})"}})
 
