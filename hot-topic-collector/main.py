@@ -24,7 +24,7 @@ def get_llm_client() -> OpenAI:
     global _client
     if _client is None:
         _client = OpenAI(
-            api_key=os.getenv("LLM_API_KEY"),
+            api_key=os.getenv("LLM_API_KEY", "").strip(),
             base_url=os.getenv("LLM_BASE_URL", "https://api.openai.com/v1")
         )
     return _client
@@ -269,7 +269,8 @@ def filter_topics_locally(topics: List[Topic], keywords: List[str], max_topics: 
 
 
 def call_llm_filter(topics: List[Topic], keywords: List[str], max_topics: int) -> List[Topic]:
-    if not os.getenv("LLM_API_KEY"):
+    api_key = os.getenv("LLM_API_KEY", "").strip()
+    if not api_key:
         raise RuntimeError("LLM_API_KEY is not set")
 
     prompt_template = read_text(FILTER_PROMPT_PATH)
