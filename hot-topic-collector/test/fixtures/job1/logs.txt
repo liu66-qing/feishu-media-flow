@@ -1,0 +1,1 @@
+[success] hot-topic-collector finished. raw_count=50 filtered_count=0
