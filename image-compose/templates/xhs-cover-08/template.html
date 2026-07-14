@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: {{width}}px;
+    height: {{height}}px;
+    overflow: hidden;
+    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  }
+
+  .container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .bg {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: {{bg_color}};
+    background-image: url('{{bg_image}}');
+    background-size: cover;
+    background-position: center;
+    /* 全幅柔焦效果：轻微模糊 */
+    filter: blur(2px) brightness(1.05);
+  }
+
+  /* 全幅柔焦遮罩：整体降低对比度但保留背景图可见 */
+  .overlay {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255,255,255,0.15);
+  }
+
+  /* 中心半透明卡片 */
+  .card {
+    position: relative;
+    z-index: 1;
+    background: rgba(255,255,255,0.65);
+    border-radius: 28px;
+    padding: 70px 65px;
+    width: 820px;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.12);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  /* 顶部小图标 */
+  .icon {
+    font-size: 56px;
+    margin-bottom: 28px;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+  }
+
+  .title {
+    color: #1a1a1a;
+    font-size: 60px;
+    font-weight: 900;
+    text-align: center;
+    line-height: 1.4;
+    letter-spacing: 2px;
+    max-width: 690px;
+    word-break: break-all;
+    overflow-wrap: break-word;
+  }
+
+  .divider {
+    width: 45px;
+    height: 3px;
+    background-color: {{accent_color}};
+    opacity: 0.5;
+    margin: 28px 0;
+    border-radius: 2px;
+  }
+
+  .subtitle {
+    color: #555;
+    font-size: 30px;
+    font-weight: 400;
+    text-align: center;
+    line-height: 1.6;
+    max-width: 650px;
+  }
+
+  /* 底部装饰点 */
+  .dots {
+    margin-top: 32px;
+    display: flex;
+    gap: 10px;
+  }
+  .dots span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: {{accent_color}};
+    opacity: 0.35;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="bg"></div>
+    <div class="overlay"></div>
+    <div class="card">
+      <div class="icon" id="icon">📖</div>
+      <div class="title" id="title">{{title}}</div>
+      <div class="divider"></div>
+      <div class="subtitle" id="subtitle">{{subtitle}}</div>
+      <div class="dots">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    (function() {
+      var title = document.getElementById('title');
+      var fontSize = 60;
+      while ((title.scrollWidth > 660 || title.scrollHeight > 350) && fontSize > 32) {
+        fontSize -= 2;
+        title.style.fontSize = fontSize + 'px';
+      }
+      var sub = document.getElementById('subtitle');
+      if (!sub.textContent.trim()) sub.style.display = 'none';
+    })();
+  </script>
+</body>
+</html>

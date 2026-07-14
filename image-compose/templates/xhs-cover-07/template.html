@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: {{width}}px;
+    height: {{height}}px;
+    overflow: hidden;
+    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  }
+
+  .container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .bg {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: {{bg_color}};
+    background-image: url('{{bg_image}}');
+    background-size: cover;
+    background-position: center;
+  }
+
+  /* 左侧半透明遮罩，保留背景图可见 */
+  .overlay {
+    position: absolute;
+    top: 0; left: 0;
+    width: 55%;
+    height: 100%;
+    background: linear-gradient(
+      to right,
+      rgba(255,255,255,0.6) 0%,
+      rgba(255,255,255,0.35) 60%,
+      rgba(255,255,255,0) 100%
+    );
+  }
+
+  .content {
+    position: relative;
+    z-index: 1;
+    padding: 100px 60px 100px 80px;
+    width: 55%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  /* 左侧装饰线 */
+  .deco-line {
+    width: 4px;
+    height: 60px;
+    background: {{accent_color}};
+    border-radius: 2px;
+    margin-bottom: 32px;
+    opacity: 0.7;
+  }
+
+  .title {
+    color: #1a1a1a;
+    font-size: 62px;
+    font-weight: 900;
+    text-align: left;
+    line-height: 1.4;
+    letter-spacing: 2px;
+    word-break: break-all;
+    overflow-wrap: break-word;
+    text-shadow: 0 1px 12px rgba(255,255,255,0.8), 0 0 30px rgba(255,255,255,0.4);
+  }
+
+  .divider {
+    width: 40px;
+    height: 3px;
+    background-color: {{accent_color}};
+    opacity: 0.5;
+    margin: 28px 0;
+    border-radius: 2px;
+  }
+
+  .subtitle {
+    color: #333;
+    font-size: 30px;
+    font-weight: 400;
+    text-align: left;
+    line-height: 1.6;
+    text-shadow: 0 1px 10px rgba(255,255,255,0.6), 0 0 20px rgba(255,255,255,0.3);
+  }
+
+  /* 底部小标签 */
+  .tag {
+    display: inline-block;
+    margin-top: 36px;
+    background: {{accent_color}}22;
+    border: 2px solid {{accent_color}};
+    color: #333;
+    font-size: 22px;
+    font-weight: 600;
+    padding: 8px 20px;
+    border-radius: 18px;
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="bg"></div>
+    <div class="overlay"></div>
+    <div class="content">
+      <div class="deco-line"></div>
+      <div class="title" id="title">{{title}}</div>
+      <div class="divider"></div>
+      <div class="subtitle" id="subtitle">{{subtitle}}</div>
+      <div class="tag" id="tag">推荐阅读</div>
+    </div>
+  </div>
+  
+  <script>
+    (function() {
+      var title = document.getElementById('title');
+      var fontSize = 62;
+      while ((title.scrollWidth > 500 || title.scrollHeight > 400) && fontSize > 34) {
+        fontSize -= 2;
+        title.style.fontSize = fontSize + 'px';
+      }
+      var sub = document.getElementById('subtitle');
+      var tag = document.getElementById('tag');
+      if (!sub.textContent.trim()) sub.style.display = 'none';
+    })();
+  </script>
+</body>
+</html>

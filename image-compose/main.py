@@ -199,18 +199,154 @@ def mask_api_key(key: str) -> str:
     return key[:4] + "***" + key[-4:]
 
 
-def build_ai_prompt(title: str, subtitle: str, ai_prompt: str) -> str:
+# ---------------------------------------------------------------------------
+# 场景风格关键词库（对应 cover_prompt_guide.md 分类）
+# ---------------------------------------------------------------------------
+
+SCENE_STYLE_MAP = {
+    "学习": "ins简约学习风，柔和书桌场景，笔记本、钢笔、咖啡元素，低饱和奶fufu色调",
+    "校园": "清新校园风，梧桐道光影，柔和阳光，青春明亮，浅景深背景虚化",
+    "美食": "美食特写背景，暖黄灯光，食物自然虚化，有食欲，浅景深",
+    "生活": "治愈日常风，柔和自然光，干净明亮，生活化场景自然虚化",
+    "穿搭": "简约穿搭背景，柔和光线，衣物元素边角虚化，干净ins风",
+    "活动": "明亮活泼风，浅彩色小元素点缀，画面干净不杂乱，青春有活力",
+    "通知": "柔和渐变背景，极简几何小装饰，干净正式",
+    "情绪": "治愈氛围感，柔和夕阳光影，低饱和色调，大光圈背景虚化",
+}
+
+SCENE_KEYWORDS = {
+    "学习": ["学习", "考试", "考证", "考研", "笔记", "书本", "图书馆", "自习", "复习", "规划"],
+    "校园": ["校园", "宿舍", "开学", "毕业", "梧桐", "银杏"],
+    "美食": ["吃", "食堂", "美食", "饭", "咖啡", "蛋糕", "奶茶", "甜点", "探店", "减脂", "健康餐", "菜单", "食谱"],
+    "生活": ["生活", "日常", "vlog", "周末", "放松", "改造", "收纳", "好物"],
+    "穿搭": ["穿搭", "衣服", "搭配", "包包", "购物", "公式", "秋季", "冬季", "春季", "夏季"],
+    "活动": ["社团", "活动", "聚会", "迎新", "晚会", "比赛", "大赛", "歌手", "报名", "招新", "倒计时"],
+    "通知": ["通知", "报名", "招募", "面试", "会议", "讲座", "奖学金", "申请", "截止", "指南", "流程"],
+    "情绪": ["心情", "感悟", "随笔", "深夜", "情绪", "晚安", "治愈", "温柔", "焦虑", "心理", "压力", "疗愈"],
+    "情感": ["恋爱", "脱单", "追女生", "追男生", "备胎", "舔狗", "倒追", "相亲", "婚姻", "感情", "分手", "复合", "撩", "约会", "表白"],
+}
+
+
+def infer_scene_from_text(text: str) -> str:
+    """
+    根据文本内容推断场景分类。
+    采用「得分制」：统计每个场景命中的关键词数量，返回得分最高的场景。
+    无匹配时返回 '学习'（默认兖底）。
+    """
+    if not text:
+        return "学习"
+    text_lower = text.lower()
+
+    scores = {}
+    for scene, keywords in SCENE_KEYWORDS.items():
+        score = sum(1 for kw in keywords if kw in text_lower)
+        if score > 0:
+            scores[scene] = score
+
+    if not scores:
+        return "学习"
+
+    # 返回得分最高的场景；同分时按 SCENE_KEYWORDS 定义顺序优先
+    return max(scores, key=lambda s: scores[s])
+
+
+# ---------------------------------------------------------------------------
+# 场景 → 模板 + 配色 智能匹配（对应 cover_prompt_guide.md 构图分类）
+# ---------------------------------------------------------------------------
+
+SCENE_TEMPLATE_MAP = {
+    "学习": {
+        "template": "xhs-cover-08",   # 全幅柔焦 + 中心白卡
+        "bg_color": "#F5F0EB",
+        "accent_color": "#8B7355",
+        "blank_area": "全幅柔焦留白",
+    },
+    "校园": {
+        "template": "xhs-cover-06",   # 顶部文字（上半留白背景）
+        "bg_color": "#E8F4E8",
+        "accent_color": "#4A7C59",
+        "blank_area": "上半部分",
+    },
+    "美食": {
+        "template": "xhs-cover-03",   # 底部文字（下半留白背景）
+        "bg_color": "#FFF5E6",
+        "accent_color": "#D4A574",
+        "blank_area": "下半部分",
+    },
+    "生活": {
+        "template": "xhs-cover-06",   # 顶部文字（上半留白背景）
+        "bg_color": "#E8F0F5",
+        "accent_color": "#5B8BA0",
+        "blank_area": "上半部分",
+    },
+    "穿搭": {
+        "template": "xhs-cover-07",   # 左对齐杂志风（侧边留白）
+        "bg_color": "#F5F0F0",
+        "accent_color": "#A0788C",
+        "blank_area": "侧边",
+    },
+    "活动": {
+        "template": "xhs-cover-04",   # 大字报+emoji（活泼）
+        "bg_color": "#FFE4E1",
+        "accent_color": "#FF6B6B",
+        "blank_area": "中心",
+    },
+    "通知": {
+        "template": "xhs-cover-02",   # 卡片式（正式）
+        "bg_color": "#E8EAF6",
+        "accent_color": "#5C6BC0",
+        "blank_area": "中心",
+    },
+    "情绪": {
+        "template": "xhs-cover-03",   # 底部文字（氛围感背景）
+        "bg_color": "#F0E6F6",
+        "accent_color": "#9575CD",
+        "blank_area": "上半部分",
+    },
+}
+
+
+def select_template(scene: str, template_name: str = "") -> dict:
+    """
+    根据场景自动选择最佳模板和配色。
+    若已指定 template_name 则不覆盖，仅补充配色。
+    返回 dict: {template, bg_color, accent_color, blank_area}
+    """
+    config = SCENE_TEMPLATE_MAP.get(scene, SCENE_TEMPLATE_MAP["学习"])
+    if template_name:
+        config["template"] = template_name
+    return config
+
+
+def build_ai_prompt(title: str, subtitle: str, ai_prompt: str, blank_area: str = "中心") -> str:
     """
     构建发给 AI 的图片生成 prompt：
       - 若用户在 input.json 的 variables.ai_prompt 中传入了自定义 prompt，直接使用；
-      - 否则自动拼接适合小红书竖版封面的通用 prompt：
-          "小红书封面背景图，{title}，氛围感摄影风格，无文字，无水印，高质量，竖构图[，主题：{subtitle}]"
+      - 否则根据 title/subtitle 自动推断场景风格，组装适配 DashScope wanx 的专业 prompt。
+      - 生成完整场景图，不要求留白（文字遮挡由 HTML 模板半透明遮罩处理）。
+
+    Prompt 策略（参考 cover_prompt_guide.md）：
+      - 不含"小红书"字样，避免触发平台敏感词
+      - 不要求生成文字（AI 生图模型画文字会乱码）
+      - 生成完整场景，不要纯色块留白
+      - 要求博主实拍感、8K 高清
     """
     if ai_prompt:
         return ai_prompt
-    prompt = f"小红书封面背景图，{title}，氛围感摄影风格，无文字，无水印，高质量，竖构图"
-    if subtitle:
-        prompt += f"，主题：{subtitle}"
+
+    # 从 title + subtitle 推断场景风格
+    combined_text = f"{title} {subtitle}"
+    scene = infer_scene_from_text(combined_text)
+
+    style_prompt = SCENE_STYLE_MAP.get(scene, SCENE_STYLE_MAP["学习"])
+    prompt = (
+        f"3:4竖版封面背景图，{style_prompt}，"
+        f"搭配{title}元素，"
+        f"柔和漫反射自然光，完整场景构图，画面饱满丰富，"
+        f"无任何文字、字母、数字、水印、logo，绝对不要生成任何文字，"
+        f"高清8K细节真实，像博主随手拍的照片，低对比度不抢文字视线，"
+        f"不要清晰人物正脸"
+    )
     return prompt
 
 
@@ -241,16 +377,16 @@ def image_to_data_uri(image_path: str) -> str:
 def generate_ai_background(title: str, subtitle: str, ai_prompt: str,
                            output_dir: Path, env_config: dict) -> tuple:
     """
-    调用 DashScope 多模态生成接口生成 AI 背景图。
+    调用 DashScope 文生图接口生成 AI 背景图。
 
     流程：
       1. 用 build_ai_prompt() 构建 prompt
-      2. POST 请求到 multimodal-generation/generation 接口（messages 格式）
-      3. 从 response.output.choices[0].message.content 数组中抽取 image URL
+      2. 调用 wanx2.1-t2i-turbo 文生图
+      3. 从 response 中抽取 image URL
       4. 下载图片保存到 {output_dir}/ai_bg.png
       5. 失败自动重试 1 次（共 2 次尝试），仍失败则抛异常交由上层降级
 
-    返回：(本地保存路径字符串, 实际使用的 prompt)
+    返回：(本地保存路径字符串，实际使用的 prompt)
     """
     prompt = build_ai_prompt(title, subtitle, ai_prompt)
     save_path = output_dir / "ai_bg.png"
@@ -258,11 +394,6 @@ def generate_ai_background(title: str, subtitle: str, ai_prompt: str,
     endpoint = env_config["endpoint"]
     model = env_config["model"]
     api_key = env_config["api_key"]
-
-    logging.info(
-        f"Calling DashScope multimodal-generation, model={model}, "
-        f"prompt={prompt[:80]}..., api_key={mask_api_key(api_key)}"
-    )
 
     request_body = {
         "model": model,
@@ -274,6 +405,10 @@ def generate_ai_background(title: str, subtitle: str, ai_prompt: str,
             "n": 1
         }
     }
+    logging.info(
+        f"Calling DashScope text2image, model={model}, "
+        f"prompt={prompt[:80]}..., api_key={mask_api_key(api_key)}"
+    )
 
     last_error = None
     for attempt in range(2):
@@ -402,6 +537,31 @@ def run_job(job_dir: Path) -> dict:
     output_dir = job_dir / "output"
     output_dir.mkdir(exist_ok=True)
 
+    # ---------- 智能模板匹配（两种模式共用） ----------
+    # 根据 visual_context 或标题推断场景，自动选择最佳模板和配色
+    if not template_name:
+        visual_context = variables.get("visual_context", {})
+        if visual_context:
+            keywords = visual_context.get("keywords", [])
+            topic_summary = visual_context.get("topic_summary", "")
+            combined_text = f"{topic_summary} {' '.join(keywords)} {title}"
+            scene = infer_scene_from_text(combined_text)
+            logging.info(f"Visual context from step1_analyze: scene={scene}, keywords={keywords}")
+        else:
+            combined_text = f"{title} {subtitle}"
+            scene = infer_scene_from_text(combined_text)
+
+        template_config = select_template(scene, template_name)
+        template_name = template_config["template"]
+
+        # 自动设置配色（如果用户未自定义）
+        if not variables.get("bg_color") or variables.get("bg_color") == "#FF6B6B":
+            variables["bg_color"] = template_config["bg_color"]
+        if not variables.get("accent_color") or variables.get("accent_color") == "#FFFFFF":
+            variables["accent_color"] = template_config["accent_color"]
+
+        logging.info(f"Smart template match: scene={scene}, template={template_name}, blank_area={template_config['blank_area']}")
+
     # ---------- AI 背景模式分支 ----------
     if image_mode == "ai_bg":
         env_config = load_env_config()
@@ -409,23 +569,35 @@ def run_job(job_dir: Path) -> dict:
             ai_fallback_reason = "missing_api_key"
             logging.warning("Missing LLM_API_KEY, falling back to template mode")
             image_mode_used = "template"
-            if not template_name:
-                template_name = "xhs-cover-01"
         else:
             try:
+                # 获取留白区域用于 prompt 构图
+                visual_context = variables.get("visual_context", {})
+                if visual_context:
+                    keywords = visual_context.get("keywords", [])
+                    topic_summary = visual_context.get("topic_summary", "")
+                    combined_text = f"{topic_summary} {' '.join(keywords)} {title}"
+                else:
+                    combined_text = f"{title} {subtitle}"
+                scene = infer_scene_from_text(combined_text)
+                template_config = select_template(scene)
+                blank_area = template_config["blank_area"]
+
+                # 生成与模板构图匹配的 AI prompt
+                ai_prompt = build_ai_prompt(title, subtitle, ai_prompt, blank_area)
+
                 ai_bg_path_str, ai_prompt_used = generate_ai_background(
                     title, subtitle, ai_prompt, output_dir, env_config
                 )
-                template_name = "xhs-cover-03"
                 bg_data_uri = image_to_data_uri(ai_bg_path_str)
                 variables["bg_image"] = bg_data_uri
                 image_mode_used = "ai_bg"
+
+                logging.info(f"AI background generated: scene={scene}, blank_area={blank_area}")
             except Exception as e:
                 ai_fallback_reason = str(e)[:200]
                 logging.error(f"AI background generation failed, falling back to template: {e}")
                 image_mode_used = "template"
-                if not template_name:
-                    template_name = "xhs-cover-01"
 
     logging.info(
         f"Template: {template_name}, Content ID: {content_id}, Image Mode: {image_mode_used}"
