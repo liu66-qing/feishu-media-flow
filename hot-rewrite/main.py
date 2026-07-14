@@ -14,6 +14,8 @@ PROMPTS_DIR = SKILL_DIR / "prompts"
 SYSTEM_PROMPT_PATH = PROMPTS_DIR / "system.md"
 USER_TEMPLATE_PATH = PROMPTS_DIR / "user_template.md"
 
+MAX_REWRITE_RETRIES = 2
+
 client = OpenAI(
     api_key=os.getenv("LLM_API_KEY"),
     base_url=os.getenv("LLM_BASE_URL", "https://api.openai.com/v1")
@@ -116,54 +118,18 @@ def similarity(a, b):
     return round(normalized_score, 4), round(raw_score, 4)
 
 
-def analyze_source(source_text):
-    return {
-        "hook": "原文通过直接指出痛点吸引读者注意。",
-        "structure": "痛点引入 -> 方法拆解 -> 场景说明 -> 总结建议",
-        "viral_points": [
-            "开头问题明确",
-            "内容结构清晰",
-            "读者能快速代入"
-        ],
-        "target_audience": "对该主题感兴趣、希望获得实用建议的读者"
-    }
-
-
-def rewrite_content(input_data):
-    target_platform = input_data.get("target_platform", "xhs")
-    target_column = input_data.get("target_column", "经验干货")
-
-    title = "开学季别只拼热闹，先把动线想清楚"
-
-    body = (
-        f"这版内容面向 {target_platform} 平台，改用「迎新动线设计」来展开，"
-        "重点不是讲怎么介绍自己，而是思考一个同学从远处看到、走近、参与、离开的全过程。\n\n"
-        "很多开学季摊点看起来很忙，但路过的人并不知道自己下一步该做什么。"
-        "如果桌面信息太多、成员站位太散、互动入口不明显，对方很可能看一眼就走。\n\n"
-        "可以先把空间分成三个区域。\n\n"
-        "第一个区域负责吸引注意。这里不需要放满文字，只要让人一眼看懂主题。"
-        "比如用一句清楚的问题、一张场景图，或者一个正在进行的小任务。\n\n"
-        "第二个区域负责轻量参与。不要一上来要求对方长时间交流，"
-        "可以设置一个三十秒就能完成的动作，让陌生感先降下来。\n\n"
-        "第三个区域负责收尾。结束时给对方一个明确记忆点，"
-        "比如下一场公开活动、适合的人群，或者一个可以之后再看的内容入口。\n\n"
-        "这样做的核心，是把开学季摊点从单纯展示，变成一段有顺序的体验。"
-        "当路径更清楚，人就更容易从路过变成愿意了解。"
+def build_retry_hint(attempt, last_score):
+    """为重试构建额外提示，要求 LLM 更大程度改变表达。"""
+    return (
+        f"\n\n注意：你上一次改写的相似度为 {last_score}，超过了 0.3 的阈值。"
+        f"这是第 {attempt} 次重试（最多 {MAX_REWRITE_RETRIES} 次）。"
+        "请务必从完全不同的角度、叙事结构和表达方式来改写，"
+        "避免沿用原文的句式、段落顺序和关键词。"
     )
 
-    hashtags = [f"#{target_column}", "#开学季", "#活动动线"]
 
-    return {
-        "title": title,
-        "body": body,
-        "hashtags": hashtags
-    }
-
-
-def rewrite_content_with_llm(input_data):
-    if not os.getenv("LLM_API_KEY"):
-        raise RuntimeError("LLM_API_KEY is not set")
-
+def call_rewrite_llm(input_data, retry_hint=""):
+    """调用 LLM 进行改写，返回解析后的 JSON 数据。"""
     system = read_text(SYSTEM_PROMPT_PATH)
     template = read_text(USER_TEMPLATE_PATH)
 
@@ -171,8 +137,12 @@ def rewrite_content_with_llm(input_data):
         "source_text": input_data.get("source_text", ""),
         "source_url": input_data.get("source_url", ""),
         "target_platform": input_data.get("target_platform", "xhs"),
-        "target_column": input_data.get("target_column", "经验干货")
+        "target_column": input_data.get("target_column", "经验干货"),
+        "rewrite_angle": input_data.get("rewrite_angle", "")
     })
+
+    if retry_hint:
+        prompt = prompt + retry_hint
 
     raw = call_llm(prompt, system=system)
 
@@ -181,7 +151,8 @@ def rewrite_content_with_llm(input_data):
 
     data = parse_llm_json(raw)
 
-    if "rewritten_content" in data:
+    # 兼容两种结构：顶层含 rewritten_content 或直接就是内容
+    if "rewritten_content" in data and isinstance(data["rewritten_content"], dict):
         rewritten = data["rewritten_content"]
     else:
         rewritten = data
@@ -190,10 +161,16 @@ def rewrite_content_with_llm(input_data):
         if field not in rewritten:
             raise ValueError(f"LLM output missing field: {field}")
 
+    # 提取 original_analysis（可能在顶层）
+    original_analysis = data.get("original_analysis", {})
+
     return {
-        "title": rewritten.get("title", ""),
-        "body": rewritten.get("body", ""),
-        "hashtags": rewritten.get("hashtags", [])
+        "original_analysis": original_analysis,
+        "rewritten_content": {
+            "title": rewritten.get("title", ""),
+            "body": rewritten.get("body", ""),
+            "hashtags": rewritten.get("hashtags", [])
+        }
     }
 
 
@@ -201,41 +178,50 @@ def generate_hot_rewrite(input_data):
     source_text = input_data.get("source_text", "")
     source_url = input_data.get("source_url", "")
 
-    original_analysis = analyze_source(source_text)
-    llm_enabled = False
-    llm_error = ""
+    if not os.getenv("LLM_API_KEY"):
+        raise RuntimeError("LLM_API_KEY is not set")
 
-    try:
-        rewritten_content = rewrite_content_with_llm(input_data)
-        llm_enabled = True
-    except Exception as e:
-        rewritten_content = rewrite_content(input_data)
-        llm_error = str(e)
+    last_score = None
+    llm_result = None
 
-    rewritten_text = rewritten_content["title"] + "\n" + rewritten_content["body"]
-    similarity_score, _simhash_raw_score = similarity(source_text, rewritten_text)
+    for attempt in range(MAX_REWRITE_RETRIES + 1):
+        retry_hint = ""
+        if attempt > 0 and last_score is not None:
+            retry_hint = build_retry_hint(attempt, last_score)
 
-    if similarity_score > 0.3:
+        llm_result = call_rewrite_llm(input_data, retry_hint=retry_hint)
+
+        rewritten_content = llm_result["rewritten_content"]
+        rewritten_text = rewritten_content["title"] + "\n" + rewritten_content["body"]
+        similarity_score, _simhash_raw_score = similarity(source_text, rewritten_text)
+        last_score = similarity_score
+
+        if similarity_score <= 0.3:
+            status = "success"
+            risk_notes = []
+            break
+    else:
+        # 重试次数用尽仍未通过
         status = "failed"
         risk_notes = [
-            "similarity_score 超过 0.3，当前改写结果与原文相似度过高，需要重写。"
+            f"similarity_score={last_score}，经过 {MAX_REWRITE_RETRIES} 次重试后仍超过 0.3，"
+            "改写结果与原文相似度过高，建议人工介入。"
         ]
-    else:
-        status = "success"
-        risk_notes = []
+
+    original_analysis = llm_result.get("original_analysis", {})
 
     return status, {
         "original_analysis": original_analysis,
-        "rewritten_content": rewritten_content,
-        "similarity_score": similarity_score,
+        "rewritten_content": llm_result["rewritten_content"],
+        "similarity_score": last_score,
         "similarity_method": "simhash_normalized_from_raw_baseline_0.5",
         "source_attribution": {
             "url": source_url,
             "note": "灵感来自原始内容，已重构角度、结构和表达方式。"
         },
         "risk_notes": risk_notes,
-        "llm_enabled": llm_enabled,
-        "llm_error": llm_error
+        "llm_enabled": True,
+        "llm_error": ""
     }
 
 
