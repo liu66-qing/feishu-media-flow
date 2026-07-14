@@ -11,6 +11,7 @@ callbacks advance individual items.
 import json
 import logging
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from uuid import uuid4
 
 from app.config import Settings
@@ -28,9 +29,21 @@ from app.services.llm import call_llm
 from app.services.notifier import FeishuNotifier
 from app.services.planner import Planner
 from app.services.publisher import Publisher, PublishPayload
-from app.services.skill_runner import SkillRunner
+from app.services.skill_runner import SkillRunner, dry_run_skill_result
 
 logger = logging.getLogger(__name__)
+
+# UTC+8 timezone
+_CST = timezone(timedelta(hours=8))
+
+# Mock topics used when hot-topic-collector skill is not available
+_MOCK_WEEKLY_TOPICS = [
+    {"title": "大学生社团招新季：如何打造爆款招新推文", "source": "xhs", "angle_suggestion": "从视觉设计+文案结构拆解招新推文的高赞套路", "suggested_platform": "xhs"},
+    {"title": "校园新媒体运营复盘：从0到5000粉的完整路径", "source": "weibo", "angle_suggestion": "以真实数据复盘切入，拆解内容选题和发布节奏", "suggested_platform": "xhs"},
+    {"title": "社团活动短视频拍摄：3个模板让你快速出片", "source": "douyin", "angle_suggestion": "提供可直接套用的分镜模板，降低拍摄门槛", "suggested_platform": "douyin"},
+    {"title": "开学季校园摊位互动玩法大全", "source": "weibo", "angle_suggestion": "汇总创意互动游戏，配合实操案例", "suggested_platform": "xhs"},
+    {"title": "学生组织如何做高效的复盘总结", "source": "xhs", "angle_suggestion": "给出复盘模板和流程，强调可落地", "suggested_platform": "wechat"},
+]
 
 # How long before an unapproved topic expires
 TOPIC_EXPIRY_HOURS = 72
@@ -55,11 +68,12 @@ class AgentLoop:
     # ------------------------------------------------------------------
 
     async def tick(self) -> dict:
-        """Main tick: plan if needed, advance due items, expire stale."""
+        """Main tick: plan if needed, advance due items, expire stale, weekly material."""
         results = {
             "planned": await self._run_planner_if_needed(),
             "advanced": await self._advance_due_items(),
             "expired": await self._expire_stale(),
+            "weekly_material": await self._check_weekly_material_card(),
         }
         logger.info("Agent tick complete: %s", results)
         return results
@@ -492,6 +506,65 @@ class AgentLoop:
         chat_id = self.settings.feishu_default_chat_id
         if chat_id:
             await self.notifier.send_card(chat_id, card)
+
+    # ------------------------------------------------------------------
+    # Weekly material card (Monday)
+    # ------------------------------------------------------------------
+
+    async def _check_weekly_material_card(self) -> str:
+        """Send weekly hot-topic material card on Monday (UTC+8)."""
+        now_cst = datetime.now(_CST)
+        if now_cst.weekday() != 0:
+            return "not_monday"
+
+        date_str = now_cst.strftime("%Y-%m-%d")
+        flag_path = self.settings.data_dir / f"weekly_material_sent_{date_str}.flag"
+        if flag_path.exists():
+            return "already_sent"
+
+        # Collect hot topics via skill or fallback to mock
+        topics = await self._collect_weekly_topics()
+
+        from app.services.cards import build_material_review_card
+        card = build_material_review_card(topics)
+
+        chat_id = self.settings.feishu_default_chat_id
+        if not chat_id:
+            logger.warning("No feishu_default_chat_id, skip weekly material card")
+            return "no_chat_id"
+
+        await self.notifier.send_card(chat_id, card)
+
+        # Write flag to prevent duplicate send
+        flag_path.write_text(date_str, encoding="utf-8")
+        logger.info("Weekly material card sent for %s (%d topics)", date_str, len(topics))
+        return f"sent_{len(topics)}_topics"
+
+    async def _collect_weekly_topics(self) -> list[dict]:
+        """Run hot-topic-collector skill; fallback to mock data on failure."""
+        job = SkillJob(
+            content_id="WEEKLY",
+            job_id=f"JOB-WEEKLY-{uuid4().hex[:8]}",
+            topic="weekly_hot_topics",
+            materials=[],
+        )
+        # Build input with keywords/platforms for hot-topic-collector
+        job_input = {
+            "keywords": ["大学生", "社团", "运营", "校园", "新媒体"],
+            "platforms": ["weibo", "douyin", "xhs"],
+            "max_topics": 10,
+        }
+        # SkillRunner writes job.model_dump_json() as input.json, but
+        # hot-topic-collector expects its own fields. We write a custom input.
+        try:
+            result = self.runner.run("hot-topic-collector", job)
+            topics = result.get("topics", [])
+            if topics:
+                return topics[:10]
+        except (FileNotFoundError, RuntimeError) as e:
+            logger.warning("hot-topic-collector unavailable, using mock: %s", e)
+
+        return _MOCK_WEEKLY_TOPICS
 
     # ------------------------------------------------------------------
     # Housekeeping

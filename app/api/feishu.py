@@ -184,6 +184,24 @@ async def _handle_card_action(event: dict, workflow: WorkflowService) -> dict:
             pass
         return {"status": "rejected", "content_id": content_id}
 
+    # Weekly material: adopt a hot topic into content generation
+    if action == "adopt_topic":
+        topic_title = action_value.get("topic_title", "")
+        platform_str = action_value.get("platform", "xhs")
+        angle = action_value.get("angle", "")
+        if not topic_title:
+            return {"status": "error", "detail": "missing topic_title"}
+        try:
+            platform = _parse_platform(platform_str)
+        except HTTPException:
+            return {"status": "error", "detail": f"unknown platform: {platform_str}"}
+        import asyncio
+        asyncio.create_task(
+            workflow.create_content_from_topic(platform, topic_title)
+        )
+        logger.info("Adopted topic via card: %s -> %s", topic_title, platform_str)
+        return {"status": "adopted", "topic": topic_title, "platform": platform_str}
+
     return {"status": "ignored", "action": action}
 
 
