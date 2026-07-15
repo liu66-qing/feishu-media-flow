@@ -20,9 +20,9 @@
     "body_max_length": 500,
     "max_tags": 5,
     "tag_format": "hash_prefix",
-    "image_spec": {"width": 1080, "height": 1920, "format": "png"},
-    "style_guide": "短平快节奏，前3秒抓眼球。口语化表达，像跟朋友说话。可以用反转/悬念/争议性开头。",
-    "content_structure": "悬念开头(1句) → 核心内容(3-5句) → 总结金句(1句)",
+    "image_spec": {"width": 1080, "height": 1350, "format": "png"},
+    "style_guide": "图文卡片节奏，封面先抓住注意力；每页只讲一个重点，口语化但不使用真人口播、风景素材或外部图库。视觉与小红书校园编辑海报保持一致。",
+    "content_structure": "封面(1页) → 核心内容(3-6页，每页一个重点) → 总结卡(1页)",
     "forbidden_words": [],
     "hashtag_style": "热搜词+领域词，#前缀"
   },

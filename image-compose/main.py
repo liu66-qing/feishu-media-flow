@@ -17,6 +17,7 @@ image-compose 技能包 - 主入口
 
 import argparse
 import base64
+import html
 import json
 import logging
 import mimetypes
@@ -110,25 +111,39 @@ def render_html(template_html: str, variables: dict, output_size: dict) -> str:
         bg_image    背景图（URL 或 base64 data URI；为空则不使用背景图）
     output_size 决定 {{width}}/{{height}}，默认 1080x1350。
     """
-    title = variables.get("title", "")
-    subtitle = variables.get("subtitle", "")
-    bg_color = variables.get("bg_color", "#FFFFFF")
-    accent_color = variables.get("accent_color", "#000000")
-    bg_image = variables.get("bg_image", "")
-
     width = output_size.get("width", 1080)
     height = output_size.get("height", 1350)
+    defaults = {
+        "title": "",
+        "subtitle": "",
+        "body": "",
+        "highlight": "",
+        "section_label": "核心内容",
+        "brand_name": "校园新媒体",
+        "series_name": "本期精选",
+        "page_label": "01 / 01",
+        "page_number": "01",
+        "metric_label": "",
+        "metric_value": "",
+        "visual_style": "auto",
+        "illustration_variant": "idea",
+        "footer": "校园内容工作流",
+        "bg_color": "#F7F4EE",
+        "accent_color": "#C94F32",
+        "bg_image": "",
+        "width": width,
+        "height": height,
+    }
+    values = {**defaults, **variables, "width": width, "height": height}
+    raw_keys = {"bg_image", "bg_color", "accent_color", "width", "height"}
 
-    html = template_html
-    html = html.replace("{{title}}", title)
-    html = html.replace("{{subtitle}}", subtitle)
-    html = html.replace("{{bg_color}}", bg_color)
-    html = html.replace("{{accent_color}}", accent_color)
-    html = html.replace("{{bg_image}}", bg_image)
-    html = html.replace("{{width}}", str(width))
-    html = html.replace("{{height}}", str(height))
-
-    return html
+    rendered = template_html
+    for key, value in values.items():
+        string_value = str(value or "")
+        if key not in raw_keys:
+            string_value = html.escape(string_value, quote=True)
+        rendered = rendered.replace(f"{{{{{key}}}}}", string_value)
+    return rendered
 
 
 # ---------------------------------------------------------------------------
@@ -204,14 +219,14 @@ def mask_api_key(key: str) -> str:
 # ---------------------------------------------------------------------------
 
 SCENE_STYLE_MAP = {
-    "学习": "ins简约学习风，柔和书桌场景，笔记本、钢笔、咖啡元素，低饱和奶fufu色调",
-    "校园": "清新校园风，梧桐道光影，柔和阳光，青春明亮，浅景深背景虚化",
-    "美食": "美食特写背景，暖黄灯光，食物自然虚化，有食欲，浅景深",
-    "生活": "治愈日常风，柔和自然光，干净明亮，生活化场景自然虚化",
-    "穿搭": "简约穿搭背景，柔和光线，衣物元素边角虚化，干净ins风",
-    "活动": "明亮活泼风，浅彩色小元素点缀，画面干净不杂乱，青春有活力",
-    "通知": "柔和渐变背景，极简几何小装饰，干净正式",
-    "情绪": "治愈氛围感，柔和夕阳光影，低饱和色调，大光圈背景虚化",
+    "学习": "中国大学图书馆或自习室，18至24岁大学生学习小组，书本与笔记本电脑，专注而有朝气",
+    "校园": "中国大学校园教学楼与林荫路，18至24岁大学生结伴交流，青春明亮",
+    "美食": "中国大学食堂或校园咖啡空间，18至24岁大学生用餐交流，干净有活力",
+    "生活": "中国大学宿舍公共区或校园生活空间，18至24岁大学生日常协作，真实自然",
+    "穿搭": "中国大学校园步道，18至24岁大学生清爽日常穿搭，青春编辑感",
+    "活动": "中国大学社团活动现场，18至24岁大学生共同布展或排练，热烈有秩序",
+    "通知": "中国大学校园公告与活动空间，年轻学生查看信息，现代编辑海报感",
+    "情绪": "中国大学校园傍晚学习生活场景，18至24岁大学生安静思考，克制温暖",
 }
 
 SCENE_KEYWORDS = {
@@ -306,19 +321,132 @@ SCENE_TEMPLATE_MAP = {
 }
 
 
-def select_template(scene: str, template_name: str = "") -> dict:
+CARD_TEMPLATE_SETS = {
+    "editorial": {
+        "cover": "campus-poster-cover",
+        "card": "campus-poster-card",
+        "summary": "campus-poster-summary",
+        "bg_color": "#F7F4EE",
+        "accent_color": "#C94F32",
+        "blank_area": "中心和上半部分",
+    },
+    "comic": {
+        "cover": "campus-comic-cover",
+        "card": "campus-comic-card",
+        "summary": "campus-comic-summary",
+        "bg_color": "#FCFCFA",
+        "accent_color": "#1688F8",
+        "blank_area": "下半部分插画区",
+    },
+}
+
+COMIC_STYLE_KEYWORDS = [
+    "为什么", "怎么", "如何", "到底", "是不是", "值不值", "区别", "对比", "真相", "误区",
+    "纠结", "焦虑", "困惑", "避坑", "踩坑", "复盘", "经历", "故事", "观点", "科普",
+    "看懂", "入门", "原理", "趋势", "ai", "agent", "机器人", "内行", "聊聊",
+]
+
+EDITORIAL_STYLE_KEYWORDS = [
+    "通知", "公告", "招新", "招募", "报名", "截止", "倒计时", "活动", "比赛", "晚会",
+    "讲座", "会议", "奖学金", "申请", "流程", "步骤", "清单", "日程", "指南", "发布",
+]
+
+
+def infer_visual_style(text: str, preferred: str = "auto") -> str:
+    """Select a reusable visual system from topic semantics."""
+    normalized_preference = str(preferred or "auto").strip().lower()
+    aliases = {
+        "handdrawn": "comic", "hand-drawn": "comic", "漫画": "comic", "手绘": "comic",
+        "poster": "editorial", "海报": "editorial", "编辑": "editorial",
+    }
+    normalized_preference = aliases.get(normalized_preference, normalized_preference)
+    if normalized_preference in CARD_TEMPLATE_SETS:
+        return normalized_preference
+    if normalized_preference == "legacy_scene":
+        return "legacy_scene"
+
+    content = str(text or "").lower()
+    comic_score = sum(1 for keyword in COMIC_STYLE_KEYWORDS if keyword in content)
+    editorial_score = sum(1 for keyword in EDITORIAL_STYLE_KEYWORDS if keyword in content)
+    comic_score += content.count("?") + content.count("？")
+    if any(token in content for token in ("a/b", "vs", "优缺点", "一边", "另一边")):
+        comic_score += 2
+    return "comic" if comic_score > editorial_score else "editorial"
+
+
+def infer_illustration_variant(text: str, role: str = "card") -> str:
+    """Choose a comic scene composition without coupling it to the topic taxonomy."""
+    if role == "summary":
+        return "group"
+    content = str(text or "").lower()
+    if any(keyword in content for keyword in ("对比", "区别", "两种", "各自", "vs", "a/b", "优缺点")):
+        return "compare"
+    if any(keyword in content for keyword in ("对话", "沟通", "交流", "提问", "答疑", "采访", "讨论")):
+        return "dialogue"
+    if any(keyword in content for keyword in ("三类", "三种", "大家", "团队", "同学们", "群体", "一起")):
+        return "group"
+    if any(keyword in content for keyword in ("方法", "步骤", "清单", "怎么做", "如何", "先", "再")):
+        return "explain"
+    return "idea"
+
+
+def select_card_template_set(text: str, preferred: str = "auto") -> dict:
+    visual_style = infer_visual_style(text, preferred)
+    if visual_style == "legacy_scene":
+        visual_style = "editorial"
+    config = dict(CARD_TEMPLATE_SETS[visual_style])
+    config["visual_style"] = visual_style
+    return config
+
+
+def select_template(
+    scene: str,
+    template_name: str = "",
+    text: str = "",
+    visual_style: str = "auto",
+    role: str = "cover",
+) -> dict:
     """
     根据场景自动选择最佳模板和配色。
     若已指定 template_name 则不覆盖，仅补充配色。
     返回 dict: {template, bg_color, accent_color, blank_area}
     """
-    config = SCENE_TEMPLATE_MAP.get(scene, SCENE_TEMPLATE_MAP["学习"])
+    selected_style = infer_visual_style(text, visual_style)
+    if selected_style == "legacy_scene":
+        config = dict(SCENE_TEMPLATE_MAP.get(scene, SCENE_TEMPLATE_MAP["学习"]))
+        config["visual_style"] = "legacy_scene"
+    else:
+        template_set = select_card_template_set(text, selected_style)
+        config = {
+            "template": template_set.get(role, template_set["cover"]),
+            "bg_color": template_set["bg_color"],
+            "accent_color": template_set["accent_color"],
+            "blank_area": template_set["blank_area"],
+            "visual_style": template_set["visual_style"],
+        }
     if template_name:
         config["template"] = template_name
+        if template_name.startswith("campus-comic-"):
+            config.update({"visual_style": "comic", "bg_color": "#FCFCFA", "accent_color": "#1688F8", "blank_area": "下半部分插画区"})
+        elif template_name.startswith("campus-poster-"):
+            config.update({"visual_style": "editorial", "bg_color": "#F7F4EE", "accent_color": "#C94F32", "blank_area": "中心和上半部分"})
+        elif template_name.startswith("xhs-"):
+            legacy_config = dict(SCENE_TEMPLATE_MAP.get(scene, SCENE_TEMPLATE_MAP["学习"]))
+            legacy_config.update({"template": template_name, "visual_style": "legacy_scene"})
+            config = legacy_config
+        elif template_name.startswith("wechat-"):
+            config.update({"visual_style": "editorial", "bg_color": "#F7F4EE", "accent_color": "#C94F32", "blank_area": "中心和上半部分"})
     return config
 
 
-def build_ai_prompt(title: str, subtitle: str, ai_prompt: str, blank_area: str = "中心") -> str:
+def build_ai_prompt(
+    title: str,
+    subtitle: str,
+    ai_prompt: str,
+    blank_area: str = "中心",
+    visual_style: str = "editorial",
+    illustration_variant: str = "idea",
+) -> str:
     """
     构建发给 AI 的图片生成 prompt：
       - 若用户在 input.json 的 variables.ai_prompt 中传入了自定义 prompt，直接使用；
@@ -331,21 +459,38 @@ def build_ai_prompt(title: str, subtitle: str, ai_prompt: str, blank_area: str =
       - 生成完整场景，不要纯色块留白
       - 要求博主实拍感、8K 高清
     """
-    if ai_prompt:
+    marker = "硬性身份与场景约束"
+    if ai_prompt and marker in ai_prompt:
         return ai_prompt
 
-    # 从 title + subtitle 推断场景风格
     combined_text = f"{title} {subtitle}"
     scene = infer_scene_from_text(combined_text)
-
     style_prompt = SCENE_STYLE_MAP.get(scene, SCENE_STYLE_MAP["学习"])
+    creative_direction = ai_prompt.strip() if ai_prompt else f"主题语义：{title}；补充语义：{subtitle}"
+    if visual_style == "comic":
+        return (
+            f"竖版极简手绘校园漫画插画，{creative_direction}。"
+            f"场景语义：{style_prompt}；构图类型：{illustration_variant}。"
+            f"纯白或暖白背景，粗黑马克笔线条，圆头抽象人物，少量高饱和亮蓝和一点洋红作为强调色，"
+            f"人物表情克制幽默，动作清楚，像知识科普漫画而不是儿童绘本。"
+            f"主体集中在{blank_area}，其余区域干净，方便后续排中文标题。"
+            f"{marker}：角色只能表达18至24岁的中国大学生、社团成员或校园志愿者；"
+            f"通过书包、笔记本电脑、展台、图书馆桌椅、社团物料等体现中国大学校园语境。"
+            f"禁止社会职场人士、商务会议、儿童、中学生、游客、纯自然风景、旅游地标、商业棚拍和写实网红人物。"
+            f"无任何文字、字母、数字、水印、logo、校徽或品牌标识；不要生成伪文字。"
+            f"画面平整清晰、留白充足、黑线边缘干净，适合作为知识图文卡片插画。"
+        )
     prompt = (
-        f"3:4竖版封面背景图，{style_prompt}，"
-        f"搭配{title}元素，"
-        f"柔和漫反射自然光，完整场景构图，画面饱满丰富，"
-        f"无任何文字、字母、数字、水印、logo，绝对不要生成任何文字，"
-        f"高清8K细节真实，像博主随手拍的照片，低对比度不抢文字视线，"
-        f"不要清晰人物正脸"
+        f"竖版校园主题编辑海报背景，{creative_direction}。"
+        f"场景设计：{style_prompt}。"
+        f"画面要有一个亮眼且明确的主题视觉焦点，使用朱红、暖白、黑色与少量钴蓝形成现代校园海报配色，"
+        f"构图简洁有层次，在{blank_area}保留干净的文字排版空间，主体不得遮挡该区域。"
+        f"{marker}：人物只能是18至24岁的中国大学生，身份呈现为学生、社团成员或校园志愿者；"
+        f"地点只能在中国大学校园、教学楼、图书馆、自习室、宿舍公共区、食堂或社团活动空间。"
+        f"禁止社会职场人士、商务会议、儿童、中学生、游客、城市街拍、纯自然风景、旅游地标、豪宅和商业影棚。"
+        f"禁止人物大头特写与网红摆拍，优先中景或远景、自然互动、真实校园细节。"
+        f"无任何文字、字母、数字、水印、logo、校徽或品牌标识；不要生成伪文字。"
+        f"高质量海报摄影或精致编辑插画质感，明亮、青春、有冲击力，但背景细节不能干扰后续标题。"
     )
     return prompt
 
@@ -537,21 +682,36 @@ def run_job(job_dir: Path) -> dict:
     output_dir = job_dir / "output"
     output_dir.mkdir(exist_ok=True)
 
-    # ---------- 智能模板匹配（两种模式共用） ----------
-    # 根据 visual_context 或标题推断场景，自动选择最佳模板和配色
-    if not template_name:
-        visual_context = variables.get("visual_context", {})
-        if visual_context:
-            keywords = visual_context.get("keywords", [])
-            topic_summary = visual_context.get("topic_summary", "")
-            combined_text = f"{topic_summary} {' '.join(keywords)} {title}"
-            scene = infer_scene_from_text(combined_text)
-            logging.info(f"Visual context from step1_analyze: scene={scene}, keywords={keywords}")
-        else:
-            combined_text = f"{title} {subtitle}"
-            scene = infer_scene_from_text(combined_text)
+    # ---------- 主题驱动的视觉系统与模板匹配 ----------
+    visual_context = variables.get("visual_context", {})
+    if visual_context:
+        keywords = visual_context.get("keywords", [])
+        if not isinstance(keywords, list):
+            keywords = []
+        topic_summary = visual_context.get("topic_summary", "")
+        combined_text = f"{topic_summary} {' '.join(str(item) for item in keywords)} {title} {subtitle}"
+    else:
+        keywords = []
+        combined_text = f"{title} {subtitle}"
+    scene = infer_scene_from_text(combined_text)
+    preferred_visual_style = str(variables.get("visual_style") or "auto")
+    template_role = str(variables.get("template_role") or "cover")
+    template_config = select_template(
+        scene,
+        template_name,
+        text=combined_text,
+        visual_style=preferred_visual_style,
+        role=template_role,
+    )
+    visual_style_used = template_config.get("visual_style", "editorial")
+    illustration_variant = str(
+        variables.get("illustration_variant")
+        or infer_illustration_variant(combined_text, template_role)
+    )
+    variables["visual_style"] = visual_style_used
+    variables["illustration_variant"] = illustration_variant
 
-        template_config = select_template(scene, template_name)
+    if not template_name:
         template_name = template_config["template"]
 
         # 自动设置配色（如果用户未自定义）
@@ -560,7 +720,14 @@ def run_job(job_dir: Path) -> dict:
         if not variables.get("accent_color") or variables.get("accent_color") == "#FFFFFF":
             variables["accent_color"] = template_config["accent_color"]
 
-        logging.info(f"Smart template match: scene={scene}, template={template_name}, blank_area={template_config['blank_area']}")
+    logging.info(
+        "Smart template match: scene=%s, visual_style=%s, role=%s, variant=%s, template=%s",
+        scene,
+        visual_style_used,
+        template_role,
+        illustration_variant,
+        template_name,
+    )
 
     # ---------- AI 背景模式分支 ----------
     if image_mode == "ai_bg":
@@ -571,20 +738,17 @@ def run_job(job_dir: Path) -> dict:
             image_mode_used = "template"
         else:
             try:
-                # 获取留白区域用于 prompt 构图
-                visual_context = variables.get("visual_context", {})
-                if visual_context:
-                    keywords = visual_context.get("keywords", [])
-                    topic_summary = visual_context.get("topic_summary", "")
-                    combined_text = f"{topic_summary} {' '.join(keywords)} {title}"
-                else:
-                    combined_text = f"{title} {subtitle}"
-                scene = infer_scene_from_text(combined_text)
-                template_config = select_template(scene)
                 blank_area = template_config["blank_area"]
 
                 # 生成与模板构图匹配的 AI prompt
-                ai_prompt = build_ai_prompt(title, subtitle, ai_prompt, blank_area)
+                ai_prompt = build_ai_prompt(
+                    title,
+                    subtitle,
+                    ai_prompt,
+                    blank_area,
+                    visual_style_used,
+                    illustration_variant,
+                )
 
                 ai_bg_path_str, ai_prompt_used = generate_ai_background(
                     title, subtitle, ai_prompt, output_dir, env_config
@@ -621,6 +785,8 @@ def run_job(job_dir: Path) -> dict:
         "width": width,
         "height": height,
         "template_used": template_name,
+        "visual_style_used": visual_style_used,
+        "illustration_variant": illustration_variant,
         "image_mode_used": image_mode_used,
         "ai_fallback_reason": ai_fallback_reason,
         "ai_prompt_used": ai_prompt_used

@@ -1,0 +1,19 @@
+{
+  "content_id": "CNT-CAMPUS-COVER-001",
+  "job_id": "JOB-CAMPUS-COVER-001",
+  "template_name": "campus-poster-cover",
+  "image_mode": "template",
+  "variables": {
+    "brand_name": "校园新媒体",
+    "series_name": "本周精选",
+    "section_label": "社团运营指南",
+    "title": "招新现场\n别只会发传单",
+    "subtitle": "三个细节，让新生愿意停下来",
+    "page_number": "01",
+    "page_label": "01 / 06",
+    "footer": "大学生社团内容实验室",
+    "bg_color": "#C94F32",
+    "accent_color": "#C94F32"
+  },
+  "output_size": {"width": 1080, "height": 1350}
+}

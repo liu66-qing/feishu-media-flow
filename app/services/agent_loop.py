@@ -8,6 +8,7 @@ Each content item has its own state machine. The tick discovers work;
 callbacks advance individual items.
 """
 
+import asyncio
 import json
 import logging
 from datetime import datetime, timedelta, timezone
@@ -24,8 +25,15 @@ from app.models import (
     TopicStatus,
 )
 from app.services.bitable import BitableClient
+from app.services.cards import (
+    build_publish_review_card,
+    build_schedule_card,
+    build_status_card,
+    build_wechat_article_card,
+)
 from app.services.critic import Critic
 from app.services.llm import call_llm
+from app.services.media_delivery import MediaDeliveryService
 from app.services.notifier import FeishuNotifier
 from app.services.planner import Planner
 from app.services.publisher import Publisher, PublishPayload
@@ -54,14 +62,217 @@ MONTHLY_TARGET = 4
 class AgentLoop:
     """Main orchestration loop for the media workflow agent."""
 
-    def __init__(self, settings: Settings) -> None:
+    def __init__(
+        self,
+        settings: Settings,
+        *,
+        bitable: BitableClient | None = None,
+        notifier: FeishuNotifier | None = None,
+        planner: Planner | None = None,
+        critic: Critic | None = None,
+        runner: SkillRunner | None = None,
+        publisher: Publisher | None = None,
+        media_delivery: MediaDeliveryService | None = None,
+    ) -> None:
         self.settings = settings
-        self.bitable = BitableClient(settings)
-        self.notifier = FeishuNotifier(settings)
-        self.planner = Planner()
-        self.critic = Critic()
-        self.runner = SkillRunner(settings)
-        self.publisher = Publisher(settings)
+        self.bitable = bitable or BitableClient(settings)
+        self.notifier = notifier or FeishuNotifier(settings)
+        self.planner = planner or Planner()
+        self.critic = critic or Critic()
+        self.runner = runner or SkillRunner(settings)
+        self.publisher = publisher or Publisher(settings)
+        self.media_delivery = media_delivery or MediaDeliveryService(
+            settings,
+            notifier=self.notifier,
+            runner=self.runner,
+        )
+
+    async def create_content_from_topic(
+        self,
+        platform: Platform,
+        topic: str,
+        *,
+        chat_id: str = "",
+        materials: list[dict] | None = None,
+    ) -> dict:
+        """Create one user-requested draft and run it to the approval checkpoint."""
+        content_id = f"CNT-{uuid4().hex[:12]}"
+        await self.bitable.create_record(
+            "content",
+            {
+                "content_id": content_id,
+                "topic": topic,
+                "platform": platform.value,
+                "status": DraftStatus.GENERATING.value,
+                "version": 1,
+                "revision_count": 0,
+                "materials": _safe_json_str(materials or []),
+                "chat_id": chat_id,
+                "created_at": _datetime_to_feishu_ms(datetime.now(timezone.utc)),
+            },
+        )
+        result = await self.run_until_checkpoint(content_id)
+        return {"status": "created", "content_id": content_id, "result": result}
+
+    async def run_until_checkpoint(self, item_id: str, max_steps: int = 12) -> dict:
+        """Advance autonomous states until human input, a future schedule, or a terminal state."""
+        autonomous = {
+            TopicStatus.APPROVED.value,
+            DraftStatus.GENERATING.value,
+            DraftStatus.CRITIQUING.value,
+            DraftStatus.PASSED.value,
+            DraftStatus.COMPOSING_IMAGE.value,
+            DraftStatus.PACKAGING.value,
+            DraftStatus.PUBLISH_APPROVED.value,
+        }
+        last_result: dict = {"status": "not_found", "id": item_id}
+        for _ in range(max_steps):
+            record = await self._load_item(item_id)
+            if not record:
+                return last_result
+            fields = record.get("fields", {})
+            status = fields.get("status", "")
+            if status == DraftStatus.SCHEDULED.value:
+                if not _scheduled_at_is_due(fields.get("scheduled_at")):
+                    return {"status": "waiting", "current_state": status}
+            elif status not in autonomous:
+                return {"status": "waiting", "current_state": status}
+            last_result = await self.advance_item(item_id, reason="auto")
+        return {"status": "step_limit", "id": item_id, "last_result": last_result}
+
+    async def approve_topic(self, topic_id: str, operator_open_id: str = "") -> dict:
+        return await self._approve_checkpoint(
+            topic_id,
+            TopicStatus.AWAITING_APPROVAL.value,
+            TopicStatus.APPROVED.value,
+            operator_open_id,
+        )
+
+    async def approve_publish(self, content_id: str, operator_open_id: str = "") -> dict:
+        return await self._approve_checkpoint(
+            content_id,
+            DraftStatus.AWAITING_PUBLISH_APPROVAL.value,
+            DraftStatus.PUBLISH_APPROVED.value,
+            operator_open_id,
+        )
+
+    async def reject_item(self, item_id: str, expected_status: str, operator_open_id: str = "") -> dict:
+        record = await self._load_item(item_id)
+        if not record:
+            return {"status": "not_found", "id": item_id}
+        current = record.get("fields", {}).get("status", "")
+        if current != expected_status:
+            return {"status": "invalid_state", "id": item_id, "current_state": current}
+        await self._update_item_status(
+            record,
+            DraftStatus.REJECTED.value,
+            {
+                "reviewed_by": operator_open_id or "unknown",
+                "reviewed_at": _datetime_to_feishu_ms(datetime.now(timezone.utc)),
+            },
+        )
+        return {"status": "rejected", "id": item_id}
+
+    async def handle_card_action(self, action_value: dict, operator_open_id: str = "") -> dict:
+        """Own all AgentLoop card actions so the Feishu adapter stays transport-only."""
+        action = str(action_value.get("action", ""))
+        if action == "approve_topic":
+            topic_id = str(action_value.get("topic_id", ""))
+            result = await self.approve_topic(topic_id, operator_open_id)
+            self._start_after_approval(topic_id, result)
+            return result
+        if action == "reject_topic":
+            return await self.reject_item(
+                str(action_value.get("topic_id", "")),
+                TopicStatus.AWAITING_APPROVAL.value,
+                operator_open_id,
+            )
+        if action == "approve_publish":
+            content_id = str(action_value.get("content_id", ""))
+            result = await self.approve_publish(content_id, operator_open_id)
+            self._start_after_approval(content_id, result)
+            return result
+        if action == "reject_publish":
+            return await self.reject_item(
+                str(action_value.get("content_id", "")),
+                DraftStatus.AWAITING_PUBLISH_APPROVAL.value,
+                operator_open_id,
+            )
+        if action == "retry_publish":
+            content_id = str(action_value.get("content_id", ""))
+            record = await self._load_item(content_id)
+            if not record:
+                return {"status": "not_found", "id": content_id}
+            current = record.get("fields", {}).get("status", "")
+            if current != DraftStatus.FAILED.value:
+                return {"status": "invalid_state", "id": content_id, "current_state": current}
+            await self._update_item_status(
+                record,
+                DraftStatus.SCHEDULED.value,
+                {"scheduled_at": _datetime_to_feishu_ms(datetime.now(timezone.utc))},
+            )
+            asyncio.create_task(self.run_until_checkpoint(content_id))
+            return {"status": "accepted", "id": content_id, "action": action}
+        if action == "manual_takeover":
+            content_id = str(action_value.get("content_id", ""))
+            record = await self._load_item(content_id)
+            if not record:
+                return {"status": "not_found", "id": content_id}
+            await self._update_item_status(record, DraftStatus.CANCELLED.value)
+            return {"status": "manual_takeover", "id": content_id}
+        if action == "adopt_topic":
+            topic = str(action_value.get("topic_title", "")).strip()
+            try:
+                platform = Platform(str(action_value.get("platform", Platform.XHS.value)))
+            except ValueError:
+                return {"status": "error", "detail": "unknown platform"}
+            if not topic:
+                return {"status": "error", "detail": "missing topic_title"}
+            asyncio.create_task(self.create_content_from_topic(platform, topic))
+            return {"status": "accepted", "topic": topic, "platform": platform.value}
+        if action in {
+            "approve_all",
+            "approve_ai_image",
+            "reject_all",
+            "confirm_publish",
+            "regenerate_image",
+            "reject_regenerate",
+        }:
+            return {
+                "status": "deprecated_action",
+                "action": action,
+                "detail": "该卡片来自已停用的 WorkflowService 链路，请通过 /新建 重新生成。",
+            }
+        return {"status": "ignored", "action": action}
+
+    async def _approve_checkpoint(
+        self,
+        item_id: str,
+        expected_status: str,
+        approved_status: str,
+        operator_open_id: str,
+    ) -> dict:
+        if not item_id:
+            return {"status": "error", "detail": "missing item id"}
+        record = await self._load_item(item_id)
+        if not record:
+            return {"status": "not_found", "id": item_id}
+        current = record.get("fields", {}).get("status", "")
+        if current != expected_status:
+            return {"status": "invalid_state", "id": item_id, "current_state": current}
+        await self._update_item_status(
+            record,
+            approved_status,
+            {
+                "reviewed_by": operator_open_id or "unknown",
+                "reviewed_at": _datetime_to_feishu_ms(datetime.now(timezone.utc)),
+            },
+        )
+        return {"status": "accepted", "id": item_id, "next_state": approved_status}
+
+    def _start_after_approval(self, item_id: str, result: dict) -> None:
+        if result.get("status") == "accepted":
+            asyncio.create_task(self.run_until_checkpoint(item_id))
 
     # ------------------------------------------------------------------
     # Global tick (called by cron or /agent/tick endpoint)
@@ -71,7 +282,7 @@ class AgentLoop:
         """Main tick: plan if needed, advance due items, expire stale, weekly material."""
         results = {
             "planned": await self._run_planner_if_needed(),
-            "advanced": await self._advance_due_items(),
+            "advanced": await self.advance_due_items(),
             "expired": await self._expire_stale(),
             "weekly_material": await self._check_weekly_material_card(),
         }
@@ -154,7 +365,14 @@ class AgentLoop:
         fields = record.get("fields", {})
         topic = fields.get("topic", "")
         platforms_raw = fields.get("target_platforms", "xhs")
-        platforms = [Platform(p.strip()) for p in platforms_raw.split(",") if p.strip() in Platform.__members__.values()]
+        platforms = []
+        for raw_platform in str(platforms_raw).split(","):
+            try:
+                platforms.append(Platform(raw_platform.strip()))
+            except ValueError:
+                continue
+        if not platforms:
+            platforms = [Platform.XHS]
 
         drafts_created = []
         for platform in platforms:
@@ -167,11 +385,13 @@ class AgentLoop:
                 "status": DraftStatus.GENERATING.value,
                 "version": 1,
                 "revision_count": 0,
+                "chat_id": fields.get("chat_id", ""),
+                "created_at": _datetime_to_feishu_ms(datetime.now(timezone.utc)),
             })
             drafts_created.append(draft_id)
-            # Trigger generation immediately
-            await self._generate_draft(draft_id, platform, topic, fields)
+            await self.run_until_checkpoint(draft_id)
 
+        await self._update_item_status(record, TopicStatus.DISPATCHED.value)
         return {"action": "generated_drafts", "drafts": drafts_created}
 
     async def _handle_generating(self, record: dict) -> dict:
@@ -179,7 +399,7 @@ class AgentLoop:
         fields = record.get("fields", {})
         platform = Platform(fields.get("platform", "xhs"))
         topic = fields.get("topic", "")
-        await self._generate_draft(record.get("record_id", ""), platform, topic, fields)
+        await self._generate_draft(fields.get("content_id", ""), platform, topic, fields)
         return {"action": "generation_triggered"}
 
     async def _handle_critiquing(self, record: dict) -> dict:
@@ -194,12 +414,15 @@ class AgentLoop:
             content=_parse_json_field(fields.get("content_payload", "{}")),
             revision_count=int(fields.get("revision_count", 0)),
         )
+        if not draft.content.get("title") and draft.content.get("selected_title"):
+            draft.content["title"] = draft.content["selected_title"]
+        if not draft.content.get("body") and draft.content.get("body_md"):
+            draft.content["body"] = draft.content["body_md"]
 
         feedback = await self.critic.evaluate(draft)
 
         if feedback.decision == "pass":
             await self._update_item_status(record, DraftStatus.PASSED.value)
-            await self._send_publish_approval_card(record, draft)
         elif feedback.decision == "revise" and draft.revision_count < 3:
             await self._update_item_status(record, DraftStatus.REVISING.value, {
                 "revision_count": draft.revision_count + 1,
@@ -216,7 +439,7 @@ class AgentLoop:
         return {"action": "critiqued", "decision": feedback.decision, "score": feedback.scores.total}
 
     async def _handle_passed(self, record: dict) -> dict:
-        """Content passed critic → XHS goes to image compose, others to publish approval."""
+        """Compose and deliver platform-specific media after content review passes."""
         fields = record.get("fields", {})
         platform = fields.get("platform", "xhs")
 
@@ -224,10 +447,70 @@ class AgentLoop:
             await self._update_item_status(record, DraftStatus.COMPOSING_IMAGE.value)
             await self._compose_image(record)
             return {"action": "composing_image"}
-        else:
-            await self._send_publish_approval_card(record, None)
-            await self._update_item_status(record, DraftStatus.AWAITING_PUBLISH_APPROVAL.value)
-            return {"action": "awaiting_publish_approval"}
+        if platform == Platform.DOUYIN.value:
+            return await self._deliver_douyin_cards(record)
+        if platform == Platform.WECHAT.value:
+            return await self._deliver_wechat_article(record)
+        await self._update_item_status(record, DraftStatus.AWAITING_PUBLISH_APPROVAL.value)
+        await self._send_publish_approval_card(record, None)
+        return {"action": "awaiting_publish_approval"}
+
+    async def _deliver_douyin_cards(self, record: dict) -> dict:
+        """Generate ordered image cards and stop at manual Douyin upload."""
+        fields = record.get("fields", {})
+        content = _parse_json_field(fields.get("content_payload", "{}"))
+        content_id = fields.get("content_id", "")
+        result = await self.media_delivery.compose_douyin_cards(
+            content_id,
+            content,
+            chat_id=fields.get("chat_id", ""),
+            use_ai_image=True,
+        )
+        if not result:
+            await self._update_item_status(record, DraftStatus.FAILED.value)
+            return {"action": "douyin_card_delivery_failed"}
+        await self._update_item_status(
+            record,
+            DraftStatus.AWAITING_PUBLISH_APPROVAL.value,
+            {"image_result": _safe_json_str(result)},
+        )
+        return {"action": "douyin_cards_delivered", "card_count": len(result.get("card_paths", []))}
+
+    async def _deliver_wechat_article(self, record: dict) -> dict:
+        """Send the article, create labeled images, and attempt a WeChat draft."""
+        fields = record.get("fields", {})
+        content = _parse_json_field(fields.get("content_payload", "{}"))
+        content_id = fields.get("content_id", "")
+        chat_id = fields.get("chat_id") or self.settings.feishu_default_chat_id
+        title = content.get("selected_title") or content.get("title") or fields.get("topic", "")
+        if chat_id:
+            await self.notifier.send_card(
+                chat_id,
+                build_wechat_article_card(
+                    title=title,
+                    summary=str(content.get("summary", "")),
+                    body_md=str(content.get("body_md") or content.get("body") or ""),
+                    hashtags=[str(tag) for tag in content.get("hashtags", [])],
+                    content_id=content_id,
+                ),
+            )
+
+        result = await self.media_delivery.compose_wechat_package(
+            content_id,
+            content,
+            chat_id=chat_id,
+            use_ai_image=True,
+        )
+        await self._update_item_status(
+            record,
+            DraftStatus.AWAITING_PUBLISH_APPROVAL.value,
+            {"image_result": _safe_json_str(result)},
+        )
+        return {
+            "action": "wechat_article_delivered",
+            "draft_created": bool(result.get("draft_created")),
+            "image_count": len(result.get("assets", [])),
+        }
 
     async def _handle_composing_image(self, record: dict) -> dict:
         """Run image-compose skill for XHS cover/cards."""
@@ -240,6 +523,7 @@ class AgentLoop:
         fields = record.get("fields", {})
         content = _parse_json_field(fields.get("content_payload", "{}"))
         image_result = _parse_json_field(fields.get("image_result", "{}"))
+        image_paths = _image_paths(image_result)
 
         job = SkillJob(
             content_id=fields.get("content_id", ""),
@@ -247,15 +531,18 @@ class AgentLoop:
             title=content.get("title", content.get("selected_title", "")),
             body=content.get("body", ""),
             hashtags=content.get("hashtags", []),
-            cover_image=image_result.get("cover_path", ""),
+            cover_image=image_result.get("cover_path", image_result.get("image_path", "")),
             card_images=image_result.get("card_paths", []),
+            assets=[{"type": "image", "path": path} for path in image_paths],
         )
 
         try:
-            result = self.runner.run("xhs-publish-package", job)
+            result = await asyncio.to_thread(self.runner.run, "xhs-publish-package", job)
+            package_result = _result_data(result)
+            package_result["asset_paths"] = _package_asset_paths(package_result)
             await self.bitable.update_record("content", record["record_id"], {
                 "status": DraftStatus.AWAITING_PUBLISH_APPROVAL.value,
-                "package_result": _safe_json_str(result.get("data", {})),
+                "package_result": _safe_json_str(package_result),
             })
             await self._send_publish_approval_card(record, None)
         except Exception as e:
@@ -265,14 +552,21 @@ class AgentLoop:
         return {"action": "packaged"}
 
     async def _handle_publish_approved(self, record: dict) -> dict:
-        """Admin approved publish → schedule it."""
-        await self._update_item_status(record, DraftStatus.SCHEDULED.value)
+        """Admin approved publish → make it immediately eligible for upload."""
+        await self._update_item_status(
+            record,
+            DraftStatus.SCHEDULED.value,
+            {"scheduled_at": _datetime_to_feishu_ms(datetime.now(timezone.utc))},
+        )
         return {"action": "scheduled"}
 
     async def _handle_scheduled(self, record: dict) -> dict:
         """Scheduled content → auto-publish via social-auto-upload."""
         fields = record.get("fields", {})
         platform = fields.get("platform", "xhs")
+        if platform in {Platform.DOUYIN.value, Platform.WECHAT.value}:
+            await self._update_item_status(record, DraftStatus.AWAITING_PUBLISH_APPROVAL.value)
+            return {"action": "manual_delivery_only", "platform": platform}
         content = _parse_json_field(fields.get("content_payload", "{}"))
         package = _parse_json_field(fields.get("package_result", "{}"))
         image_result = _parse_json_field(fields.get("image_result", "{}"))
@@ -301,7 +595,7 @@ class AgentLoop:
         )
 
         await self._update_item_status(record, DraftStatus.PUBLISHING.value)
-        result = self.publisher.publish(payload)
+        result = await asyncio.to_thread(self.publisher.publish, payload)
 
         if result.success:
             await self._update_item_status(record, DraftStatus.PUBLISHED.value)
@@ -324,7 +618,7 @@ class AgentLoop:
                     return f.get("account_name", "")
         except Exception:
             pass
-        return None
+        return self.settings.social_auto_upload_default_account or None
 
     async def _notify_publish_failure(self, record: dict, error: str) -> None:
         """Send failure notification to admins via Feishu with retry option."""
@@ -363,7 +657,7 @@ class AgentLoop:
             job_id=f"JOB-{uuid4().hex[:8]}",
             platform=platform,
             topic=topic,
-            materials=_parse_json_field(fields.get("materials", "[]")),
+            materials=_parse_list_field(fields.get("materials", "[]")),
         )
 
         skill_name = {
@@ -373,9 +667,10 @@ class AgentLoop:
         }[platform]
 
         try:
-            result = self.runner.run(skill_name, job)
+            result = await asyncio.to_thread(self.runner.run, skill_name, job)
         except FileNotFoundError:
             result = dry_run_skill_result(job, skill_name)
+        content = _result_data(result)
 
         # Save generated content and move to critiquing
         try:
@@ -384,7 +679,7 @@ class AgentLoop:
                 if r.get("fields", {}).get("content_id") == draft_id:
                     await self.bitable.update_record("content", r["record_id"], {
                         "status": DraftStatus.CRITIQUING.value,
-                        "content_payload": _safe_json_str(result.get("data", {})),
+                        "content_payload": _safe_json_str(content),
                     })
                     break
         except Exception as e:
@@ -426,26 +721,38 @@ class AgentLoop:
         """Call image-compose skill, then advance to packaging."""
         fields = record.get("fields", {})
         content = _parse_json_field(fields.get("content_payload", "{}"))
-        title = content.get("title", content.get("selected_title", ""))
+        title = str(content.get("title") or content.get("selected_title") or "")
 
         job = SkillJob(
             content_id=fields.get("content_id", ""),
             job_id=f"JOB-{uuid4().hex[:8]}",
-            template_name="xhs-cover-01",
+            template_name="",
+            image_mode="ai_bg",
             variables={
-                "title": title[:20] if title else "untitled",
-                "subtitle": content.get("cover_text", ""),
-                "bg_color": "#FF6B6B",
-                "accent_color": "#FFFFFF",
+                "title": content.get("cover_text") or title[:24] or "校园主题精选",
+                "subtitle": title if content.get("cover_text") else "",
+                "brand_name": "校园新媒体",
+                "series_name": "本期精选",
+                "section_label": "校园主题精选",
+                "page_number": "01",
+                "page_label": "01 / 01",
+                "footer": "校园内容工作流",
+                "ai_prompt": content.get("cover_text") or title,
+                "visual_style": content.get("visual_style", "auto"),
+                "template_role": "cover",
             },
             output_size={"width": 1080, "height": 1350},
         )
 
         try:
-            result = self.runner.run("image-compose", job)
+            result = await asyncio.to_thread(self.runner.run, "image-compose", job)
+            image_result = _result_data(result)
+            if image_result.get("image_path") and not image_result.get("cover_path"):
+                image_result["cover_path"] = image_result["image_path"]
+            image_result.setdefault("card_paths", [])
             await self.bitable.update_record("content", record["record_id"], {
                 "status": DraftStatus.PACKAGING.value,
-                "image_result": _safe_json_str(result.get("data", {})),
+                "image_result": _safe_json_str(image_result),
             })
         except Exception as e:
             logger.error("Image compose failed for %s: %s", record.get("record_id"), e)
@@ -484,26 +791,24 @@ class AgentLoop:
         """Send final content for admin publish approval."""
         fields = record.get("fields", {})
         content = _parse_json_field(fields.get("content_payload", "{}"))
-        title = content.get("title", content.get("selected_title", fields.get("topic", "")))
+        title = content.get("title") or content.get("selected_title") or fields.get("topic", "")
+        image_result = _parse_json_field(fields.get("image_result", "{}"))
+        image_paths = _image_paths(image_result)
+        image_keys = []
+        for image_path in image_paths:
+            image_key = await self.notifier.upload_image(image_path)
+            if image_key:
+                image_keys.append(image_key)
 
-        card = {
-            "config": {"wide_screen_mode": True},
-            "header": {"template": "green", "title": {"tag": "plain_text", "content": "✅ 内容发布审批"}},
-            "elements": [
-                {"tag": "div", "text": {"tag": "lark_md", "content": (
-                    f"**标题**：{title}\n"
-                    f"**平台**：{fields.get('platform', '')}\n"
-                    f"**正文预览**：{str(content.get('body', ''))[:200]}..."
-                )}},
-                {"tag": "action", "actions": [
-                    {"tag": "button", "text": {"tag": "plain_text", "content": "发布"}, "type": "primary",
-                     "value": {"action": "approve_publish", "content_id": fields.get("content_id", "")}},
-                    {"tag": "button", "text": {"tag": "plain_text", "content": "打回修改"}, "type": "default",
-                     "value": {"action": "reject_publish", "content_id": fields.get("content_id", "")}},
-                ]},
-            ],
-        }
-        chat_id = self.settings.feishu_default_chat_id
+        card = build_publish_review_card(
+            content_id=fields.get("content_id", ""),
+            platform=fields.get("platform", ""),
+            title=title,
+            body=str(content.get("body", content.get("body_md", ""))),
+            hashtags=[str(tag) for tag in content.get("hashtags", [])],
+            image_keys=image_keys,
+        )
+        chat_id = fields.get("chat_id") or self.settings.feishu_default_chat_id
         if chat_id:
             await self.notifier.send_card(chat_id, card)
 
@@ -570,25 +875,70 @@ class AgentLoop:
     # Housekeeping
     # ------------------------------------------------------------------
 
-    async def _advance_due_items(self) -> int:
+    async def advance_due_items(self) -> int:
         """Find items that need advancement and process them."""
         advanced = 0
         try:
             records = await self.bitable.list_records("content")
             for r in records:
-                status = r.get("fields", {}).get("status", "")
+                fields = r.get("fields", {})
+                status = fields.get("status", "")
                 if status in (
+                    TopicStatus.APPROVED.value,
                     DraftStatus.GENERATING.value,
                     DraftStatus.CRITIQUING.value,
                     DraftStatus.PASSED.value,
                     DraftStatus.COMPOSING_IMAGE.value,
                     DraftStatus.PACKAGING.value,
+                    DraftStatus.PUBLISH_APPROVED.value,
+                ) or (
+                    status == DraftStatus.SCHEDULED.value
+                    and _scheduled_at_is_due(fields.get("scheduled_at"))
                 ):
-                    await self.advance_item(r.get("record_id", ""), reason="tick")
+                    item_id = fields.get("content_id") or r.get("record_id", "")
+                    await self.run_until_checkpoint(item_id)
                     advanced += 1
         except Exception as e:
             logger.warning("advance_due_items error: %s", e)
         return advanced
+
+    async def status_summary(self) -> dict:
+        try:
+            records = await self.bitable.list_records("content")
+            counts: dict[str, int] = {}
+            for record in records:
+                status = record.get("fields", {}).get("status", "unknown")
+                counts[status] = counts.get(status, 0) + 1
+            summary = "\n".join(f"- {status}: {count}" for status, count in sorted(counts.items())) or "暂无内容"
+            card = build_status_card("系统状态", summary)
+        except Exception:
+            card = build_status_card("系统状态", "多维表未配置，无法读取状态。")
+        return {"status": "ok", "card": card}
+
+    async def get_schedule(self) -> dict:
+        try:
+            records = await self.bitable.list_records("content")
+            items = []
+            for record in records:
+                fields = record.get("fields", {})
+                if fields.get("status") in {
+                    DraftStatus.AWAITING_PUBLISH_APPROVAL.value,
+                    DraftStatus.PUBLISH_APPROVED.value,
+                    DraftStatus.SCHEDULED.value,
+                    DraftStatus.PUBLISHING.value,
+                }:
+                    items.append(
+                        {
+                            "topic": fields.get("topic", ""),
+                            "platform": fields.get("platform", ""),
+                            "scheduled_at": fields.get("scheduled_at", "待定"),
+                            "status": fields.get("status", ""),
+                        }
+                    )
+            card = build_schedule_card(items, self.settings.feishu_bitable_app_token)
+        except Exception:
+            card = build_schedule_card([])
+        return {"status": "ok", "card": card}
 
     async def _expire_stale(self) -> int:
         """Expire topics/approvals that have been waiting too long."""
@@ -600,7 +950,8 @@ class AgentLoop:
                 fields = r.get("fields", {})
                 if fields.get("status") == TopicStatus.AWAITING_APPROVAL.value:
                     created = fields.get("created_at", "")
-                    if created and datetime.fromisoformat(str(created).replace("Z", "+00:00")) < cutoff:
+                    created_at = _parse_feishu_datetime(created)
+                    if created_at and created_at < cutoff:
                         await self.bitable.update_record("content", r["record_id"], {"status": TopicStatus.EXPIRED.value})
                         expired += 1
         except Exception as e:
@@ -626,7 +977,7 @@ class AgentLoop:
                 "target_platforms": ",".join(p.value for p in topic.target_platforms),
                 "status": TopicStatus.AWAITING_APPROVAL.value,
                 "key_points": "; ".join(topic.key_points),
-                "created_at": topic.created_at.isoformat(),
+                "created_at": _datetime_to_feishu_ms(topic.created_at),
             })
         except Exception as e:
             logger.error("Failed to save topic %s: %s", topic.topic_id, e)
@@ -649,6 +1000,7 @@ class AgentLoop:
             await self.bitable.update_record("content", record["record_id"], fields)
         except Exception as e:
             logger.error("Failed to update status for %s: %s", record.get("record_id"), e)
+            raise
 
 
 def _parse_json_field(raw) -> dict:
@@ -668,3 +1020,69 @@ def _safe_json_str(obj) -> str:
         return json.dumps(obj, ensure_ascii=False)
     except (TypeError, ValueError):
         return "{}"
+
+
+def _parse_list_field(raw) -> list:
+    if isinstance(raw, list):
+        return raw
+    try:
+        parsed = json.loads(str(raw))
+    except (json.JSONDecodeError, TypeError):
+        return []
+    return parsed if isinstance(parsed, list) else []
+
+
+def _result_data(result: dict) -> dict:
+    nested = result.get("data")
+    if isinstance(nested, dict):
+        return dict(nested)
+    return {
+        key: value
+        for key, value in result.items()
+        if key not in {"status", "timestamp", "generated_at"}
+    }
+
+
+def _image_paths(image_result: dict) -> list[str]:
+    cover = image_result.get("cover_path") or image_result.get("image_path") or ""
+    cards = image_result.get("card_paths") or image_result.get("image_paths") or []
+    paths = ([cover] if cover else []) + list(cards)
+    return [str(path) for path in paths if path]
+
+
+def _package_asset_paths(package_result: dict) -> list[str]:
+    package_path = package_result.get("publish_package_path")
+    if not package_path:
+        return []
+    assets_dir = Path(str(package_path)) / "assets"
+    if not assets_dir.exists():
+        return []
+    return [str(path) for path in sorted(assets_dir.iterdir()) if path.is_file() and path.suffix != ".missing"]
+
+
+def _scheduled_at_is_due(raw) -> bool:
+    due_at = _parse_feishu_datetime(raw)
+    if due_at is None:
+        return False
+    return due_at <= datetime.now(timezone.utc)
+
+
+def _datetime_to_feishu_ms(value: datetime) -> int:
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=timezone.utc)
+    return int(value.timestamp() * 1000)
+
+
+def _parse_feishu_datetime(raw) -> datetime | None:
+    if raw in (None, ""):
+        return None
+    if isinstance(raw, (int, float)):
+        value = float(raw)
+        if value > 10_000_000_000:
+            value /= 1000
+        return datetime.fromtimestamp(value, tz=timezone.utc)
+    try:
+        parsed = datetime.fromisoformat(str(raw).replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)

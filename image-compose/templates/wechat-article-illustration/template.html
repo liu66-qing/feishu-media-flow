@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  * { box-sizing: border-box; }
+  html, body { width: {{width}}px; height: {{height}}px; margin: 0; overflow: hidden; }
+  body {
+    --paper: {{bg_color}}; --accent: {{accent_color}}; --ink: #151513; --muted: #69645d;
+    font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif;
+    background: var(--paper); color: var(--ink);
+  }
+  .poster { position: relative; width: 100%; height: 100%; overflow: hidden; display: grid; grid-template-columns: 55% 45%; }
+  .copy { position: relative; z-index: 2; padding: 42px 42px 38px 54px; display: flex; flex-direction: column; }
+  .masthead { color: var(--accent); display: flex; align-items: center; gap: 10px; font-size: 17px; line-height: 1; font-weight: 850; }
+  .mark { width: 15px; height: 15px; background: var(--accent); }
+  .content { margin-top: 72px; }
+  .kicker { color: var(--muted); font-size: 17px; line-height: 1.2; font-weight: 800; }
+  .title { margin-top: 15px; max-height: 142px; overflow: hidden; font-size: 48px; line-height: 1.12; font-weight: 950; word-break: break-word; }
+  .rule { width: 102px; height: 4px; margin: 24px 0 19px; background: var(--accent); }
+  .subtitle { max-height: 82px; overflow: hidden; color: #4f4b45; font-size: 20px; line-height: 1.45; font-weight: 650; }
+  .footer { margin-top: auto; display: flex; justify-content: space-between; align-items: center; font-size: 16px; line-height: 1; font-weight: 800; }
+  .page { color: var(--accent); font-family: Consolas, monospace; }
+  .visual { position: relative; overflow: hidden; background: var(--accent); }
+  .art { position: absolute; inset: 0; background-image: url('{{bg_image}}'); background-size: cover; background-position: center; opacity: .76; filter: saturate(.88) contrast(1.04); }
+  .veil { position: absolute; inset: 0; background: rgba(118, 28, 16, .2); }
+  .number { position: absolute; right: -32px; bottom: -82px; color: rgba(255,250,240,.16); font: 950 330px/.8 Arial, sans-serif; }
+  .bars { position: absolute; left: 34px; top: 36px; width: 106px; height: 106px; border-left: 26px solid rgba(255,250,240,.2); border-bottom: 26px solid rgba(255,250,240,.2); }
+  .position { position: absolute; z-index: 2; right: 30px; top: 34px; max-width: 300px; color: #fffaf0; text-align: right; font-size: 16px; line-height: 1.35; font-weight: 800; }
+</style>
+</head>
+<body>
+  <main class="poster">
+    <section class="copy">
+      <header class="masthead"><span class="mark"></span>{{brand_name}} · {{series_name}}</header>
+      <div class="content">
+        <div class="kicker">{{section_label}}</div>
+        <div class="title" id="title">{{title}}</div>
+        <div class="rule"></div>
+        <div class="subtitle optional">{{subtitle}}</div>
+      </div>
+      <footer class="footer"><span>{{footer}}</span><span class="page">{{page_label}}</span></footer>
+    </section>
+    <section class="visual">
+      <div class="art"></div><div class="veil"></div><div class="bars"></div><div class="number">02</div>
+      <div class="position optional">{{highlight}}</div>
+    </section>
+  </main>
+<script>
+  document.querySelectorAll('.optional').forEach((el) => { if (!el.textContent.trim()) el.remove(); });
+  const title = document.getElementById('title'); let size = 48;
+  while (title.scrollHeight > 142 && size > 34) { size -= 2; title.style.fontSize = size + 'px'; }
+</script>
+</body>
+</html>

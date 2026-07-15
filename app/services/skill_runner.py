@@ -29,22 +29,32 @@ class SkillRunner:
         env["DATA_DIR"] = str(self.settings.data_dir)
         if self.settings.dashscope_api_key:
             env["DASHSCOPE_API_KEY"] = self.settings.dashscope_api_key
+        timeout = (
+            self.settings.image_skill_timeout_seconds
+            if skill_name == "image-compose"
+            else self.settings.skill_timeout_seconds
+        )
         completed = subprocess.run(
             [sys.executable, str(main_py), "--job-dir", str(job_dir)],
             cwd=str(skill_dir),
             env=env,
             text=True,
             capture_output=True,
-            timeout=self.settings.skill_timeout_seconds,
+            timeout=timeout,
             check=False,
         )
-        output_file = job_dir / f"{skill_name}.json"
+        output_candidates = [
+            job_dir / f"{skill_name}.json",
+            job_dir / f"{skill_name.replace('-', '_')}.json",
+        ]
+        output_file = next((path for path in output_candidates if path.exists()), output_candidates[0])
         if completed.returncode != 0:
             error_file = job_dir / "error.json"
             detail = error_file.read_text(encoding="utf-8") if error_file.exists() else (completed.stderr or completed.stdout or f"exit code {completed.returncode}")
             raise RuntimeError(f"Skill {skill_name} failed: {detail}")
         if not output_file.exists():
-            raise RuntimeError(f"Skill {skill_name} did not create {output_file.name}")
+            expected = " or ".join(path.name for path in output_candidates)
+            raise RuntimeError(f"Skill {skill_name} did not create {expected}")
         return json.loads(output_file.read_text(encoding="utf-8"))
 
 
@@ -55,4 +65,3 @@ def dry_run_skill_result(job: SkillJob, skill_name: str) -> dict:
         "content_id": job.content_id,
         "data": {"skill": skill_name, "topic": job.topic, "dry_run": True},
     }
-

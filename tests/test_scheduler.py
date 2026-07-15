@@ -24,5 +24,4 @@ async def test_scheduler_tick_triggers_due_records() -> None:
     store = FakeStore()
     triggered = await scheduler_tick(store, datetime(2026, 7, 5, 1, tzinfo=timezone.utc))
     assert triggered == ["rec_due"]
-    assert store.updated == [("content", "rec_due", {"status": "approved"})]
-
+    assert store.updated == [("content", "rec_due", {"status": "publishing"})]

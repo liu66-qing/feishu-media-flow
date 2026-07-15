@@ -1,3 +1,5 @@
+"""Legacy scheduler helpers; the application runtime now recovers via AgentLoop."""
+
 import json
 import logging
 from datetime import datetime, timezone

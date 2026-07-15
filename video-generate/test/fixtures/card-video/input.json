@@ -1,0 +1,49 @@
+{
+  "content_id": "CNT-DOUYIN-CARD-001",
+  "job_id": "JOB-DOUYIN-CARD-001",
+  "platform": "douyin",
+  "topic": "社团招新现场如何提高转化",
+  "selected_title": "招新现场别只会发传单",
+  "cover_lines": ["招新现场", "别只会发传单"],
+  "image_mode": "template",
+  "variables": {
+    "brand_name": "校园新媒体",
+    "series_name": "本周精选",
+    "footer": "大学生社团内容实验室",
+    "accent_color": "#C94F32",
+    "paper_color": "#F7F4EE"
+  },
+  "cards": [
+    {
+      "kind": "detail",
+      "section_label": "先看问题",
+      "title": "为什么没人愿意停",
+      "body": "桌布、易拉宝和二维码都有了，新生还是匆匆走过。问题不是宣传不够，而是没有停留理由。",
+      "highlight": "先设计停留，再设计报名。"
+    },
+    {
+      "kind": "detail",
+      "section_label": "方法一",
+      "title": "把展示改成体验",
+      "body": "留出一小块体验区，让老成员演示社团最有代表性的活动。新生先参与，再了解。",
+      "highlight": "动态体验比堆满宣传物更有效。"
+    },
+    {
+      "kind": "detail",
+      "section_label": "方法二",
+      "title": "给出一个明确钩子",
+      "body": "不要只问要不要了解社团。换成一个具体问题，让对方知道停下来能获得什么。",
+      "highlight": "具体收益，才会触发好奇心。"
+    },
+    {
+      "kind": "summary",
+      "section_label": "快速回顾",
+      "title": "最后记住这三点",
+      "body": "01 先创造停留理由\n02 用体验代替介绍\n03 用具体问题开启交流",
+      "highlight": "让新生愿意停下来，转化才真正开始。"
+    }
+  ],
+  "body": "社团招新现场别只会发传单，先创造停留理由，再用体验和具体问题开启交流。",
+  "hashtags": ["#社团招新", "#大学生活", "#校园活动"],
+  "output_size": {"width": 1080, "height": 1350}
+}

@@ -128,7 +128,7 @@ class FeishuNotifier:
             return {"status": "error", "detail": str(e)}
 
     async def send_image_card(self, chat_id: str, image_key: str, title: str, content_id: str) -> dict[str, Any]:
-        """Send a rich card with embedded image and approve/reject buttons."""
+        """Send a legacy WorkflowService image card kept for migration only."""
         card = {
             "config": {"wide_screen_mode": True},
             "header": {"template": "green", "title": {"tag": "plain_text", "content": f"🎨 封面图待确认：{title}"}},

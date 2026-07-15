@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  * { box-sizing: border-box; }
+  html, body { width: {{width}}px; height: {{height}}px; margin: 0; overflow: hidden; }
+  body {
+    --accent: {{accent_color}};
+    font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif;
+    background: var(--accent);
+    color: #fffaf0;
+  }
+  .poster { position: relative; width: 100%; height: 100%; overflow: hidden; isolation: isolate; }
+  .art {
+    position: absolute; inset: 0;
+    background-image: url('{{bg_image}}');
+    background-size: cover; background-position: center 42%;
+    opacity: .42; filter: saturate(.82) contrast(1.08);
+  }
+  .shade { position: absolute; inset: 0; background: rgba(118, 28, 16, .58); }
+  .ghost { position: absolute; right: -24px; bottom: -112px; color: rgba(255,250,240,.09); font: 950 410px/.8 Arial, sans-serif; }
+  .frame { position: relative; z-index: 2; height: 100%; padding: 42px 54px 38px; display: flex; flex-direction: column; }
+  .masthead { display: flex; justify-content: space-between; align-items: center; font-size: 18px; line-height: 1; font-weight: 850; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .mark { width: 16px; height: 16px; background: #fffaf0; }
+  .page { font-family: Consolas, monospace; opacity: .78; }
+  .content { margin-top: 66px; width: 710px; }
+  .kicker { margin-bottom: 18px; font-size: 19px; line-height: 1.2; font-weight: 800; opacity: .9; }
+  .title { max-height: 172px; overflow: hidden; white-space: pre-line; word-break: break-word; font-size: 54px; line-height: 1.12; font-weight: 950; }
+  .rule { width: 98px; height: 4px; margin: 22px 0 18px; background: #fffaf0; }
+  .subtitle { width: 680px; max-height: 62px; overflow: hidden; font-size: 21px; line-height: 1.45; font-weight: 650; opacity: .9; }
+  .footer { margin-top: auto; display: flex; justify-content: space-between; align-items: end; font-size: 17px; line-height: 1; font-weight: 750; }
+</style>
+</head>
+<body>
+  <main class="poster">
+    <div class="art"></div><div class="shade"></div><div class="ghost">01</div>
+    <div class="frame">
+      <header class="masthead"><span class="brand"><span class="mark"></span>{{brand_name}} · {{series_name}}</span><span class="page">{{page_label}}</span></header>
+      <section class="content">
+        <div class="kicker">{{section_label}}</div>
+        <div class="title" id="title">{{title}}</div>
+        <div class="rule"></div>
+        <div class="subtitle optional">{{subtitle}}</div>
+      </section>
+      <footer class="footer"><span>{{footer}}</span><span>900 × 500</span></footer>
+    </div>
+  </main>
+<script>
+  document.querySelectorAll('.optional').forEach((el) => { if (!el.textContent.trim()) el.remove(); });
+  const title = document.getElementById('title'); let size = 54;
+  while (title.scrollHeight > 172 && size > 38) { size -= 2; title.style.fontSize = size + 'px'; }
+</script>
+</body>
+</html>

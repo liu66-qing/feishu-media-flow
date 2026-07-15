@@ -22,6 +22,7 @@ class TopicStatus(StrEnum):
     PROPOSED = "proposed"
     AWAITING_APPROVAL = "awaiting_topic_approval"
     APPROVED = "approved"
+    DISPATCHED = "dispatched"
     REJECTED = "rejected"
     EXPIRED = "expired"
     CANCELLED = "cancelled"

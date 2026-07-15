@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  * { box-sizing: border-box; }
+  html, body { width: {{width}}px; height: {{height}}px; margin: 0; overflow: hidden; }
+  body { --paper: {{bg_color}}; --accent: {{accent_color}}; --ink: #151513; font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif; background: var(--paper); color: var(--ink); }
+  .poster { position: relative; width: 100%; height: 100%; overflow: hidden; padding: 78px 88px 72px; display: flex; flex-direction: column; }
+  .ghost { position: absolute; right: -55px; top: 190px; font: 950 600px/.8 Arial, sans-serif; color: rgba(201,79,50,.06); }
+  .masthead { display: flex; align-items: center; gap: 14px; color: var(--accent); font: 800 26px/1.2 Consolas, "Microsoft YaHei", sans-serif; }
+  .mark { width: 20px; height: 20px; background: var(--accent); }
+  .content { position: relative; margin-top: clamp(110px, 14vh, 250px); }
+  .title { margin: 0; font-size: 86px; line-height: 1.08; font-weight: 950; max-width: 860px; }
+  .subtitle { margin-top: 28px; font-size: 38px; line-height: 1.4; color: #625d56; font-weight: 750; white-space: pre-line; }
+  .rule { width: 160px; height: 5px; background: var(--accent); margin: 48px 0; }
+  .body { font-size: 42px; line-height: 1.68; font-weight: 850; white-space: pre-line; max-width: 850px; max-height: 680px; overflow: hidden; }
+  .closing { margin-top: 42px; color: var(--accent); font-size: 34px; line-height: 1.45; font-weight: 850; white-space: pre-line; }
+  .footer { margin-top: auto; display: flex; justify-content: space-between; font-size: 24px; font-weight: 800; }
+</style>
+</head>
+<body>
+  <main class="poster">
+    <div class="ghost">{{page_number}}</div>
+    <header class="masthead"><span class="mark"></span>{{brand_name}} · {{series_name}}</header>
+    <section class="content">
+      <h1 class="title">{{title}}</h1>
+      <div class="subtitle optional">{{subtitle}}</div>
+      <div class="rule"></div>
+      <div class="body" id="body">{{body}}</div>
+      <div class="closing optional">{{highlight}}</div>
+    </section>
+    <footer class="footer"><span>{{footer}}</span><span>{{page_label}}</span></footer>
+  </main>
+<script>
+  document.querySelectorAll('.optional').forEach((el) => { if (!el.textContent.trim()) el.remove(); });
+  const body = document.getElementById('body'); let size = 42; while (body.scrollHeight > 680 && size > 29) { size -= 2; body.style.fontSize = size + 'px'; }
+</script>
+</body>
+</html>

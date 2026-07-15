@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  * { box-sizing: border-box; }
+  html, body { width: {{width}}px; height: {{height}}px; margin: 0; overflow: hidden; }
+  body {
+    --paper: {{bg_color}}; --accent: {{accent_color}}; --ink: #151513; --muted: #69645d; --blue: #2e78ad;
+    font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif;
+    background: var(--paper); color: var(--ink);
+  }
+  .poster { position: relative; width: 100%; height: 100%; overflow: hidden; padding: 78px 88px 72px; display: flex; flex-direction: column; }
+  .ghost { position: absolute; right: -30px; top: 55px; font: 950 510px/.8 Arial, sans-serif; color: rgba(201,79,50,.07); }
+  .shape { position: absolute; left: -80px; bottom: 70px; width: 430px; height: 280px; background: rgba(201,79,50,.045); transform: rotate(-16deg); }
+  .masthead { position: relative; display: flex; justify-content: space-between; color: var(--accent); font: 800 26px/1.2 Consolas, "Microsoft YaHei", sans-serif; }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .mark { width: 20px; height: 20px; background: var(--accent); }
+  .page { color: var(--muted); }
+  .content { position: relative; margin-top: clamp(120px, 14vh, 250px); max-width: 900px; }
+  .title { margin: 0; font-size: 68px; line-height: 1.12; font-weight: 950; max-height: 225px; overflow: hidden; word-break: break-word; }
+  .metrics { margin-top: 28px; display: flex; gap: 16px; align-items: center; }
+  .metric { padding: 14px 25px; border-radius: 999px; font: 800 26px/1 Consolas, "Microsoft YaHei", sans-serif; background: white; }
+  .metric.value { background: var(--accent); color: white; }
+  .rule { width: 160px; height: 5px; margin: 42px 0 34px; background: var(--accent); }
+  .section { color: var(--muted); font-size: 25px; line-height: 1.2; font-weight: 800; margin-bottom: 18px; }
+  .body { font-size: 40px; line-height: 1.48; font-weight: 760; white-space: pre-line; max-height: 450px; overflow: hidden; }
+  .highlight { margin-top: 34px; border-left: 6px solid var(--accent); padding: 4px 0 4px 28px; }
+  .highlight-label { color: var(--accent); font-size: 24px; font-weight: 850; margin-bottom: 10px; }
+  .highlight-text { font-size: 36px; line-height: 1.43; font-weight: 850; white-space: pre-line; max-height: 230px; overflow: hidden; }
+  .footer { position: relative; margin-top: auto; display: flex; justify-content: space-between; align-items: center; font-size: 24px; font-weight: 800; }
+  .footer-dot { width: 15px; height: 15px; border-radius: 50%; background: var(--blue); display: inline-block; margin-right: 12px; }
+</style>
+</head>
+<body>
+  <main class="poster">
+    <div class="ghost">{{page_number}}</div><div class="shape"></div>
+    <header class="masthead"><span class="brand"><span class="mark"></span>{{brand_name}} · {{series_name}}</span><span class="page">{{page_label}}</span></header>
+    <section class="content">
+      <h1 class="title" id="title">{{title}}</h1>
+      <div class="metrics optional"><span class="metric">{{metric_label}}</span><span class="metric value">{{metric_value}}</span></div>
+      <div class="rule"></div>
+      <div class="section">{{section_label}}</div>
+      <div class="body" id="body">{{body}}</div>
+      <aside class="highlight optional"><div class="highlight-label">亮点</div><div class="highlight-text" id="highlight">{{highlight}}</div></aside>
+    </section>
+    <footer class="footer"><span><span class="footer-dot"></span>{{footer}}</span><span>{{page_label}}</span></footer>
+  </main>
+<script>
+  document.querySelectorAll('.optional').forEach((el) => { if (!el.textContent.trim()) el.remove(); });
+  function fit(id, maxHeight, start, min) { const el = document.getElementById(id); let size = start; while (el && el.scrollHeight > maxHeight && size > min) { size -= 2; el.style.fontSize = size + 'px'; } }
+  fit('title', 225, 68, 48); fit('body', 450, 40, 28); fit('highlight', 230, 36, 27);
+</script>
+</body>
+</html>

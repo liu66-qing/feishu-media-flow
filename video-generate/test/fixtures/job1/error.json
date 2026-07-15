@@ -1,5 +1,0 @@
-{
-  "status": "error",
-  "generated_at": "2026-07-13T13:09:50Z",
-  "error": "503 Server Error: Service Unavailable for url: http://localhost:8080/api/video/generate"
-}

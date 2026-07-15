@@ -1,1 +1,1 @@
-requests
+-r ../image-compose/requirements.txt

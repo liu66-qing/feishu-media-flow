@@ -24,6 +24,11 @@ SYSTEM_PROMPT = (
     "- 封面大字：2-4行，每行3-7字\n"
     "- 标签：3-6个\n"
     "- 标题：口语化，有悬念或冲突感\n\n"
+    "## 卡片约束\n"
+    "- 封面外生成4-7张有序图文卡片，最后一张为summary\n"
+    "- 卡片只包含kind、section_label、title、body、highlight\n"
+    "- 不生成配音、时长、视频分镜或素材下载建议\n"
+    "- 不要求真人出镜、自然风景、实拍视频、绿幕、手机截图或外部图库\n\n"
     "## 风格要求\n"
     "- 开头必须有真实场景代入\n"
     "- 结尾有编号建议（3-5条）\n"
@@ -156,6 +161,28 @@ def list_of_strings(value: Any) -> list[str]:
     return [str(item).strip() for item in value if str(item).strip()]
 
 
+def normalize_cards(value: Any) -> list[dict[str, Any]]:
+    if not isinstance(value, list):
+        return []
+    cards: list[dict[str, Any]] = []
+    for index, raw in enumerate(value[:7], start=1):
+        if not isinstance(raw, dict):
+            continue
+        kind = str(raw.get("kind") or "detail").strip().lower()
+        if kind not in {"detail", "summary"}:
+            kind = "detail"
+        cards.append({
+            "kind": kind,
+            "section_label": str(raw.get("section_label") or f"要点 {index}").strip()[:20],
+            "title": str(raw.get("title") or "核心要点").strip()[:32],
+            "body": str(raw.get("body") or "").strip()[:180],
+            "highlight": str(raw.get("highlight") or "").strip()[:80],
+        })
+    if cards:
+        cards[-1]["kind"] = "summary"
+    return cards
+
+
 def normalize_final(job: dict[str, Any], context: dict[str, Any]) -> dict[str, Any]:
     review = context["step4_review"]
     final = review.get("final") if isinstance(review.get("final"), dict) else review
@@ -163,6 +190,7 @@ def normalize_final(job: dict[str, Any], context: dict[str, Any]) -> dict[str, A
     hashtags = list_of_strings(final.get("hashtags") or context["step3_body"].get("hashtags"))
     body = str(final.get("body") or context["step3_body"].get("body") or "").strip()
     cover_lines = list_of_strings(final.get("cover_lines") or context["step2_titles"].get("cover_lines"))
+    cards = normalize_cards(final.get("cards") or context["step3_body"].get("cards"))
 
     return {
         "content_id": job["content_id"],
@@ -173,6 +201,7 @@ def normalize_final(job: dict[str, Any], context: dict[str, Any]) -> dict[str, A
         "hashtags": hashtags[:6],
         "cover_lines": cover_lines[:4],
         "cover_text": " ".join(cover_lines[:4])[:20] if cover_lines else "",
+        "cards": cards,
         "risk_notes": list_of_strings(final.get("risk_notes")),
     }
 
@@ -190,6 +219,13 @@ def validate_output(result: dict[str, Any]) -> None:
         raise PipelineError("all hashtags must start with #")
     if not 1 <= len(result["cover_lines"]) <= 5:
         raise PipelineError(f"cover_lines must have 1-5 items, got {len(result['cover_lines'])}")
+    if not 4 <= len(result["cards"]) <= 7:
+        raise PipelineError(f"cards must contain 4-7 items, got {len(result['cards'])}")
+    for index, card in enumerate(result["cards"], start=1):
+        if not card["title"] or not card["body"]:
+            raise PipelineError(f"card {index} must contain title and body")
+    if result["cards"][-1]["kind"] != "summary":
+        raise PipelineError("the last card must be a summary card")
 
 
 def run(job_dir: Path) -> int:

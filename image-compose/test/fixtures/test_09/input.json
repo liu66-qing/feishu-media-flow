@@ -1,0 +1,22 @@
+{
+  "content_id": "CNT-CAMPUS-CARD-001",
+  "job_id": "JOB-CAMPUS-CARD-001",
+  "template_name": "campus-poster-card",
+  "image_mode": "template",
+  "variables": {
+    "brand_name": "校园新媒体",
+    "series_name": "本周精选",
+    "section_label": "先看问题",
+    "title": "为什么你的摊位没人停",
+    "body": "桌布、易拉宝、报名二维码都准备了，路过的新生却只看一眼。\n\n问题不是宣传不够，而是现场没有一个值得停下来的理由。",
+    "highlight": "先设计停留，再设计报名。",
+    "metric_label": "校园运营",
+    "metric_value": "要点 01",
+    "page_number": "02",
+    "page_label": "02 / 06",
+    "footer": "大学生社团内容实验室",
+    "bg_color": "#F7F4EE",
+    "accent_color": "#C94F32"
+  },
+  "output_size": {"width": 1080, "height": 1350}
+}

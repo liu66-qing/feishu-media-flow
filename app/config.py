@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     app_env: str = "dev"
     app_base_url: str = "http://127.0.0.1:8000"
     data_dir: Path = Path(".data")
+    agent_recovery_enabled: bool = True
 
     feishu_app_id: str = ""
     feishu_app_secret: str = ""
@@ -28,6 +29,7 @@ class Settings(BaseSettings):
 
     skill_root: Path = Path(".")
     skill_timeout_seconds: int = Field(default=120, ge=1)
+    image_skill_timeout_seconds: int = Field(default=300, ge=60)
 
     wechat_app_id: str = ""
     wechat_app_secret: str = ""
@@ -36,6 +38,7 @@ class Settings(BaseSettings):
     llm_base_url: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"
     llm_model: str = "qwen-plus"
     dashscope_api_key: str = ""
+    social_auto_upload_default_account: str = "default"
 
     @property
     def admin_open_ids(self) -> list[str]:

@@ -1,8 +1,8 @@
-# image-compose - 小红书封面/卡片图片合成
+# image-compose - 小红书/抖音卡片图片合成
 
 ## 功能定位
 
-根据模板和变量合成小红书封面图、内容卡片，输出 1080x1350 像素的 PNG 图片。支持两种生成模式：
+根据主题自动选择视觉系统并合成小红书、抖音封面图和内容卡片，默认输出 1080x1350 像素的 PNG 图片。支持两种生成模式：
 - **template 模式**（默认）：使用 HTML+Playwright 模板合成，速度快、零成本
 - **ai_bg 模式**：调用 Qwen-Image-2.0 AI 模型生成氛围感背景图，再通过 HTML+Playwright 叠上标题文字，视觉效果更佳
 
@@ -24,8 +24,12 @@
 |--------|------|------|---------|
 | `xhs-cover-01` | 封面 | 1080x1350 | 简约文字型：纯色背景 + 居中大标题 + 副标题 |
 | `xhs-cover-02` | 封面 | 1080x1350 | 卡片型：白色卡片浮于彩色背景上，文字在卡片内 |
-| `xhs-cover-03` | 封面 | 1080x1350 | 图文混排型：支持背景图 + 半透明遮罩 + 文字（ai_bg 模式自动使用此模板） |
+| `xhs-cover-03` | 封面 | 1080x1350 | 旧版图文混排型：支持背景图 + 半透明遮罩 + 文字 |
 | `xhs-card-01` | 内容卡片 | 1080x1350 | 通用内容卡片：适合展示正文要点、金句 |
+| `campus-poster-cover/card/summary` | 封面/正文/总结 | 1080x1350 | 校园编辑海报：适合招新、报名、通知、活动、清单和流程 |
+| `campus-comic-cover/card/summary` | 封面/正文/总结 | 1080x1350 | 极简校园手绘：白底、粗黑线、亮蓝强调，适合问答、对比、科普、复盘和观点 |
+
+未指定 `template_name` 时，系统根据主题选择完整模板组，同一组卡片不会混用两套视觉系统。
 
 ## 输入格式
 
@@ -36,12 +40,12 @@
   "content_id": "CNT-20260705-001",
   "job_id": "JOB-20260705-001",
   "image_mode": "template",
-  "template_name": "xhs-cover-01",
+  "template_name": "",
   "variables": {
     "title": "招新别只会摆摊",
     "subtitle": "3个方法翻倍转化率",
-    "bg_color": "#FF6B6B",
-    "accent_color": "#FFFFFF"
+    "visual_style": "auto",
+    "template_role": "cover"
   },
   "output_size": {
     "width": 1080,
@@ -57,12 +61,13 @@
   "content_id": "CNT-20260705-001",
   "job_id": "JOB-20260705-001",
   "image_mode": "ai_bg",
-  "template_name": "xhs-cover-01",
+  "template_name": "",
   "variables": {
     "title": "掌控情绪的人才能掌控人生",
     "subtitle": "5个心理学技巧",
-    "accent_color": "#FFFFFF",
-    "ai_prompt": "神秘宇宙星空背景，深蓝色调，星云，银河，壮观，无文字"
+    "visual_style": "comic",
+    "template_role": "cover",
+    "ai_prompt": "大学生在校园 AI 展台交流和提问，极简手绘海报，无文字"
   },
   "output_size": {
     "width": 1080,
@@ -71,13 +76,13 @@
 }
 ```
 
-**注意**：`ai_bg` 模式会自动使用 `xhs-cover-03` 模板，忽略 `template_name` 字段。AI 生成的背景图保存到 `{job_dir}/output/ai_bg.png`。
+**注意**：`ai_bg` 模式保留主题选中的模板。AI 生成的插画或背景保存到 `{job_dir}/output/ai_bg.png`；调用失败时继续使用所选模板的内置视觉，不会中断出图。
 
 ### 顶层字段说明
 
 | 字段 | 必填 | 默认值 | 说明 |
 |------|------|--------|------|
-| `template_name` | template模式必填 | - | 模板名：xhs-cover-01/02/03, xhs-card-01 |
+| `template_name` | 否 | `""` | 留空时按主题自动选择；传具体模板名时固定使用该模板 |
 | `image_mode` | 否 | `"template"` | 生成模式：`"template"`（模板合成）或 `"ai_bg"`（AI生成背景+叠字） |
 | `content_id` | 否 | "" | 内容 ID |
 | `job_id` | 否 | "" | 任务 ID |
@@ -94,6 +99,9 @@
 | `accent_color` | 否 | "#000000" | 文字强调色 |
 | `bg_image` | 否 | "" | 自定义背景图片路径（仅 xhs-cover-03 使用，ai_bg 模式自动设置） |
 | `ai_prompt` | 否 | "" | AI 生成背景图的自定义 prompt；不传则自动根据 title/subtitle 拼接 |
+| `visual_style` | 否 | `"auto"` | `auto`、`comic` 或 `editorial`；显式值可覆盖主题判断 |
+| `template_role` | 否 | `"cover"` | `cover`、`card` 或 `summary` |
+| `illustration_variant` | 否 | 自动判断 | 漫画正文构图：`idea`、`explain`、`compare`、`dialogue`、`group` |
 
 ## AI 自动降级策略
 
@@ -111,14 +119,7 @@
 
 ## 自动 Prompt 拼接规则
 
-不传 `ai_prompt` 时，自动拼接 prompt：
-
-```
-小红书封面背景图，{title}，氛围感摄影风格，无文字，无水印，高质量，竖构图，主题：{subtitle}
-```
-
-- 只有 subtitle 非空时才追加"，主题：{subtitle}"
-- 建议传入自定义 ai_prompt 以获得更精确的背景效果
+无论是否传入自定义 `ai_prompt`，系统都会追加硬性约束：角色只能是 18–24 岁中国大学生，场景只能是中国大学校园，禁止职场人士、儿童、游客、纯自然风景、网红棚拍、文字、水印和品牌标识。漫画模板会额外约束白底、粗黑线、亮蓝强调和对应的情景构图。
 
 ## 环境配置
 
@@ -145,6 +146,8 @@ LLM_MODEL=qwen-image-2.0-pro-2026-06-22
     "width": 1080,
     "height": 1350,
     "template_used": "xhs-cover-03",
+    "visual_style_used": "comic",
+    "illustration_variant": "dialogue",
     "image_mode_used": "ai_bg",
     "ai_fallback_reason": null,
     "ai_prompt_used": "小红书封面背景图，掌控情绪..."
@@ -187,6 +190,8 @@ LLM_MODEL=qwen-image-2.0-pro-2026-06-22
 | `width` | int | 图片宽度（像素） |
 | `height` | int | 图片高度（像素） |
 | `template_used` | string | 实际使用的模板名 |
+| `visual_style_used` | string | 实际使用的视觉系统：`comic`、`editorial` 或 `legacy_scene` |
+| `illustration_variant` | string | 实际使用的漫画构图变体 |
 | `image_mode_used` | string | 实际使用的模式：`"template"` 或 `"ai_bg"` |
 | `ai_fallback_reason` | string/null | AI 降级原因，成功时为 null |
 | `ai_prompt_used` | string/null | 实际发送给 AI 的 prompt，template 模式为 null |
@@ -204,7 +209,7 @@ LLM_MODEL=qwen-image-2.0-pro-2026-06-22
 - 留白合理（文字区不超过画面 60%）
 - 字体层级分明（标题 > 副标题）
 - 参考真实小红书爆款封面风格，不能像 Word 艺术字
-- AI 背景图应为竖构图氛围感摄影风格，无乱码文字
+- AI 图片必须符合中国大学校园与大学生身份约束，无乱码文字、水印或品牌标识
 
 ## 运行方式
 

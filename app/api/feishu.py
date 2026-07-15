@@ -2,10 +2,10 @@ from fastapi import APIRouter, Header, HTTPException, Request
 
 from app.config import get_settings
 from app.models import Platform
+from app.services.agent_loop import AgentLoop
 from app.services.commands import parse_command
 from app.services.feishu_security import verify_event_token, verify_webhook_signature
 from app.services.idempotency import IdempotencyStore
-from app.services.workflow import WorkflowService
 
 router = APIRouter()
 
@@ -43,19 +43,16 @@ async def feishu_webhook(
         return {"status": "duplicate", "event_id": event_id}
 
     event_type = header.get("event_type", "")
-    workflow = WorkflowService(settings)
+    agent = AgentLoop(settings)
     if "im.message.receive" in event_type:
-        return await _handle_message(payload.get("event", {}), workflow)
+        return await _handle_message(payload.get("event", {}), agent)
     if "card.action.trigger" in event_type or payload.get("type") == "card_action":
-        return await _handle_card_action(payload.get("event", payload), workflow)
+        return await _handle_card_action(payload.get("event", payload), agent)
     return {"status": "ignored", "event_type": event_type}
 
 
-async def _handle_message(event: dict, workflow: WorkflowService) -> dict:
-    from app.services.notifier import FeishuNotifier
-
-    settings = get_settings()
-    notifier = FeishuNotifier(settings)
+async def _handle_message(event: dict, agent: AgentLoop) -> dict:
+    notifier = agent.notifier
     message = event.get("message", {})
     message_id = message.get("message_id", "")
     chat_id = message.get("chat_id", "")
@@ -66,7 +63,7 @@ async def _handle_message(event: dict, workflow: WorkflowService) -> dict:
         return {"status": "ignored", "reason": "not a command"}
 
     if command.name in {"状态", "status"}:
-        result = await workflow.status_summary()
+        result = await agent.status_summary()
         card = result.get("card")
         if card and chat_id:
             await notifier.send_card(chat_id, card)
@@ -75,7 +72,7 @@ async def _handle_message(event: dict, workflow: WorkflowService) -> dict:
         return result
 
     if command.name in {"排期", "schedule"}:
-        result = await workflow.get_schedule()
+        result = await agent.get_schedule()
         card = result.get("card")
         if card and chat_id:
             await notifier.send_card(chat_id, card)
@@ -97,8 +94,14 @@ async def _handle_message(event: dict, workflow: WorkflowService) -> dict:
 
         async def _run_generation() -> None:
             try:
-                await workflow.create_content_from_topic(platform, topic, chat_id=chat_id)
-                await notifier.send_text(chat_id, f"✅ 内容生成完成：{topic}")
+                await agent.create_content_from_topic(platform, topic, chat_id=chat_id)
+                if platform == Platform.DOUYIN:
+                    message = f"抖音图文卡片已生成，请按卡片顺序手动上传：{topic}"
+                elif platform == Platform.WECHAT:
+                    message = f"公众号文章与配图已生成，草稿结果和插图位置已发送：{topic}"
+                else:
+                    message = f"内容与配图已生成，请在审批卡片中确认发布：{topic}"
+                await notifier.send_text(chat_id, message)
             except Exception as e:
                 await notifier.send_text(chat_id, f"❌ 生成失败：{e}")
 
@@ -110,99 +113,12 @@ async def _handle_message(event: dict, workflow: WorkflowService) -> dict:
     return {"status": "ignored", "reason": f"unknown command {command.name}"}
 
 
-async def _handle_card_action(event: dict, workflow: WorkflowService) -> dict:
-    import json
-
+async def _handle_card_action(event: dict, agent: AgentLoop) -> dict:
     action_value = event.get("action", {}).get("value", {}) or event.get("action_value", {})
     operator = event.get("operator", {}).get("open_id", "")
-    action = action_value.get("action")
-    raw_ids = action_value.get("content_ids", [])
-    # value may be double-encoded JSON string from card button
-    if isinstance(raw_ids, str):
-        content_ids = json.loads(raw_ids)
-    else:
-        content_ids = raw_ids
-    if isinstance(content_ids, str):
-        content_ids = [content_ids]
-
-    # Legacy bulk approve
-    if action == "approve_all":
-        return await workflow.approve(content_ids, operator)
-
-    # Approve with AI-generated background image
-    if action == "approve_ai_image":
-        return await workflow.approve(content_ids, operator, use_ai_image=True)
-
-    # Agent loop: topic approval
-    if action == "approve_topic":
-        from app.services.agent_loop import AgentLoop
-        settings = get_settings()
-        agent = AgentLoop(settings)
-        topic_id = action_value.get("topic_id", "")
-        return await agent.advance_item(topic_id, reason="topic_approved")
-
-    if action == "reject_topic":
-        from app.services.agent_loop import AgentLoop
-        settings = get_settings()
-        agent = AgentLoop(settings)
-        topic_id = action_value.get("topic_id", "")
-        # Mark as rejected
-        from app.services.bitable import BitableClient
-        bitable = BitableClient(settings)
-        try:
-            records = await bitable.list_records("content")
-            for r in records:
-                if r.get("fields", {}).get("content_id") == topic_id:
-                    await bitable.update_record("content", r["record_id"], {"status": "rejected"})
-                    break
-        except Exception:
-            pass
-        return {"status": "rejected", "topic_id": topic_id}
-
-    # Agent loop: publish approval
-    if action == "approve_publish":
-        from app.services.agent_loop import AgentLoop
-        settings = get_settings()
-        agent = AgentLoop(settings)
-        content_id = action_value.get("content_id", "")
-        return await agent.advance_item(content_id, reason="publish_approved")
-
-    if action == "reject_publish":
-        from app.services.agent_loop import AgentLoop
-        settings = get_settings()
-        agent = AgentLoop(settings)
-        content_id = action_value.get("content_id", "")
-        from app.services.bitable import BitableClient
-        bitable = BitableClient(settings)
-        try:
-            records = await bitable.list_records("content")
-            for r in records:
-                if r.get("fields", {}).get("content_id") == content_id:
-                    await bitable.update_record("content", r["record_id"], {"status": "rejected"})
-                    break
-        except Exception:
-            pass
-        return {"status": "rejected", "content_id": content_id}
-
-    # Weekly material: adopt a hot topic into content generation
-    if action == "adopt_topic":
-        topic_title = action_value.get("topic_title", "")
-        platform_str = action_value.get("platform", "xhs")
-        angle = action_value.get("angle", "")
-        if not topic_title:
-            return {"status": "error", "detail": "missing topic_title"}
-        try:
-            platform = _parse_platform(platform_str)
-        except HTTPException:
-            return {"status": "error", "detail": f"unknown platform: {platform_str}"}
-        import asyncio
-        asyncio.create_task(
-            workflow.create_content_from_topic(platform, topic_title)
-        )
-        logger.info("Adopted topic via card: %s -> %s", topic_title, platform_str)
-        return {"status": "adopted", "topic": topic_title, "platform": platform_str}
-
-    return {"status": "ignored", "action": action}
+    if not isinstance(action_value, dict):
+        return {"status": "error", "detail": "invalid card action payload"}
+    return await agent.handle_card_action(action_value, operator)
 
 
 def _extract_text(content: str | dict) -> str:

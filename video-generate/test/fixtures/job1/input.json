@@ -1,9 +1,12 @@
 {
-  "content_id": "CNT-VIDEO-001",
-  "job_id": "JOB-VIDEO-001",
+  "content_id": "CNT-DOUYIN-CARDS-001",
+  "job_id": "JOB-DOUYIN-CARDS-001",
   "platform": "douyin",
   "topic": "大学生如何高效备考",
-  "voice_name": "zh-CN-YunxiNeural",
-  "video_source": "pexels",
-  "duration": 60
+  "selected_title": "大学生高效备考的三个方法",
+  "cover_lines": ["高效备考", "先做好这三件事"],
+  "body": "备考先明确目标、拆分任务，再用固定节奏复盘。",
+  "hashtags": ["#大学生活", "#期末备考", "#学习方法"],
+  "image_mode": "template",
+  "output_size": {"width": 1080, "height": 1350}
 }

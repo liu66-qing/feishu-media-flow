@@ -1,97 +1,43 @@
 # content-generate-douyin
 
-## 功能说明
+## 功能
 
-content-generate-douyin 用于根据选题生成 60-90 秒抖音短视频分镜脚本。
+根据选题生成抖音图文内容，不生成短视频分镜、配音或时长数据。
 
-当前版本支持：
+生成流程分为选题分析、标题与封面、正文与卡片、质量审查四步。最终结果包含：
 
-- 读取 topic、duration_target、style
-- 输出 title、duration、hook、scenes、caption、hashtags、cover_text
-- 自动生成 8-15 个场景
-- 每个场景包含 voiceover、subtitle、visual、asset_hint
-- 控制每个场景 duration 不超过 8 秒
-- 控制总时长接近 duration_target
-- 支持与 risk-check 串联测试
+- 3 个标题候选和 1 个最终标题。
+- 2–4 行封面大字。
+- 适合手动发布抖音图文的正文和标签。
+- 4–7 张有序正文卡片，最后一张固定为总结卡。
+
+卡片只描述编辑海报式图文内容，不要求真人出镜、自然风景、实拍视频、绿幕、手机截图或外部图库。
 
 ## 输入
 
-输入文件固定为：
+`{job_dir}/input.json`：
 
-```text
-{job_dir}/input.json
-
-示例：
+```json
 {
-  "content_id": "CNT-DOUYIN-001",
-  "job_id": "JOB-DOUYIN-001",
-  "topic": "3个方法让社团招新效率更高",
-  "duration_target": 75,
-  "style": "口播 + 图文卡片"
+  "content_id": "CNT-xxx",
+  "job_id": "JOB-xxx",
+  "platform": "douyin",
+  "topic": "社团招新现场如何提高转化",
+  "column": "校园运营",
+  "materials": []
 }
+```
 
-输出
+## 输出
 
-输出文件固定为：
-{job_dir}/content_generate_douyin.json
-输出字段包括：
-title：视频标题
-duration：总时长
-style：视频风格
-hook：开场钩子
-scenes：分镜数组
-caption：发布文案
-hashtags：标签
-cover_text：封面文字
+结果写入 `{job_dir}/content-generate-douyin.json`，主要字段为：
 
-每个 scene 包含：
-index
-duration
-voiceover
-subtitle
-visual
-asset_hint
+- `selected_title`
+- `body`
+- `hashtags`
+- `cover_lines`
+- `cover_text`
+- `cards`
+- `risk_notes`
 
-运行方式
-
-在项目根目录 D:\Agent 下运行：
-python skills/media-workflow/scripts/content-generate-douyin/main.py --job-dir skills/media-workflow/scripts/content-generate-douyin/test/fixtures/case_001
-
-验收规则
-
-当前版本按任务书检查以下规则：
-总时长 = duration_target ±5 秒
-场景数 8-15 个
-每个场景 duration ≤ 8 秒
-第一幕有明显 hook
-subtitle 比 voiceover 更精简
-每个场景都有 asset_hint
-输出内容通过 risk-check
-
-当前测试结果
-
-case_001 已完成测试：
-duration = 75
-scenes = 10
-每个 scene duration ≤ 8
-每个 scene 均包含 asset_hint
-第一幕包含 hook
-risk-check 串联结果为 low
-
-当前不足
-
-当前版本仍为模板生成版，存在以下不足：
-未接入 LLM
-内容结构较固定
-尚未完成多人朗读测试
-尚未测试 3/5 场景以上自然通顺
-尚未扩展多个不同选题
-
-后续优化
-
-下一版建议：
-接入 LLM，提升脚本自然度
-根据不同 topic 动态生成场景
-增加朗读测试记录
-扩展至少 5 组 fixtures
-自动串联 risk-check
+每张 `cards` 数据包含 `kind`、`section_label`、`title`、`body`、`highlight`。此结果交给兼容名为 `video-generate` 的卡片包生成器渲染为 PNG，最终由用户手动上传抖音。
