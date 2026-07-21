@@ -1,0 +1,309 @@
+{
+  "status": "success",
+  "collected_at": "2026-07-21T03:22:14Z",
+  "platforms": [
+    "wechat",
+    "douyin",
+    "xhs"
+  ],
+  "samples": [
+    {
+      "platform": "douyin",
+      "title": "来这！寻找属于你的高光时刻！",
+      "summary": "肇庆学院招新宣传介绍大学生活。",
+      "cover": "",
+      "hashtags": [
+        "#肇庆学院",
+        "#招新宣传",
+        "#新学期新开始",
+        "#这大概就是青春的样子"
+      ],
+      "published_at": "2022-09-14",
+      "source": "douyin_public_page",
+      "source_url": "https://www.douyin.com/video/7338006013515255078/search/%E7%A4%BE%E5%9B%A2%E6%8B%9B%E6%96%B0%20%E5%A4%A7%E5%AD%A6%E7%94%9F%E6%B4%BB?aid=34bfbd3f-9891-4c2f-9215-11beb69c694d&modal_id=7143227740907506959&type=general",
+      "metrics": {
+        "likes": 20000,
+        "comments": 3960,
+        "shares": 3238,
+        "favorites": 12000,
+        "views": 0
+      },
+      "quality_status": "valid",
+      "quality_score": 1.0,
+      "data_status": "live",
+      "collected_at": "2026-07-21T03:22:14Z"
+    },
+    {
+      "platform": "xhs",
+      "title": "我悟了‼️原来大学面试一次就通过只需三步😭",
+      "summary": "文章介绍了大学社团面试的技巧和各个社团之间的区别。",
+      "cover": "",
+      "hashtags": [
+        "#大学生",
+        "#大学社团",
+        "#社团招新",
+        "#大学学生会",
+        "#大学学生会面试",
+        "#关于大学社团学生会的选择",
+        "青志联",
+        "#大学要不要加社团"
+      ],
+      "published_at": "2023-07-05",
+      "source": "xhs_public_search",
+      "source_url": "https://www.xiaohongshu.com/explore/64a4f4e1000000003100acc9?xsec_token=ABP27GhCEm3SlU6KUROeKhHniqrLkQlfH9DNAjbFrzNsU=&xsec_source=pc_search&source=web_explore_feed",
+      "metrics": {
+        "likes": 17000,
+        "comments": 117,
+        "shares": 0,
+        "favorites": 14000,
+        "views": 0
+      },
+      "quality_status": "valid",
+      "quality_score": 1.0,
+      "data_status": "live",
+      "collected_at": "2026-07-21T03:22:14Z"
+    },
+    {
+      "platform": "xhs",
+      "title": "哪家大学校组织招新这样",
+      "summary": "文章介绍了淮北师范大学通过易拉宝展示聊天记录来招新的流量密码。",
+      "cover": "",
+      "hashtags": [
+        "#淮北师范大学",
+        "#社团招新",
+        "#大学生",
+        "#大学生活",
+        "#淮师青年融媒体中心"
+      ],
+      "published_at": "2023-09-14",
+      "source": "xhs_public_search",
+      "source_url": "https://www.xiaohongshu.com/explore/650138490000000014025219?xsec_token=AB7GaWpHMUA2ujFnruYLoAPxj5ImPQQbkPtF09Svis0ZY=&xsec_source=pc_search&source=web_explore_feed",
+      "metrics": {
+        "likes": 12000,
+        "comments": 774,
+        "shares": 0,
+        "favorites": 1508,
+        "views": 0
+      },
+      "quality_status": "valid",
+      "quality_score": 1.0,
+      "data_status": "live",
+      "collected_at": "2026-07-21T03:22:14Z"
+    },
+    {
+      "platform": "douyin",
+      "title": "百种热爱在此汇聚！清华学生社团联合招新精彩呈现",
+      "summary": "清华大学发布的社团联合招新短视频，适合观察高校账号如何用活动现场和情绪化文案展示社团氛围。",
+      "cover": "",
+      "hashtags": [
+        "#社团招新",
+        "#校园生活",
+        "#学生社团"
+      ],
+      "published_at": "2026-03-27",
+      "source": "douyin_public_page",
+      "source_url": "https://jingxuan.douyin.com/m/video/7621749348946218275",
+      "metrics": {
+        "likes": 6558,
+        "comments": 133,
+        "shares": 353,
+        "favorites": 574,
+        "views": 0
+      },
+      "quality_status": "valid",
+      "quality_score": 1.0,
+      "data_status": "live",
+      "collected_at": "2026-07-21T03:22:14Z"
+    },
+    {
+      "platform": "douyin",
+      "title": "“百团”就位，青春集结！清华学生社团联合招新来袭",
+      "summary": "清华大学发布的学生社团联合招新短视频，适合分析高校官方账号如何用短视频呈现社团招新现场。",
+      "cover": "",
+      "hashtags": [
+        "#社团招新",
+        "#大学生活",
+        "#开学季"
+      ],
+      "published_at": "2026-03-21",
+      "source": "douyin_public_page",
+      "source_url": "https://jingxuan.douyin.com/m/video/7619545604301131042",
+      "metrics": {
+        "likes": 3615,
+        "comments": 138,
+        "shares": 138,
+        "favorites": 265,
+        "views": 0
+      },
+      "quality_status": "valid",
+      "quality_score": 1.0,
+      "data_status": "live",
+      "collected_at": "2026-07-21T03:22:14Z"
+    },
+    {
+      "platform": "wechat",
+      "title": "校团委青年新媒体中心纳新通知",
+      "summary": "中国石油大学华东校团委青年新媒体中心纳新通知，包含微信、抖音、B站、小红书等平台运营岗位和招募要求。",
+      "cover": "",
+      "hashtags": [
+        "校园新媒体",
+        "学生组织",
+        "纳新"
+      ],
+      "published_at": "2026-04-09",
+      "source": "campus_public_site",
+      "source_url": "https://youth.upc.edu.cn/2026/0409/c11148a487267/page.psp",
+      "metrics": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "favorites": 0,
+        "views": 1902
+      },
+      "quality_status": "valid",
+      "quality_score": 1.0,
+      "data_status": "live",
+      "collected_at": "2026-07-21T03:22:14Z"
+    },
+    {
+      "platform": "wechat",
+      "title": "“社”彩缤纷，“团”聚青春 | 东南大学无锡校区社团招新啦",
+      "summary": "文章介绍东南大学无锡校区各个社团以及社团对应的招新群二维码。",
+      "cover": "",
+      "hashtags": [
+        "社团招新",
+        "开学季",
+        "东南大学无锡校区"
+      ],
+      "published_at": "2025-09-17",
+      "source": "wechat_material_reference",
+      "source_url": "https://mp.weixin.qq.com/s/rS27-udbHSafQymLqQw4Fw",
+      "metrics": {
+        "likes": 9,
+        "comments": 0,
+        "shares": 50,
+        "favorites": 0,
+        "views": 1163
+      },
+      "quality_status": "valid",
+      "quality_score": 1.0,
+      "data_status": "live",
+      "collected_at": "2026-07-21T03:22:14Z"
+    },
+    {
+      "platform": "douyin",
+      "title": "奥克兰大学新生开学必做这10件事",
+      "summary": "面向大学新生的开学清单类短视频，包含 Club Expo、学生卡、课程系统等校园生活信息。",
+      "cover": "",
+      "hashtags": [
+        "#大学生活",
+        "#开学季",
+        "#新生指南"
+      ],
+      "published_at": "2025-02-25",
+      "source": "douyin_public_page",
+      "source_url": "https://jingxuan.douyin.com/m/video/7475315160027057449",
+      "metrics": {
+        "likes": 191,
+        "comments": 15,
+        "shares": 102,
+        "favorites": 143,
+        "views": 0
+      },
+      "quality_status": "valid",
+      "quality_score": 1.0,
+      "data_status": "live",
+      "collected_at": "2026-07-21T03:22:14Z"
+    },
+    {
+      "platform": "wechat",
+      "title": "CSA招新｜和我们一起，把校园生活变得更有意思",
+      "summary": "SJSU中国学生会纳新宣传，详细介绍了各部门负责的职责，在结尾附上了招新二维码。",
+      "cover": "",
+      "hashtags": [
+        "社团招新"
+      ],
+      "published_at": "2026-07-21",
+      "source": "wechat_material_reference",
+      "source_url": "https://mp.weixin.qq.com/s/01u69Uh4ogNitjsjUG7hMQ",
+      "metrics": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 3,
+        "favorites": 0,
+        "views": 48
+      },
+      "quality_status": "valid",
+      "quality_score": 1.0,
+      "data_status": "live",
+      "collected_at": "2026-07-21T03:22:14Z"
+    },
+    {
+      "platform": "xhs",
+      "title": "再一次感受到准大一开学的震撼....😭",
+      "summary": "文章介绍了准大一新生开学需要准备的必备好物。",
+      "cover": "",
+      "hashtags": [
+        "#开学带这些",
+        "#开学必备的清单",
+        "#新生入学",
+        "#准大一",
+        "#学姐分享",
+        "#开学季",
+        "#开学轻装上阵",
+        "#开启大学生活"
+      ],
+      "published_at": "2025-07-24",
+      "source": "xhs_public_search",
+      "source_url": "https://www.xiaohongshu.com/explore/6881d743000000000d025d0d?xsec_token=ABjTR06dBuylMomS4qJeq13h8T0E5XslijQ9RCivCOZ0M=&xsec_source=pc_search&source=web_explore_feed",
+      "metrics": {
+        "likes": 6875,
+        "comments": 2888,
+        "shares": 0,
+        "favorites": 40,
+        "views": 0
+      },
+      "quality_status": "valid",
+      "quality_score": 0.84,
+      "data_status": "live",
+      "collected_at": "2026-07-21T03:22:14Z"
+    },
+    {
+      "platform": "douyin",
+      "title": "加入我们文艺部吧！来文艺找慢慢玩！",
+      "summary": "文艺部招新介绍各部门负责人视频。",
+      "cover": "",
+      "hashtags": [
+        "#开学啦啦啦啦",
+        "#招新",
+        "#像素风",
+        "#找我玩"
+      ],
+      "published_at": "2025-09-06",
+      "source": "douyin_public_page",
+      "source_url": "https://www.douyin.com/video/7621749348946218275/search/%E7%A4%BE%E5%9B%A2%E6%8B%9B%E6%96%B0?aid=ce7440c5-8adf-4a80-85e7-584642c4bdde&modal_id=7546865761944898873&type=general",
+      "metrics": {
+        "likes": 264,
+        "comments": 22,
+        "shares": 249,
+        "favorites": 155,
+        "views": 0
+      },
+      "quality_status": "valid",
+      "quality_score": 0.84,
+      "data_status": "live",
+      "collected_at": "2026-07-21T03:22:14Z"
+    }
+  ],
+  "raw_count": 11,
+  "valid_count": 11,
+  "by_platform": {
+    "wechat": 3,
+    "douyin": 5,
+    "xhs": 3
+  },
+  "fetch_errors": [],
+  "degraded_platforms": [],
+  "cache_used": false,
+  "notes": []
+}
