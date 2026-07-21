@@ -1,0 +1,29 @@
+{
+  "case_name": "case_06_活动",
+  "scene": "06",
+  "title": "校园歌手大赛",
+  "subtitle": "报名倒计时3天",
+  "visual_context": {
+    "scene_hint": "",
+    "keywords": [
+      "歌手大赛",
+      "校园活动",
+      "报名",
+      "才艺展示"
+    ],
+    "topic_summary": "校园歌手大赛活动宣传"
+  },
+  "success": true,
+  "duration_seconds": 1.1,
+  "output_images": [
+    {
+      "name": "xhs-cover-04.png",
+      "size_kb": 209.4
+    }
+  ],
+  "template_used": "xhs-cover-04",
+  "expected_template": "xhs-cover-04",
+  "template_match": true,
+  "image_mode_used": "template",
+  "error": null
+}

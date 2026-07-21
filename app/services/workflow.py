@@ -133,7 +133,10 @@ class WorkflowService:
         }
         if use_ai_image:
             variables["ai_background"] = True
-            variables["ai_prompt"] = cover_text or title
+            # 从 step1_analyze 提取视觉上下文，传给 image-compose 做智能匹配
+            visual_context = self._extract_visual_context(gen_data)
+            if visual_context:
+                variables["visual_context"] = visual_context
         compose_job = SkillJob(
             content_id=content_id,
             job_id=f"JOB-IMG-{content_id[4:]}",
@@ -283,6 +286,61 @@ class WorkflowService:
                     return
         except Exception as e:
             logger.warning("bitable update failed (non-fatal): %s", e)
+
+    def _extract_visual_context(self, gen_data: dict) -> dict:
+        """
+        从 step1_analyze 结果中提取视觉上下文，供 image-compose 智能匹配模板和 prompt。
+
+        提取逻辑：
+          1. 找到 best_angle 对应的角度详情
+          2. 从 hook、value、proof_points 中提取文本关键词
+          3. 结合 topic_summary 构建视觉上下文
+
+        返回 dict:
+          - scene_hint: 场景提示（如 "学习"、"美食"），可为空由 image-compose 自行推断
+          - keywords: 视觉关键词列表（如 ["书桌", "笔记本", "咖啡"]）
+          - topic_summary: 选题概要
+        """
+        step1 = gen_data.get("step1_analyze", {})
+        if not step1:
+            return {}
+
+        topic_summary = step1.get("topic_summary", "")
+        best_angle_name = step1.get("best_angle", "")
+        angles = step1.get("angles", [])
+
+        # 找到最佳角度的详情
+        best_angle_info = None
+        for angle in angles:
+            if angle.get("name") == best_angle_name:
+                best_angle_info = angle
+                break
+
+        if not best_angle_info:
+            # 没有匹配的角度，用 topic_summary 兜底
+            return {"topic_summary": topic_summary} if topic_summary else {}
+
+        # 提取视觉关键词：从 hook + value + proof_points 中抽取
+        keywords = []
+        hook = best_angle_info.get("hook", "")
+        value = best_angle_info.get("value", "")
+        proof_points = best_angle_info.get("proof_points", [])
+
+        # 把 hook 和 value 中的实质内容作为关键词
+        for text in [hook, value]:
+            if text:
+                keywords.append(text)
+
+        # proof_points 是具体的素材点，直接加入
+        for point in proof_points:
+            if isinstance(point, str) and point.strip():
+                keywords.append(point.strip())
+
+        return {
+            "scene_hint": "",  # 留空，由 image-compose 根据 keywords 推断
+            "keywords": keywords[:5],  # 最多 5 个，避免 prompt 过长
+            "topic_summary": topic_summary,
+        }
 
     def _skill_for_platform(self, platform: Platform) -> str:
         return {

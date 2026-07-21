@@ -1,0 +1,24 @@
+{
+  "content_id": "CNT-V2-008",
+  "job_id": "JOB-V2-008",
+  "template_name": "",
+  "image_mode": "template",
+  "variables": {
+    "title": "焦虑时读这篇",
+    "subtitle": "5个心理学小技巧",
+    "visual_context": {
+      "scene_hint": "",
+      "keywords": [
+        "焦虑缓解",
+        "心理学",
+        "情绪管理",
+        "自我疗愈"
+      ],
+      "topic_summary": "大学生焦虑情绪缓解方法"
+    }
+  },
+  "output_size": {
+    "width": 1080,
+    "height": 1350
+  }
+}

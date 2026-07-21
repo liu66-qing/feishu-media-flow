@@ -1,0 +1,8 @@
+2026-07-15 09:51:29,426 [INFO] Starting image-compose, job_dir: test\results\cover09_test
+2026-07-15 09:51:29,427 [INFO] Template: xhs-cover-09, Content ID: TEST-001, Image Mode: template
+2026-07-15 09:51:29,427 [INFO] Capturing screenshot to test\results\cover09_test\output\xhs-cover-09.png
+2026-07-15 09:51:31,622 [INFO] Image compose completed successfully: test\results\cover09_test\output\xhs-cover-09.png
+2026-07-15 09:59:15,065 [INFO] Starting image-compose, job_dir: test\results\cover09_test
+2026-07-15 09:59:15,067 [INFO] Template: xhs-cover-09, Content ID: TEST-001, Image Mode: template
+2026-07-15 09:59:15,067 [INFO] Capturing screenshot to test\results\cover09_test\output\xhs-cover-09.png
+2026-07-15 09:59:17,107 [INFO] Image compose completed successfully: test\results\cover09_test\output\xhs-cover-09.png

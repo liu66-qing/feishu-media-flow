@@ -1,0 +1,20 @@
+{
+  "status": "success",
+  "timestamp": "2026-07-06T00:24:22.331285",
+  "content_id": "CNT-RISK-014",
+  "data": {
+    "risk_level": "low",
+    "hits": [
+      {
+        "word": "私信领",
+        "type": "platform_risk",
+        "location": "body",
+        "context": "想要完整资料的同学可以私信领，我们会统一整理后发送。"
+      }
+    ],
+    "llm_concerns": [],
+    "suggestions": [
+      "建议删除或替换「私信领」这类可能引流违规的表达。"
+    ]
+  }
+}

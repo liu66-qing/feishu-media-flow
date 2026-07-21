@@ -32,6 +32,51 @@ from playwright.sync_api import sync_playwright
 
 
 # ---------------------------------------------------------------------------
+# 平台偏好画像加载（V2 Schema）
+# ---------------------------------------------------------------------------
+
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent
+_PROFILE_DIR = _PROJECT_ROOT / ".data" / "profiles"
+
+
+def load_platform_profile(platform: str) -> dict | None:
+    """Load platform preference profile (V2 Schema). Returns None if not found or expired."""
+    profile_file = _PROFILE_DIR / f"{platform}_profile.json"
+    if not profile_file.exists():
+        return None
+    try:
+        profile = json.loads(profile_file.read_text(encoding="utf-8"))
+        # Check expiry (7 days)
+        gen_at = profile.get("gen_at", "")
+        if gen_at:
+            gen_time = datetime.fromisoformat(gen_at)
+            if gen_time.tzinfo is None:
+                from datetime import timezone as _tz
+                gen_time = gen_time.replace(tzinfo=_tz.utc)
+            age_days = (datetime.now(_tz.utc) - gen_time).days
+            if age_days >= 7:
+                return None
+        return profile
+    except Exception:
+        return None
+
+
+def get_visual_style_hints(platform: str) -> dict:
+    """Get visual style hints from platform preference profile for AI image generation."""
+    profile = load_platform_profile(platform)
+    if not profile:
+        return {}
+    
+    vis = profile.get("vis", {})
+    return {
+        "color_palette": vis.get("color_palette", []),
+        "composition": vis.get("composition", {}),
+        "mood": vis.get("mood", ""),
+        "decoration": vis.get("decoration", ""),
+    }
+
+
+# ---------------------------------------------------------------------------
 # 基础工具函数
 # ---------------------------------------------------------------------------
 
@@ -186,7 +231,7 @@ def load_env_config() -> dict:
         load_dotenv(env_path)
     api_key = os.getenv("LLM_API_KEY", "")
     base_url = os.getenv("LLM_BASE_URL", "")
-    model = os.getenv("IMAGE_MODEL", "wanx2.1-t2i-turbo")
+    model = os.getenv("LLM_MODEL", "wanx2.1-t2i-turbo")
 
     if base_url:
         if "/compatible-mode/" in base_url:

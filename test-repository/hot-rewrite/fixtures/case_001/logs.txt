@@ -1,0 +1,1 @@
+[success] hot-rewrite finished. similarity_score=0

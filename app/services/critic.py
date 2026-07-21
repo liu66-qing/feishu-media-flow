@@ -12,10 +12,36 @@ logger = logging.getLogger(__name__)
 
 PROMPTS_DIR = Path(__file__).resolve().parent.parent / "prompts"
 
+# Platform preference profile path (V2 Schema)
+_PROFILE_DIR = Path(__file__).resolve().parent.parent.parent / ".data" / "profiles"
+
 PASS_THRESHOLD = 20
 REVISE_THRESHOLD = 15
 MIN_DIMENSION_SCORE = 3
 MAX_REVISIONS = 3
+
+
+def load_platform_profile(platform: str) -> dict[str, Any] | None:
+    """Load platform preference profile (V2 Schema). Returns None if not found or expired."""
+    from datetime import datetime, timezone as _tz
+    
+    profile_file = _PROFILE_DIR / f"{platform}_profile.json"
+    if not profile_file.exists():
+        return None
+    try:
+        profile = json.loads(profile_file.read_text(encoding="utf-8"))
+        # Check expiry (7 days)
+        gen_at = profile.get("gen_at", "")
+        if gen_at:
+            gen_time = datetime.fromisoformat(gen_at)
+            if gen_time.tzinfo is None:
+                gen_time = gen_time.replace(tzinfo=_tz.utc)
+            age_days = (datetime.now(_tz.utc) - gen_time).days
+            if age_days >= 7:
+                return None
+        return profile
+    except Exception:
+        return None
 
 
 class Critic:

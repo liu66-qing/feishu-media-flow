@@ -1,0 +1,24 @@
+{
+  "content_id": "CNT-V2-004",
+  "job_id": "JOB-V2-004",
+  "template_name": "",
+  "image_mode": "template",
+  "variables": {
+    "title": "宿舍改造计划",
+    "subtitle": "500元打造ins风小窝",
+    "visual_context": {
+      "scene_hint": "",
+      "keywords": [
+        "宿舍改造",
+        "ins风",
+        "收纳神器",
+        "平价好物"
+      ],
+      "topic_summary": "大学宿舍低成本改造分享"
+    }
+  },
+  "output_size": {
+    "width": 1080,
+    "height": 1350
+  }
+}

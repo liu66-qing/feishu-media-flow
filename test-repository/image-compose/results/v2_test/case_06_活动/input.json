@@ -1,0 +1,24 @@
+{
+  "content_id": "CNT-V2-006",
+  "job_id": "JOB-V2-006",
+  "template_name": "",
+  "image_mode": "template",
+  "variables": {
+    "title": "校园歌手大赛",
+    "subtitle": "报名倒计时3天",
+    "visual_context": {
+      "scene_hint": "",
+      "keywords": [
+        "歌手大赛",
+        "校园活动",
+        "报名",
+        "才艺展示"
+      ],
+      "topic_summary": "校园歌手大赛活动宣传"
+    }
+  },
+  "output_size": {
+    "width": 1080,
+    "height": 1350
+  }
+}

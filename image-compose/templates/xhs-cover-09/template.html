@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width={{width}}, height={{height}}">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: {{width}}px;
+    height: {{height}}px;
+    overflow: hidden;
+    font-family: 'Noto Sans SC', 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  }
+
+  .container {
+    width: 100%;
+    height: 100%;
+    background-color: {{bg_color}};
+    background-image: url('{{bg_image}}');
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 50px;
+  }
+
+  /* 漫画速度线背景效果 */
+  .speed-lines {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .speed-line {
+    position: absolute;
+    background: rgba(255,255,255,0.15);
+    transform-origin: center;
+  }
+
+  .speed-line:nth-child(1) { top: 10%; left: -5%; width: 120%; height: 3px; transform: rotate(-15deg); }
+  .speed-line:nth-child(2) { top: 25%; left: -5%; width: 120%; height: 2px; transform: rotate(-8deg); }
+  .speed-line:nth-child(3) { top: 40%; left: -5%; width: 120%; height: 4px; transform: rotate(5deg); }
+  .speed-line:nth-child(4) { top: 55%; left: -5%; width: 120%; height: 2px; transform: rotate(12deg); }
+  .speed-line:nth-child(5) { top: 70%; left: -5%; width: 120%; height: 3px; transform: rotate(-3deg); }
+  .speed-line:nth-child(6) { top: 85%; left: -5%; width: 120%; height: 2px; transform: rotate(8deg); }
+
+  /* 爆炸星burst装饰 */
+  .starburst {
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    background: {{accent_color}};
+    clip-path: polygon(
+      50% 0%, 61% 35%, 98% 35%, 68% 57%,
+      79% 91%, 50% 70%, 21% 91%, 32% 57%,
+      2% 35%, 39% 35%
+    );
+    opacity: 0.9;
+    z-index: 1;
+  }
+
+  .starburst-top {
+    top: 40px;
+    right: 60px;
+    transform: rotate(15deg) scale(1.2);
+  }
+
+  .starburst-bottom {
+    bottom: 60px;
+    left: 50px;
+    transform: rotate(-10deg) scale(0.9);
+  }
+
+  /* 闪电图标装饰 */
+  .lightning {
+    position: absolute;
+    font-size: 48px;
+    z-index: 2;
+    filter: drop-shadow(0 0 8px rgba(0,0,0,0.3));
+  }
+
+  .lightning-1 { top: 30px; left: 80px; transform: rotate(-20deg); }
+  .lightning-2 { bottom: 40px; right: 70px; transform: rotate(15deg); font-size: 36px; }
+
+  /* HOT 标签 */
+  .hot-badge {
+    position: absolute;
+    top: 30px;
+    left: 50px;
+    background: #FF1744;
+    color: #FFFFFF;
+    font-size: 22px;
+    font-weight: 900;
+    padding: 8px 18px;
+    border-radius: 6px;
+    transform: rotate(-8deg);
+    z-index: 3;
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.2);
+    letter-spacing: 2px;
+  }
+
+  /* 主标题 - 超大粗体 + 黑色描边 */
+  .title-wrapper {
+    position: relative;
+    z-index: 5;
+    text-align: center;
+    max-width: 980px;
+    padding: 20px 0;
+  }
+
+  .title {
+    color: #FFFFFF;
+    font-size: 96px;
+    font-weight: 900;
+    text-align: center;
+    line-height: 1.2;
+    letter-spacing: 4px;
+    /* 多层描边效果 */
+    -webkit-text-stroke: 4px #000000;
+    text-stroke: 4px #000000;
+    /* 3D 阴影效果 */
+    text-shadow:
+      4px 4px 0 #000000,
+      -2px -2px 0 #000000,
+      2px -2px 0 #000000,
+      -2px 2px 0 #000000,
+      6px 6px 0 rgba(0,0,0,0.3);
+    word-break: break-all;
+    overflow-wrap: break-word;
+  }
+
+  /* 副标题 - 带背景色块 */
+  .subtitle-wrapper {
+    position: relative;
+    z-index: 5;
+    margin-top: 30px;
+    text-align: center;
+  }
+
+  .subtitle-bg {
+    display: inline-block;
+    background: #000000;
+    color: #FFFFFF;
+    font-size: 42px;
+    font-weight: 900;
+    padding: 12px 40px;
+    border-radius: 8px;
+    letter-spacing: 3px;
+    box-shadow: 4px 4px 0 rgba(0,0,0,0.2);
+    transform: rotate(-1deg);
+  }
+
+  /* 装饰圆点组 */
+  .dot-group {
+    position: absolute;
+    z-index: 2;
+  }
+
+  .dot-group span {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: {{accent_color}};
+    margin: 4px;
+    box-shadow: 2px 2px 0 rgba(0,0,0,0.2);
+  }
+
+  .dot-group-1 { top: 160px; left: 40px; }
+  .dot-group-2 { bottom: 140px; right: 45px; }
+
+  /* 底部装饰条 */
+  .bottom-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 8px;
+    background: {{accent_color}};
+    z-index: 4;
+  }
+
+  .top-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 8px;
+    background: {{accent_color}};
+    z-index: 4;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <!-- 速度线背景 -->
+    <div class="speed-lines">
+      <div class="speed-line"></div>
+      <div class="speed-line"></div>
+      <div class="speed-line"></div>
+      <div class="speed-line"></div>
+      <div class="speed-line"></div>
+      <div class="speed-line"></div>
+    </div>
+
+    <!-- 爆炸星burst -->
+    <div class="starburst starburst-top"></div>
+    <div class="starburst starburst-bottom"></div>
+
+    <!-- 闪电装饰 -->
+    <div class="lightning lightning-1"></div>
+    <div class="lightning lightning-2">⚡</div>
+
+    <!-- HOT 标签 -->
+    <div class="hot-badge">HOT!</div>
+
+    <!-- 装饰圆点 -->
+    <div class="dot-group dot-group-1"><span></span><span></span><span></span></div>
+    <div class="dot-group dot-group-2"><span></span><span></span><span></span></div>
+
+    <!-- 顶部/底部色条 -->
+    <div class="top-bar"></div>
+    <div class="bottom-bar"></div>
+
+    <!-- 主标题 -->
+    <div class="title-wrapper">
+      <div class="title" id="title">{{title}}</div>
+    </div>
+
+    <!-- 副标题 -->
+    <div class="subtitle-wrapper" id="subtitle-wrapper">
+      <div class="subtitle-bg" id="subtitle">{{subtitle}}</div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      var title = document.getElementById('title');
+      var fontSize = 96;
+      var maxW = 960, maxH = 500;
+
+      while ((title.scrollWidth > maxW || title.scrollHeight > maxH) && fontSize > 48) {
+        fontSize -= 4;
+        title.style.fontSize = fontSize + 'px';
+        title.style.webkitTextStroke = Math.max(2, Math.floor(fontSize / 24)) + 'px #000000';
+      }
+
+      var sub = document.getElementById('subtitle-wrapper');
+      if (!document.getElementById('subtitle').textContent.trim()) {
+        sub.style.display = 'none';
+      }
+    })();
+  </script>
+</body>
+</html>

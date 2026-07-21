@@ -1,0 +1,20 @@
+{
+  "status": "success",
+  "timestamp": "2026-07-06T00:26:28.390202",
+  "content_id": "CNT-RISK-016",
+  "data": {
+    "risk_level": "high",
+    "hits": [
+      {
+        "word": "投资收益",
+        "type": "sensitive_domains",
+        "location": "body",
+        "context": "这个项目可以带来稳定投资收益，适合想增加收入的同学了解。"
+      }
+    ],
+    "llm_concerns": [],
+    "suggestions": [
+      "建议谨慎处理「投资收益」相关内容，避免涉及敏感行业承诺。"
+    ]
+  }
+}

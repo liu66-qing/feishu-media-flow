@@ -1,0 +1,15 @@
+{
+  "status": "success",
+  "timestamp": "2026-07-21T19:37:21.775346",
+  "data": {
+    "image_path": "Y:\\TYUT\\creating learning club\\feishu-media-flow-main\\platform-preference-profiler\\test\\results\\full_comparison\\round2_with_profile\\image\\output\\xhs-cover-03.png",
+    "width": 1080,
+    "height": 1350,
+    "template_used": "xhs-cover-03",
+    "visual_style_used": "legacy_scene",
+    "illustration_variant": "idea",
+    "image_mode_used": "ai_bg",
+    "ai_fallback_reason": null,
+    "ai_prompt_used": "竖版校园主题编辑海报背景，中国大学校园清晨，阳光透过梧桐树叶洒在石板路上，几位大学生背着书包走向教学楼，画面清新明亮，充满青春活力。场景设计：中国大学图书馆或自习室，18至24岁大学生学习小组，书本与笔记本电脑，专注而有朝气。画面要有一个亮眼且明确的主题视觉焦点，使用朱红、暖白、黑色与少量钴蓝形成现代校园海报配色，构图简洁有层次，在全幅柔焦留白保留干净的文字排版空间，主体不得遮挡该区域。硬性身份与场景约束：人物只能是18至24岁的中国大学生，身份呈现为学生、社团成员或校园志愿者；地点只能在中国大学校园、教学楼、图书馆、自习室、宿舍公共区、食堂或社团活动空间。禁止社会职场人士、商务会议、儿童、中学生、游客、城市街拍、纯自然风景、旅游地标、豪宅和商业影棚。禁止人物大头特写与网红摆拍，优先中景或远景、自然互动、真实校园细节。无任何文字、字母、数字、水印、logo、校徽或品牌标识；不要生成伪文字。高质量海报摄影或精致编辑插画质感，明亮、青春、有冲击力，但背景细节不能干扰后续标题。"
+  }
+}

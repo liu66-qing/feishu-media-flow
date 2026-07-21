@@ -1,0 +1,34 @@
+{
+  "case_name": "case_01_学习",
+  "title": "考研复习时间规划",
+  "subtitle": "每天多学2小时的秘密",
+  "visual_context": {
+    "scene_hint": "",
+    "keywords": [
+      "考研复习",
+      "时间管理",
+      "番茄工作法",
+      "黄金时间段"
+    ],
+    "topic_summary": "大学生考研复习时间规划指南"
+  },
+  "success": true,
+  "duration_seconds": 10.8,
+  "output_images": [
+    {
+      "name": "ai_bg.png",
+      "size_kb": 1049.2
+    },
+    {
+      "name": "xhs-cover-08.png",
+      "size_kb": 807.5
+    }
+  ],
+  "template_used": "xhs-cover-08",
+  "expected_template": "xhs-cover-08",
+  "template_match": true,
+  "image_mode_used": "ai_bg",
+  "ai_prompt_used": "3:4竖版封面背景图，ins简约学习风，柔和书桌场景，笔记本、钢笔、咖啡元素，低饱和奶fufu色调，搭配考研复习时间规划元素，柔和漫反射自然光，完整场景构图，画面饱满丰富，无任何文字、字母、数字、水印、logo，绝对不要生成任何文字，高清8K细节真实，像博主随手拍的照片，低对比度不抢文字视线，不要清晰人物正脸",
+  "ai_fallback_reason": null,
+  "error": null
+}

@@ -1,0 +1,20 @@
+{
+  "status": "success",
+  "timestamp": "2026-07-06T00:26:32.058336",
+  "content_id": "CNT-RISK-017",
+  "data": {
+    "risk_level": "high",
+    "hits": [
+      {
+        "word": "考试包过",
+        "type": "sensitive_domains",
+        "location": "body",
+        "context": "这套资料适合备考同学使用，宣传语里不能写考试包过这类承诺。"
+      }
+    ],
+    "llm_concerns": [],
+    "suggestions": [
+      "建议谨慎处理「考试包过」相关内容，避免涉及敏感行业承诺。"
+    ]
+  }
+}

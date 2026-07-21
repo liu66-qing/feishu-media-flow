@@ -1,0 +1,24 @@
+{
+  "content_id": "CNT-V2AI-001",
+  "job_id": "JOB-V2AI-001",
+  "template_name": "",
+  "image_mode": "ai_bg",
+  "variables": {
+    "title": "考研复习时间规划",
+    "subtitle": "每天多学2小时的秘密",
+    "visual_context": {
+      "scene_hint": "",
+      "keywords": [
+        "考研复习",
+        "时间管理",
+        "番茄工作法",
+        "黄金时间段"
+      ],
+      "topic_summary": "大学生考研复习时间规划指南"
+    }
+  },
+  "output_size": {
+    "width": 1080,
+    "height": 1350
+  }
+}

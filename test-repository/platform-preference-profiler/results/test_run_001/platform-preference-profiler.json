@@ -1,0 +1,30 @@
+{
+  "cid": "PROF-001",
+  "jid": "JOB-001",
+  "sample_root": ".data\\samples",
+  "profile_root": ".data\\profiles",
+  "gen_at": "2026-07-21T19:09:28.011900+08:00",
+  "profiles": [
+    {
+      "pf": "xhs",
+      "path": ".data\\profiles\\xhs_profile.json",
+      "s_cnt": 4,
+      "conf": 0.65,
+      "v": "1.0"
+    },
+    {
+      "pf": "douyin",
+      "path": ".data\\profiles\\douyin_profile.json",
+      "s_cnt": 3,
+      "conf": 0.54,
+      "v": "1.0"
+    },
+    {
+      "pf": "wechat",
+      "path": ".data\\profiles\\wechat_profile.json",
+      "s_cnt": 3,
+      "conf": 0.56,
+      "v": "1.0"
+    }
+  ]
+}

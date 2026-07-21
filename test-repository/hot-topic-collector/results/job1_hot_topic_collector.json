@@ -1,0 +1,106 @@
+{
+  "collected_at": "2026-07-20T02:47:28Z",
+  "topics": [
+    {
+      "title": "大学生做校园新媒体如何稳定更新",
+      "source": "xhs",
+      "source_url": "",
+      "heat_score": 80,
+      "relevance_score": 0.9,
+      "angle_suggestion": "可以从社团新媒体内容生产切入，给出选题、排期和素材复用建议。",
+      "suggested_platform": "xhs",
+      "data_status": "fallback",
+      "collected_at": "2026-07-20T02:47:28Z"
+    },
+    {
+      "title": "社团活动复盘模板火了",
+      "source": "xhs",
+      "source_url": "",
+      "heat_score": 78,
+      "relevance_score": 0.38,
+      "angle_suggestion": "可以从活动策划复盘切入，讲清楚目标、分工、现场执行和复盘方法。",
+      "suggested_platform": "xhs",
+      "data_status": "fallback",
+      "collected_at": "2026-07-20T02:47:28Z"
+    },
+    {
+      "title": "开学季社团招新短视频拍摄思路",
+      "source": "douyin",
+      "source_url": "",
+      "heat_score": 77,
+      "relevance_score": 0.38,
+      "angle_suggestion": "可以结合开学季招新，拆成摊位动线、互动话术和后续转化三个角度。",
+      "suggested_platform": "douyin",
+      "data_status": "fallback",
+      "collected_at": "2026-07-20T02:47:28Z"
+    },
+    {
+      "title": "校园摊位互动小游戏",
+      "source": "xhs",
+      "source_url": "",
+      "heat_score": 70,
+      "relevance_score": 0.38,
+      "angle_suggestion": "可以把热点和大学生、社团、运营连接起来，做一篇面向大学生社团负责人的实用选题。",
+      "suggested_platform": "xhs",
+      "data_status": "fallback",
+      "collected_at": "2026-07-20T02:47:28Z"
+    },
+    {
+      "title": "社团招新面试问题清单",
+      "source": "douyin",
+      "source_url": "",
+      "heat_score": 71,
+      "relevance_score": 0.3,
+      "angle_suggestion": "可以结合开学季招新，拆成摊位动线、互动话术和后续转化三个角度。",
+      "suggested_platform": "xhs",
+      "data_status": "fallback",
+      "collected_at": "2026-07-20T02:47:28Z"
+    },
+    {
+      "title": "学生组织如何做成员分工",
+      "source": "xhs",
+      "source_url": "",
+      "heat_score": 73,
+      "relevance_score": 0.16,
+      "angle_suggestion": "可以把热点和大学生、社团、运营连接起来，做一篇面向大学生社团负责人的实用选题。",
+      "suggested_platform": "xhs",
+      "data_status": "fallback",
+      "collected_at": "2026-07-20T02:47:28Z"
+    },
+    {
+      "title": "新生社团招新摊位怎么布置更吸引人",
+      "source": "weibo",
+      "source_url": "",
+      "heat_score": 82,
+      "relevance_score": 0.38,
+      "angle_suggestion": "可以结合开学季招新，拆成摊位动线、互动话术和后续转化三个角度。",
+      "suggested_platform": "weibo",
+      "data_status": "fallback",
+      "collected_at": "2026-07-20T02:47:28Z"
+    },
+    {
+      "title": "校园活动没人参加怎么办",
+      "source": "weibo",
+      "source_url": "",
+      "heat_score": 75,
+      "relevance_score": 0.38,
+      "angle_suggestion": "可以从活动策划复盘切入，讲清楚目标、分工、现场执行和复盘方法。",
+      "suggested_platform": "weibo",
+      "data_status": "fallback",
+      "collected_at": "2026-07-20T02:47:28Z"
+    }
+  ],
+  "raw_count": 58,
+  "filtered_count": 8,
+  "llm_enabled": false,
+  "llm_error": "LLM_API_KEY is not set",
+  "fetch_errors": [
+    "douyin: HTTPSConnectionPool(host='api.vvhan.com', port=443): Max retries exceeded with url: /api/hotlist?type=douyinHot (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1028)')))",
+    "xhs: HTTPSConnectionPool(host='api.vvhan.com', port=443): Max retries exceeded with url: /api/hotlist?type=xhsHot (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1028)')))"
+  ],
+  "degraded_platforms": [
+    "douyin",
+    "xhs"
+  ],
+  "cache_used": true
+}

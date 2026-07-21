@@ -15,6 +15,31 @@ PROMPTS_DIR = SKILL_DIR / "prompts"
 SYSTEM_PROMPT_PATH = PROMPTS_DIR / "system.md"
 USER_TEMPLATE_PATH = PROMPTS_DIR / "user_template.md"
 
+# Platform preference profile path (V2 Schema)
+_PROFILE_DIR = SKILL_DIR.parent / ".data" / "profiles"
+_PROFILE_FILE = _PROFILE_DIR / "wechat_profile.json"
+
+
+def load_platform_profile():
+    """Load platform preference profile (V2 Schema). Returns None if not found or expired."""
+    if not _PROFILE_FILE.exists():
+        return None
+    try:
+        profile = json.loads(_PROFILE_FILE.read_text(encoding="utf-8"))
+        # Check expiry (7 days)
+        from datetime import timezone as _tz
+        gen_at = profile.get("gen_at", "")
+        if gen_at:
+            gen_time = datetime.fromisoformat(gen_at)
+            if gen_time.tzinfo is None:
+                gen_time = gen_time.replace(tzinfo=_tz.utc)
+            age_days = (datetime.now(_tz.utc) - gen_time).days
+            if age_days >= 7:
+                return None
+        return profile
+    except Exception:
+        return None
+
 def clean_html(raw_html):
     text = re.sub(r"(?is)<script.*?>.*?</script>", " ", raw_html)
     text = re.sub(r"(?is)<style.*?>.*?</style>", " ", text)
@@ -437,6 +462,34 @@ def generate_wechat_content_with_llm(input_data):
         raise RuntimeError("LLM_API_KEY is not set")
 
     system = read_text(SYSTEM_PROMPT_PATH)
+    
+    # Inject platform preference profile if available
+    profile = load_platform_profile()
+    if profile:
+        system += "\n\n## 平台偏好画像（动态）\n"
+        system += f"- 置信度：{profile.get('conf', 0)}\n"
+        system += f"- 样本数：{profile.get('s_cnt', 0)}\n"
+        
+        topic = profile.get("topic", {})
+        if topic:
+            system += f"- 选题偏好：{json.dumps(topic, ensure_ascii=False)}\n"
+        
+        lang = profile.get("lang", {})
+        if lang:
+            system += f"- 语言风格：{json.dumps(lang, ensure_ascii=False)}\n"
+        
+        vis = profile.get("vis", {})
+        if vis:
+            system += f"- 视觉风格：{json.dumps(vis, ensure_ascii=False)}\n"
+        
+        struct = profile.get("struct", {})
+        if struct:
+            system += f"- 内容结构：{json.dumps(struct, ensure_ascii=False)}\n"
+        
+        forbid = profile.get("forbid", [])
+        if forbid:
+            system += f"- 额外禁用：{'、'.join(forbid)}\n"
+
     template = read_text(USER_TEMPLATE_PATH)
 
     prompt = render_template(template, {

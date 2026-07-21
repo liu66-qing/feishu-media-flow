@@ -1,0 +1,48 @@
+2026-07-14 17:39:42,368 [INFO] Starting image-compose, job_dir: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_test\case_01_学习
+2026-07-14 17:39:42,369 [INFO] Visual context from step1_analyze: scene=学习, keywords=['考研复习', '时间管理', '番茄工作法', '黄金时间段']
+2026-07-14 17:39:42,369 [INFO] Smart template match: scene=学习, template=xhs-cover-08, blank_area=全幅柔焦留白
+2026-07-14 17:39:42,369 [INFO] Template: xhs-cover-08, Content ID: CNT-V2-001, Image Mode: template
+2026-07-14 17:39:42,369 [INFO] Capturing screenshot to Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_test\case_01_学习\output\xhs-cover-08.png
+2026-07-14 17:39:43,554 [INFO] Image compose completed successfully: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_test\case_01_学习\output\xhs-cover-08.png
+2026-07-14 17:39:43,562 [INFO] Starting image-compose, job_dir: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_test\case_02_校园
+2026-07-14 17:39:43,563 [INFO] Visual context from step1_analyze: scene=活动, keywords=['社团招新', '校园活动', '摆摊转化', '新生季']
+2026-07-14 17:39:43,563 [INFO] Smart template match: scene=活动, template=xhs-cover-04, blank_area=中心
+2026-07-14 17:39:43,563 [INFO] Template: xhs-cover-04, Content ID: CNT-V2-002, Image Mode: template
+2026-07-14 17:39:43,563 [INFO] Capturing screenshot to Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_test\case_02_校园\output\xhs-cover-04.png
+2026-07-14 17:39:44,706 [INFO] Image compose completed successfully: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_test\case_02_校园\output\xhs-cover-04.png
+2026-07-14 17:39:44,714 [INFO] Starting image-compose, job_dir: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_test\case_03_美食
+2026-07-14 17:39:44,714 [INFO] Visual context from step1_analyze: scene=美食, keywords=['食堂美食', '隐藏菜单', '学生党必吃', '性价比']
+2026-07-14 17:39:44,715 [INFO] Smart template match: scene=美食, template=xhs-cover-03, blank_area=下半部分
+2026-07-14 17:39:44,715 [INFO] Template: xhs-cover-03, Content ID: CNT-V2-003, Image Mode: template
+2026-07-14 17:39:44,715 [INFO] Capturing screenshot to Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_test\case_03_美食\output\xhs-cover-03.png
+2026-07-14 17:39:46,460 [INFO] Image compose completed successfully: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_test\case_03_美食\output\xhs-cover-03.png
+2026-07-14 17:39:46,466 [INFO] Starting image-compose, job_dir: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_test\case_04_生活
+2026-07-14 17:39:46,467 [INFO] Visual context from step1_analyze: scene=生活, keywords=['宿舍改造', 'ins风', '收纳神器', '平价好物']
+2026-07-14 17:39:46,467 [INFO] Smart template match: scene=生活, template=xhs-cover-06, blank_area=上半部分
+2026-07-14 17:39:46,467 [INFO] Template: xhs-cover-06, Content ID: CNT-V2-004, Image Mode: template
+2026-07-14 17:39:46,468 [INFO] Capturing screenshot to Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_test\case_04_生活\output\xhs-cover-06.png
+2026-07-14 17:39:47,583 [INFO] Image compose completed successfully: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_test\case_04_生活\output\xhs-cover-06.png
+2026-07-14 17:39:47,590 [INFO] Starting image-compose, job_dir: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_test\case_05_穿搭
+2026-07-14 17:39:47,590 [INFO] Visual context from step1_analyze: scene=穿搭, keywords=['早秋穿搭', '学生党', '平价', '简约风']
+2026-07-14 17:39:47,590 [INFO] Smart template match: scene=穿搭, template=xhs-cover-07, blank_area=侧边
+2026-07-14 17:39:47,591 [INFO] Template: xhs-cover-07, Content ID: CNT-V2-005, Image Mode: template
+2026-07-14 17:39:47,591 [INFO] Capturing screenshot to Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_test\case_05_穿搭\output\xhs-cover-07.png
+2026-07-14 17:39:48,675 [INFO] Image compose completed successfully: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_test\case_05_穿搭\output\xhs-cover-07.png
+2026-07-14 17:39:48,680 [INFO] Starting image-compose, job_dir: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_test\case_06_活动
+2026-07-14 17:39:48,681 [INFO] Visual context from step1_analyze: scene=活动, keywords=['歌手大赛', '校园活动', '报名', '才艺展示']
+2026-07-14 17:39:48,681 [INFO] Smart template match: scene=活动, template=xhs-cover-04, blank_area=中心
+2026-07-14 17:39:48,681 [INFO] Template: xhs-cover-04, Content ID: CNT-V2-006, Image Mode: template
+2026-07-14 17:39:48,681 [INFO] Capturing screenshot to Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_test\case_06_活动\output\xhs-cover-04.png
+2026-07-14 17:39:49,805 [INFO] Image compose completed successfully: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_test\case_06_活动\output\xhs-cover-04.png
+2026-07-14 17:39:49,810 [INFO] Starting image-compose, job_dir: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_test\case_07_通知
+2026-07-14 17:39:49,811 [INFO] Visual context from step1_analyze: scene=通知, keywords=['奖学金', '申请流程', '截止日期', '材料准备']
+2026-07-14 17:39:49,811 [INFO] Smart template match: scene=通知, template=xhs-cover-02, blank_area=中心
+2026-07-14 17:39:49,811 [INFO] Template: xhs-cover-02, Content ID: CNT-V2-007, Image Mode: template
+2026-07-14 17:39:49,812 [INFO] Capturing screenshot to Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_test\case_07_通知\output\xhs-cover-02.png
+2026-07-14 17:39:51,458 [INFO] Image compose completed successfully: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_test\case_07_通知\output\xhs-cover-02.png
+2026-07-14 17:39:51,463 [INFO] Starting image-compose, job_dir: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_test\case_08_情绪
+2026-07-14 17:39:51,464 [INFO] Visual context from step1_analyze: scene=情绪, keywords=['焦虑缓解', '心理学', '情绪管理', '自我疗愈']
+2026-07-14 17:39:51,464 [INFO] Smart template match: scene=情绪, template=xhs-cover-03, blank_area=上半部分
+2026-07-14 17:39:51,464 [INFO] Template: xhs-cover-03, Content ID: CNT-V2-008, Image Mode: template
+2026-07-14 17:39:51,464 [INFO] Capturing screenshot to Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_test\case_08_情绪\output\xhs-cover-03.png
+2026-07-14 17:39:53,173 [INFO] Image compose completed successfully: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_test\case_08_情绪\output\xhs-cover-03.png

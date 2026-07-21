@@ -1,0 +1,29 @@
+{
+  "case_name": "case_04_生活",
+  "scene": "04",
+  "title": "宿舍改造计划",
+  "subtitle": "500元打造ins风小窝",
+  "visual_context": {
+    "scene_hint": "",
+    "keywords": [
+      "宿舍改造",
+      "ins风",
+      "收纳神器",
+      "平价好物"
+    ],
+    "topic_summary": "大学宿舍低成本改造分享"
+  },
+  "success": true,
+  "duration_seconds": 1.1,
+  "output_images": [
+    {
+      "name": "xhs-cover-06.png",
+      "size_kb": 42.4
+    }
+  ],
+  "template_used": "xhs-cover-06",
+  "expected_template": "xhs-cover-06",
+  "template_match": true,
+  "image_mode_used": "template",
+  "error": null
+}

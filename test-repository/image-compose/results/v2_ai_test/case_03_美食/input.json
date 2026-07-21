@@ -1,0 +1,24 @@
+{
+  "content_id": "CNT-V2AI-003",
+  "job_id": "JOB-V2AI-003",
+  "template_name": "",
+  "image_mode": "ai_bg",
+  "variables": {
+    "title": "食堂隐藏菜单大揭秘",
+    "subtitle": "这5道菜绝了",
+    "visual_context": {
+      "scene_hint": "",
+      "keywords": [
+        "食堂美食",
+        "隐藏菜单",
+        "学生党必吃",
+        "性价比"
+      ],
+      "topic_summary": "大学食堂隐藏美食推荐"
+    }
+  },
+  "output_size": {
+    "width": 1080,
+    "height": 1350
+  }
+}

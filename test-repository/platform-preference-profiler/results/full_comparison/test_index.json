@@ -1,0 +1,218 @@
+{
+  "timestamp": "2026-07-21T19:33:37.539687",
+  "topic": "大学生如何高效利用碎片化时间",
+  "model": "qwen-plus",
+  "rounds": {
+    "round1_no_profile": {
+      "xhs": {
+        "platform": "xhs",
+        "module": "content-generate-xhs",
+        "elapsed_seconds": 30.0,
+        "return_code": 0,
+        "stdout_tail": "",
+        "stderr_tail": "",
+        "output_file": "Y:\\TYUT\\creating learning club\\feishu-media-flow-main\\platform-preference-profiler\\test\\results\\full_comparison\\round1_no_profile\\xhs\\content-generate-xhs.json",
+        "error_file": null,
+        "error_data": null
+      },
+      "douyin": {
+        "platform": "douyin",
+        "module": "content-generate-douyin",
+        "elapsed_seconds": 46.8,
+        "return_code": 0,
+        "stdout_tail": "",
+        "stderr_tail": "",
+        "output_file": "Y:\\TYUT\\creating learning club\\feishu-media-flow-main\\platform-preference-profiler\\test\\results\\full_comparison\\round1_no_profile\\douyin\\content-generate-douyin.json",
+        "error_file": null,
+        "error_data": null
+      },
+      "wechat": {
+        "platform": "wechat",
+        "module": "content-generate-wechat",
+        "elapsed_seconds": 17.4,
+        "return_code": 0,
+        "stdout_tail": "",
+        "stderr_tail": "",
+        "output_file": "Y:\\TYUT\\creating learning club\\feishu-media-flow-main\\platform-preference-profiler\\test\\results\\full_comparison\\round1_no_profile\\wechat\\content-generate-wechat.json",
+        "error_file": null,
+        "error_data": null
+      },
+      "image": {
+        "platform": "image",
+        "module": "image-compose",
+        "elapsed_seconds": 17.6,
+        "return_code": 0,
+        "stdout_tail": "",
+        "stderr_tail": "",
+        "output_file": "Y:\\TYUT\\creating learning club\\feishu-media-flow-main\\platform-preference-profiler\\test\\results\\full_comparison\\round1_no_profile\\image\\image-compose.json",
+        "error_file": null,
+        "error_data": null,
+        "generated_images": [
+          "Y:\\TYUT\\creating learning club\\feishu-media-flow-main\\platform-preference-profiler\\test\\results\\full_comparison\\round1_no_profile\\image\\output\\ai_bg.png",
+          "Y:\\TYUT\\creating learning club\\feishu-media-flow-main\\platform-preference-profiler\\test\\results\\full_comparison\\round1_no_profile\\image\\output\\xhs-cover-03.png"
+        ]
+      }
+    },
+    "round2_with_profile": {
+      "xhs": {
+        "platform": "xhs",
+        "module": "content-generate-xhs",
+        "elapsed_seconds": 28.9,
+        "return_code": 0,
+        "stdout_tail": "",
+        "stderr_tail": "",
+        "output_file": "Y:\\TYUT\\creating learning club\\feishu-media-flow-main\\platform-preference-profiler\\test\\results\\full_comparison\\round2_with_profile\\xhs\\content-generate-xhs.json",
+        "error_file": null,
+        "error_data": null
+      },
+      "douyin": {
+        "platform": "douyin",
+        "module": "content-generate-douyin",
+        "elapsed_seconds": 54.0,
+        "return_code": 0,
+        "stdout_tail": "",
+        "stderr_tail": "",
+        "output_file": "Y:\\TYUT\\creating learning club\\feishu-media-flow-main\\platform-preference-profiler\\test\\results\\full_comparison\\round2_with_profile\\douyin\\content-generate-douyin.json",
+        "error_file": null,
+        "error_data": null
+      },
+      "wechat": {
+        "platform": "wechat",
+        "module": "content-generate-wechat",
+        "elapsed_seconds": 18.2,
+        "return_code": 0,
+        "stdout_tail": "",
+        "stderr_tail": "",
+        "output_file": "Y:\\TYUT\\creating learning club\\feishu-media-flow-main\\platform-preference-profiler\\test\\results\\full_comparison\\round2_with_profile\\wechat\\content-generate-wechat.json",
+        "error_file": null,
+        "error_data": null
+      },
+      "image": {
+        "platform": "image",
+        "module": "image-compose",
+        "elapsed_seconds": 11.3,
+        "return_code": 0,
+        "stdout_tail": "",
+        "stderr_tail": "",
+        "output_file": "Y:\\TYUT\\creating learning club\\feishu-media-flow-main\\platform-preference-profiler\\test\\results\\full_comparison\\round2_with_profile\\image\\image-compose.json",
+        "error_file": null,
+        "error_data": null,
+        "generated_images": [
+          "Y:\\TYUT\\creating learning club\\feishu-media-flow-main\\platform-preference-profiler\\test\\results\\full_comparison\\round2_with_profile\\image\\output\\ai_bg.png",
+          "Y:\\TYUT\\creating learning club\\feishu-media-flow-main\\platform-preference-profiler\\test\\results\\full_comparison\\round2_with_profile\\image\\output\\xhs-cover-03.png"
+        ]
+      }
+    }
+  },
+  "comparison_summary": {
+    "xhs": {
+      "without_profile": {
+        "success": true,
+        "title": "这5个10分钟，我偷偷变强了",
+        "body_length": 627,
+        "hashtags": [
+          "#大学生时间管理",
+          "#碎片时间利用",
+          "#学生党干货",
+          "#高效学习",
+          "#大学生成长日记",
+          "#自律不是苦熬"
+        ],
+        "cover_text": "这5个10分钟真香",
+        "token_usage": 6579
+      },
+      "with_profile": {
+        "success": true,
+        "title": "课间10分钟，我偷偷补回3个知识点",
+        "body_length": 523,
+        "hashtags": [
+          "#大学生时间管理",
+          "#碎片时间利用",
+          "#课间十分钟",
+          "#学生党日常",
+          "#大学生成长日记",
+          "#无广告纯分享",
+          "#plog"
+        ],
+        "cover_text": "课间10分钟补回3个知识点",
+        "token_usage": 11597
+      }
+    },
+    "douyin": {
+      "without_profile": {
+        "success": true,
+        "title": "课间5分钟到底能干啥？我试了3种方法全废了",
+        "body_length": 634,
+        "hashtags": [
+          "#大学生时间管理",
+          "#碎片时间",
+          "#课间利用"
+        ],
+        "cards_count": 5,
+        "token_usage": 9449
+      },
+      "with_profile": {
+        "success": true,
+        "title": "不是没时间，是没‘触发器’",
+        "body_length": 581,
+        "hashtags": [
+          "#大学生",
+          "#信息差",
+          "#应届生求职",
+          "#碎片时间",
+          "#逆袭"
+        ],
+        "cards_count": 5,
+        "token_usage": 13444
+      }
+    },
+    "wechat": {
+      "without_profile": {
+        "success": true,
+        "title": "碎片时间不是时间垃圾，而是认知升级的缝隙",
+        "body_length": 524,
+        "sections": [
+          "注意力残留：被低估的认知资源",
+          "时间块不是挤时间，而是养节奏",
+          "校园场景适配：从宿舍到图书馆的无缝迁移"
+        ],
+        "llm_enabled": true
+      },
+      "with_profile": {
+        "success": true,
+        "title": "别再‘填满’碎片时间，先守住注意力",
+        "body_length": 594,
+        "sections": [
+          "注意力残留：被忽视的认知成本",
+          "时间块锚点：给碎片一个‘落脚处’",
+          "场景-任务绑定：让行为自动发生"
+        ],
+        "llm_enabled": true
+      }
+    },
+    "image": {
+      "without_profile": {
+        "success": true,
+        "template": "xhs-cover-03",
+        "image_mode": "ai_bg",
+        "image_path": "Y:\\TYUT\\creating learning club\\feishu-media-flow-main\\platform-preference-profiler\\test\\results\\full_comparison\\round1_no_profile\\image\\output\\xhs-cover-03.png",
+        "ai_prompt_used": "竖版校园主题编辑海报背景，中国大学校园清晨，阳光透过梧桐树叶洒在石板路上，几位大学生背着书包走向教学楼，画面清新明亮，充满青春活力。场景设计：中国大学图书馆或自习室，18至24岁大学生学习小组，书本与笔记本电脑，专注而有朝气。画面要有一个亮眼且明确的主题视觉焦点，使用朱红、暖白、黑色与少量钴蓝形成现代校园海报配色，构图简洁有层次，在全幅柔焦留白保留干净的文字排版空间，主体不得遮挡该区域。硬性身份与场景约束：人物只能是18至24岁的中国大学生，身份呈现为学生、社团成员或校园志愿者；地点只能在中国大学校园、教学楼、图书馆、自习室、宿舍公共区、食堂或社团活动空间。禁止社会职场人士、商务会议、儿童、中学生、游客、城市街拍、纯自然风景、旅游地标、豪宅和商业影棚。禁止人物大头特写与网红摆拍，优先中景或远景、自然互动、真实校园细节。无任何文字、字母、数字、水印、logo、校徽或品牌标识；不要生成伪文字。高质量海报摄影或精致编辑插画质感，明亮、青春、有冲击力，但背景细节不能干扰后续标题。",
+        "generated_images": [
+          "Y:\\TYUT\\creating learning club\\feishu-media-flow-main\\platform-preference-profiler\\test\\results\\full_comparison\\round1_no_profile\\image\\output\\ai_bg.png",
+          "Y:\\TYUT\\creating learning club\\feishu-media-flow-main\\platform-preference-profiler\\test\\results\\full_comparison\\round1_no_profile\\image\\output\\xhs-cover-03.png"
+        ]
+      },
+      "with_profile": {
+        "success": true,
+        "template": "xhs-cover-03",
+        "image_mode": "ai_bg",
+        "image_path": "Y:\\TYUT\\creating learning club\\feishu-media-flow-main\\platform-preference-profiler\\test\\results\\full_comparison\\round2_with_profile\\image\\output\\xhs-cover-03.png",
+        "ai_prompt_used": "竖版校园主题编辑海报背景，中国大学校园清晨，阳光透过梧桐树叶洒在石板路上，几位大学生背着书包走向教学楼，画面清新明亮，充满青春活力。场景设计：中国大学图书馆或自习室，18至24岁大学生学习小组，书本与笔记本电脑，专注而有朝气。画面要有一个亮眼且明确的主题视觉焦点，使用朱红、暖白、黑色与少量钴蓝形成现代校园海报配色，构图简洁有层次，在全幅柔焦留白保留干净的文字排版空间，主体不得遮挡该区域。硬性身份与场景约束：人物只能是18至24岁的中国大学生，身份呈现为学生、社团成员或校园志愿者；地点只能在中国大学校园、教学楼、图书馆、自习室、宿舍公共区、食堂或社团活动空间。禁止社会职场人士、商务会议、儿童、中学生、游客、城市街拍、纯自然风景、旅游地标、豪宅和商业影棚。禁止人物大头特写与网红摆拍，优先中景或远景、自然互动、真实校园细节。无任何文字、字母、数字、水印、logo、校徽或品牌标识；不要生成伪文字。高质量海报摄影或精致编辑插画质感，明亮、青春、有冲击力，但背景细节不能干扰后续标题。",
+        "generated_images": [
+          "Y:\\TYUT\\creating learning club\\feishu-media-flow-main\\platform-preference-profiler\\test\\results\\full_comparison\\round2_with_profile\\image\\output\\ai_bg.png",
+          "Y:\\TYUT\\creating learning club\\feishu-media-flow-main\\platform-preference-profiler\\test\\results\\full_comparison\\round2_with_profile\\image\\output\\xhs-cover-03.png"
+        ]
+      }
+    }
+  }
+}

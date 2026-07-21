@@ -1,0 +1,15 @@
+{
+  "content_id": "TEST-001",
+  "job_id": "JOB-001",
+  "template_name": "xhs-cover-09",
+  "variables": {
+    "title": "做视频！",
+    "subtitle": "什么都可以！",
+    "bg_color": "#FF6B6B",
+    "accent_color": "#FFD700"
+  },
+  "output_size": {
+    "width": 1080,
+    "height": 1350
+  }
+}

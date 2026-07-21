@@ -1,0 +1,24 @@
+{
+  "content_id": "CNT-V2AI-002",
+  "job_id": "JOB-V2AI-002",
+  "template_name": "",
+  "image_mode": "ai_bg",
+  "variables": {
+    "title": "社团招新季来了",
+    "subtitle": "3个方法让转化率翻倍",
+    "visual_context": {
+      "scene_hint": "",
+      "keywords": [
+        "社团招新",
+        "校园活动",
+        "摆摊转化",
+        "新生季"
+      ],
+      "topic_summary": "大学社团招新活动策划与转化提升"
+    }
+  },
+  "output_size": {
+    "width": 1080,
+    "height": 1350
+  }
+}

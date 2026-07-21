@@ -1,0 +1,29 @@
+{
+  "case_name": "case_02_校园",
+  "scene": "02",
+  "title": "社团招新季来了",
+  "subtitle": "3个方法让转化率翻倍",
+  "visual_context": {
+    "scene_hint": "",
+    "keywords": [
+      "社团招新",
+      "校园活动",
+      "摆摊转化",
+      "新生季"
+    ],
+    "topic_summary": "大学社团招新活动策划与转化提升"
+  },
+  "success": true,
+  "duration_seconds": 1.1,
+  "output_images": [
+    {
+      "name": "xhs-cover-04.png",
+      "size_kb": 209.8
+    }
+  ],
+  "template_used": "xhs-cover-04",
+  "expected_template": "xhs-cover-04",
+  "template_match": true,
+  "image_mode_used": "template",
+  "error": null
+}

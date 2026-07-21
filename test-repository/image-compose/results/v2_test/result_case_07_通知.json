@@ -1,0 +1,29 @@
+{
+  "case_name": "case_07_通知",
+  "scene": "07",
+  "title": "奖学金申请指南",
+  "subtitle": "截止日期本周五",
+  "visual_context": {
+    "scene_hint": "",
+    "keywords": [
+      "奖学金",
+      "申请流程",
+      "截止日期",
+      "材料准备"
+    ],
+    "topic_summary": "大学奖学金申请流程与注意事项"
+  },
+  "success": true,
+  "duration_seconds": 1.6,
+  "output_images": [
+    {
+      "name": "xhs-cover-02.png",
+      "size_kb": 31.3
+    }
+  ],
+  "template_used": "xhs-cover-02",
+  "expected_template": "xhs-cover-02",
+  "template_match": true,
+  "image_mode_used": "template",
+  "error": null
+}

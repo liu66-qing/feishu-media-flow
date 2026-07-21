@@ -1,0 +1,15 @@
+{
+  "content_id": "CNT-CMP-IMG",
+  "job_id": "JOB-CMP-IMG",
+  "template_name": "xhs-cover-03",
+  "variables": {
+    "title": "碎片时间管理",
+    "subtitle": "大学生必看",
+    "ai_prompt": "中国大学校园清晨，阳光透过梧桐树叶洒在石板路上，几位大学生背着书包走向教学楼，画面清新明亮，充满青春活力"
+  },
+  "image_mode": "ai_bg",
+  "output_size": {
+    "width": 1080,
+    "height": 1350
+  }
+}

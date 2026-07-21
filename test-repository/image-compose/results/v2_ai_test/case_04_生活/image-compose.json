@@ -1,0 +1,13 @@
+{
+  "status": "success",
+  "timestamp": "2026-07-14T18:36:46.167842",
+  "data": {
+    "image_path": "Y:\\TYUT\\creating learning club\\feishu-media-flow-main\\image-compose\\test\\results\\v2_ai_test\\case_04_生活\\output\\xhs-cover-06.png",
+    "width": 1080,
+    "height": 1350,
+    "template_used": "xhs-cover-06",
+    "image_mode_used": "ai_bg",
+    "ai_fallback_reason": null,
+    "ai_prompt_used": "3:4竖版封面背景图，清新校园风，梧桐道光影，柔和阳光，青春明亮，浅景深背景虚化，搭配宿舍改造计划元素，柔和漫反射自然光，完整场景构图，画面饱满丰富，无任何文字、字母、数字、水印、logo，绝对不要生成任何文字，高清8K细节真实，像博主随手拍的照片，低对比度不抢文字视线，不要清晰人物正脸"
+  }
+}

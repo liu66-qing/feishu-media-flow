@@ -1,0 +1,34 @@
+{
+  "case_name": "case_06_活动",
+  "title": "校园歌手大赛",
+  "subtitle": "报名倒计时3天",
+  "visual_context": {
+    "scene_hint": "",
+    "keywords": [
+      "歌手大赛",
+      "校园活动",
+      "报名",
+      "才艺展示"
+    ],
+    "topic_summary": "校园歌手大赛活动宣传"
+  },
+  "success": true,
+  "duration_seconds": 10.5,
+  "output_images": [
+    {
+      "name": "ai_bg.png",
+      "size_kb": 441.8
+    },
+    {
+      "name": "xhs-cover-04.png",
+      "size_kb": 630.5
+    }
+  ],
+  "template_used": "xhs-cover-04",
+  "expected_template": "xhs-cover-04",
+  "template_match": true,
+  "image_mode_used": "ai_bg",
+  "ai_prompt_used": "3:4竖版封面背景图，明亮活泼风，浅彩色小元素点缀，画面干净不杂乱，青春有活力，搭配校园歌手大赛元素，柔和漫反射自然光，完整场景构图，画面饱满丰富，无任何文字、字母、数字、水印、logo，绝对不要生成任何文字，高清8K细节真实，像博主随手拍的照片，低对比度不抢文字视线，不要清晰人物正脸",
+  "ai_fallback_reason": null,
+  "error": null
+}

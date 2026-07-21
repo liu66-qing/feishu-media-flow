@@ -1,0 +1,10 @@
+2026-07-21 19:37:10,804 [INFO] Starting image-compose, job_dir: Y:\TYUT\creating learning club\feishu-media-flow-main\platform-preference-profiler\test\results\full_comparison\round2_with_profile\image
+2026-07-21 19:37:10,805 [INFO] Smart template match: scene=学习, visual_style=legacy_scene, role=cover, variant=idea, template=xhs-cover-03
+2026-07-21 19:37:10,806 [INFO] Calling DashScope text2image, model=wanx2.1-t2i-turbo, prompt=竖版校园主题编辑海报背景，中国大学校园清晨，阳光透过梧桐树叶洒在石板路上，几位大学生背着书包走向教学楼，画面清新明亮，充满青春活力。场景设计：中国大学图书馆或自..., api_key=sk-w***UDuM
+2026-07-21 19:37:11,083 [INFO] AI image task submitted: cf047f8f-fcfb-4926-8163-ca7db13ae209, polling...
+2026-07-21 19:37:19,495 [INFO] AI image generated, downloading from https://dashscope-5859.oss-cn-wulanchabu-acdr-1.aliyuncs.com/1d/fc/20260721/77c9...
+2026-07-21 19:37:19,765 [INFO] AI background saved to: Y:\TYUT\creating learning club\feishu-media-flow-main\platform-preference-profiler\test\results\full_comparison\round2_with_profile\image\output\ai_bg.png
+2026-07-21 19:37:19,825 [INFO] AI background generated: scene=学习, blank_area=全幅柔焦留白
+2026-07-21 19:37:19,825 [INFO] Template: xhs-cover-03, Content ID: CNT-CMP-IMG, Image Mode: ai_bg
+2026-07-21 19:37:19,829 [INFO] Capturing screenshot to Y:\TYUT\creating learning club\feishu-media-flow-main\platform-preference-profiler\test\results\full_comparison\round2_with_profile\image\output\xhs-cover-03.png
+2026-07-21 19:37:21,776 [INFO] Image compose completed successfully: Y:\TYUT\creating learning club\feishu-media-flow-main\platform-preference-profiler\test\results\full_comparison\round2_with_profile\image\output\xhs-cover-03.png

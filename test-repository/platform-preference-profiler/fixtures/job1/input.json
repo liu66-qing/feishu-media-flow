@@ -1,0 +1,7 @@
+{
+  "content_id": "PROF-001",
+  "job_id": "JOB-001",
+  "platforms": ["xhs", "douyin", "wechat"],
+  "samples_dir": ".data/samples",
+  "output_dir": ".data/profiles"
+}

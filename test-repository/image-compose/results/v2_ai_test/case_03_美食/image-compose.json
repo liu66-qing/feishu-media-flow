@@ -1,0 +1,13 @@
+{
+  "status": "success",
+  "timestamp": "2026-07-14T18:36:35.824883",
+  "data": {
+    "image_path": "Y:\\TYUT\\creating learning club\\feishu-media-flow-main\\image-compose\\test\\results\\v2_ai_test\\case_03_美食\\output\\xhs-cover-03.png",
+    "width": 1080,
+    "height": 1350,
+    "template_used": "xhs-cover-03",
+    "image_mode_used": "ai_bg",
+    "ai_fallback_reason": null,
+    "ai_prompt_used": "3:4竖版封面背景图，美食特写背景，暖黄灯光，食物自然虚化，有食欲，浅景深，搭配食堂隐藏菜单大揭秘元素，柔和漫反射自然光，完整场景构图，画面饱满丰富，无任何文字、字母、数字、水印、logo，绝对不要生成任何文字，高清8K细节真实，像博主随手拍的照片，低对比度不抢文字视线，不要清晰人物正脸"
+  }
+}

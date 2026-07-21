@@ -14,27 +14,86 @@ PROMPTS_DIR = SKILL_DIR / "prompts"
 OUTPUT_NAME = "content-generate-douyin.json"
 REQUIRED_FIELDS = ("content_id", "job_id", "topic")
 
-SYSTEM_PROMPT = (
-    "你是抖音图文内容创作者。风格成熟、真实、有信息增量，像一个有经验的人在复盘分享。\n"
-    "不要使用小红书风格（emoji堆砌、符号装饰、'姐妹们'等）。\n"
-    "不要营销腔、不要编造事实、不要夸大承诺。\n"
-    "所有回答必须是一个 JSON object。\n\n"
-    "## 平台约束\n"
-    "- 正文：600-1500字\n"
-    "- 封面大字：2-4行，每行3-7字\n"
-    "- 标签：3-6个\n"
-    "- 标题：口语化，有悬念或冲突感\n\n"
-    "## 卡片约束\n"
-    "- 封面外生成4-7张有序图文卡片，最后一张为summary\n"
-    "- 卡片只包含kind、section_label、title、body、highlight\n"
-    "- 不生成配音、时长、视频分镜或素材下载建议\n"
-    "- 不要求真人出镜、自然风景、实拍视频、绿幕、手机截图或外部图库\n\n"
-    "## 风格要求\n"
-    "- 开头必须有真实场景代入\n"
-    "- 结尾有编号建议（3-5条）\n"
-    "- 段落间有停顿感，每段2-4句\n"
-    "- 语气直接、不油腻"
-)
+# Platform preference profile path (V2 Schema)
+_PROFILE_DIR = SKILL_DIR.parent / ".data" / "profiles"
+_PROFILE_FILE = _PROFILE_DIR / "douyin_profile.json"
+
+
+def load_platform_profile() -> dict[str, Any] | None:
+    """Load platform preference profile (V2 Schema). Returns None if not found or expired."""
+    if not _PROFILE_FILE.exists():
+        return None
+    try:
+        profile = json.loads(_PROFILE_FILE.read_text(encoding="utf-8"))
+        # Check expiry (7 days)
+        gen_at = profile.get("gen_at", "")
+        if gen_at:
+            gen_time = datetime.fromisoformat(gen_at)
+            if gen_time.tzinfo is None:
+                gen_time = gen_time.replace(tzinfo=timezone.utc)
+            age_days = (datetime.now(timezone.utc) - gen_time).days
+            if age_days >= 7:
+                return None
+        return profile
+    except Exception:
+        return None
+
+
+def build_system_prompt() -> str:
+    """Build system prompt with platform constraints and optional preference profile."""
+    base_prompt = (
+        "你是抖音图文内容创作者。风格成熟、真实、有信息增量，像一个有经验的人在复盘分享。\n"
+        "不要使用小红书风格（emoji堆砌、符号装饰、'姐妹们'等）。\n"
+        "不要营销腔、不要编造事实、不要夸大承诺。\n"
+        "所有回答必须是一个 JSON object。\n\n"
+        "## 平台约束\n"
+        "- 正文：600-1500字\n"
+        "- 封面大字：2-4行，每行3-7字\n"
+        "- 标签：3-6个\n"
+        "- 标题：口语化，有悬念或冲突感\n\n"
+        "## 卡片约束\n"
+        "- 封面外生成4-7张有序图文卡片，最后一张为summary\n"
+        "- 卡片只包含kind、section_label、title、body、highlight\n"
+        "- 不生成配音、时长、视频分镜或素材下载建议\n"
+        "- 不要求真人出镜、自然风景、实拍视频、绿幕、手机截图或外部图库\n\n"
+        "## 风格要求\n"
+        "- 开头必须有真实场景代入\n"
+        "- 结尾有编号建议（3-5条）\n"
+        "- 段落间有停顿感，每段2-4句\n"
+        "- 语气直接、不油腻"
+    )
+    
+    # Inject platform preference profile if available
+    profile = load_platform_profile()
+    if profile:
+        base_prompt += "\n\n## 平台偏好画像（动态）\n"
+        base_prompt += f"- 置信度：{profile.get('conf', 0)}\n"
+        base_prompt += f"- 样本数：{profile.get('s_cnt', 0)}\n"
+        
+        topic = profile.get("topic", {})
+        if topic:
+            base_prompt += f"- 选题偏好：{json.dumps(topic, ensure_ascii=False)}\n"
+        
+        lang = profile.get("lang", {})
+        if lang:
+            base_prompt += f"- 语言风格：{json.dumps(lang, ensure_ascii=False)}\n"
+        
+        vis = profile.get("vis", {})
+        if vis:
+            base_prompt += f"- 视觉风格：{json.dumps(vis, ensure_ascii=False)}\n"
+        
+        struct = profile.get("struct", {})
+        if struct:
+            base_prompt += f"- 内容结构：{json.dumps(struct, ensure_ascii=False)}\n"
+        
+        forbid = profile.get("forbid", [])
+        if forbid:
+            base_prompt += f"- 额外禁用：{'、'.join(forbid)}\n"
+    
+    return base_prompt
+
+
+SYSTEM_PROMPT = build_system_prompt()
 
 
 class PipelineError(Exception):

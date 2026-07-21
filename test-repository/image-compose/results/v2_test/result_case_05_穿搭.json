@@ -1,0 +1,29 @@
+{
+  "case_name": "case_05_穿搭",
+  "scene": "05",
+  "title": "早秋穿搭公式",
+  "subtitle": "学生党平价搭配",
+  "visual_context": {
+    "scene_hint": "",
+    "keywords": [
+      "早秋穿搭",
+      "学生党",
+      "平价",
+      "简约风"
+    ],
+    "topic_summary": "大学生秋季平价穿搭推荐"
+  },
+  "success": true,
+  "duration_seconds": 1.1,
+  "output_images": [
+    {
+      "name": "xhs-cover-07.png",
+      "size_kb": 122.8
+    }
+  ],
+  "template_used": "xhs-cover-07",
+  "expected_template": "xhs-cover-07",
+  "template_match": true,
+  "image_mode_used": "template",
+  "error": null
+}

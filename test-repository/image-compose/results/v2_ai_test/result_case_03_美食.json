@@ -1,0 +1,34 @@
+{
+  "case_name": "case_03_美食",
+  "title": "食堂隐藏菜单大揭秘",
+  "subtitle": "这5道菜绝了",
+  "visual_context": {
+    "scene_hint": "",
+    "keywords": [
+      "食堂美食",
+      "隐藏菜单",
+      "学生党必吃",
+      "性价比"
+    ],
+    "topic_summary": "大学食堂隐藏美食推荐"
+  },
+  "success": true,
+  "duration_seconds": 13.0,
+  "output_images": [
+    {
+      "name": "ai_bg.png",
+      "size_kb": 889.7
+    },
+    {
+      "name": "xhs-cover-03.png",
+      "size_kb": 1469.8
+    }
+  ],
+  "template_used": "xhs-cover-03",
+  "expected_template": "xhs-cover-03",
+  "template_match": true,
+  "image_mode_used": "ai_bg",
+  "ai_prompt_used": "3:4竖版封面背景图，美食特写背景，暖黄灯光，食物自然虚化，有食欲，浅景深，搭配食堂隐藏菜单大揭秘元素，柔和漫反射自然光，完整场景构图，画面饱满丰富，无任何文字、字母、数字、水印、logo，绝对不要生成任何文字，高清8K细节真实，像博主随手拍的照片，低对比度不抢文字视线，不要清晰人物正脸",
+  "ai_fallback_reason": null,
+  "error": null
+}

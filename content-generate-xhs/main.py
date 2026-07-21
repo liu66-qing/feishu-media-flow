@@ -21,21 +21,81 @@ if _CONSTRAINTS_FILE.exists():
     import json as _json
     _XHS_CONSTRAINTS = _json.loads(_CONSTRAINTS_FILE.read_text(encoding="utf-8")).get("xhs", {})
 
-SYSTEM_PROMPT = (
-    "你是小红书内容共创编辑。整体风格年轻、真诚、不油腻，像真人分享经验。\n"
-    '不要使用"建议""一定""绝对"这三个词，不要编造材料里没有的事实。\n'
-    "所有回答必须是一个 JSON object。\n\n"
-    "## 平台约束\n"
-    f"- 标题：最多{_XHS_CONSTRAINTS.get('title_max_length', 20)}字\n"
-    f"- 正文：{_XHS_CONSTRAINTS.get('body_min_length', 400)}-{_XHS_CONSTRAINTS.get('body_max_length', 900)}字\n"
-    f"- 封面文案：最多{_XHS_CONSTRAINTS.get('cover_text_max_length', 15)}字\n"
-    f"- 标签：最多{_XHS_CONSTRAINTS.get('max_tags', 10)}个\n"
-    f"- 禁用词：{'、'.join(_XHS_CONSTRAINTS.get('forbidden_words', []))}\n\n"
-    "## 风格要求\n"
-    f"{_XHS_CONSTRAINTS.get('style_guide', '')}\n\n"
-    "## 内容结构\n"
-    f"{_XHS_CONSTRAINTS.get('content_structure', '')}"
-)
+# Platform preference profile path (V2 Schema)
+_PROFILE_DIR = SKILL_DIR.parent / ".data" / "profiles"
+_PROFILE_FILE = _PROFILE_DIR / "xhs_profile.json"
+
+def load_platform_profile() -> dict[str, Any] | None:
+    """Load platform preference profile (V2 Schema). Returns None if not found or expired."""
+    if not _PROFILE_FILE.exists():
+        return None
+    try:
+        profile = json.loads(_PROFILE_FILE.read_text(encoding="utf-8"))
+        # Check expiry (7 days)
+        from datetime import timedelta
+        gen_at = profile.get("gen_at", "")
+        if gen_at:
+            gen_time = datetime.fromisoformat(gen_at)
+            if gen_time.tzinfo is None:
+                from datetime import timezone as _tz
+                gen_time = gen_time.replace(tzinfo=_tz.utc)
+            age_days = (datetime.now(timezone.utc) - gen_time).days
+            if age_days >= 7:
+                return None
+        return profile
+    except Exception:
+        return None
+
+
+def build_system_prompt() -> str:
+    """Build system prompt with platform constraints and optional preference profile."""
+    base_prompt = (
+        "你是小红书内容共创编辑。整体风格年轻、真诚、不油腻，像真人分享经验。\n"
+        '不要使用"建议""一定""绝对"这三个词，不要编造材料里没有的事实。\n'
+        "所有回答必须是一个 JSON object。\n\n"
+        "## 平台约束\n"
+        f"- 标题：最多{_XHS_CONSTRAINTS.get('title_max_length', 20)}字\n"
+        f"- 正文：{_XHS_CONSTRAINTS.get('body_min_length', 400)}-{_XHS_CONSTRAINTS.get('body_max_length', 900)}字\n"
+        f"- 封面文案：最多{_XHS_CONSTRAINTS.get('cover_text_max_length', 15)}字\n"
+        f"- 标签：最多{_XHS_CONSTRAINTS.get('max_tags', 10)}个\n"
+        f"- 禁用词：{'、'.join(_XHS_CONSTRAINTS.get('forbidden_words', []))}\n\n"
+        "## 风格要求\n"
+        f"{_XHS_CONSTRAINTS.get('style_guide', '')}\n\n"
+        "## 内容结构\n"
+        f"{_XHS_CONSTRAINTS.get('content_structure', '')}"
+    )
+    
+    # Inject platform preference profile if available
+    profile = load_platform_profile()
+    if profile:
+        base_prompt += "\n\n## 平台偏好画像（动态）\n"
+        base_prompt += f"- 置信度：{profile.get('conf', 0)}\n"
+        base_prompt += f"- 样本数：{profile.get('s_cnt', 0)}\n"
+        
+        topic = profile.get("topic", {})
+        if topic:
+            base_prompt += f"- 选题偏好：{json.dumps(topic, ensure_ascii=False)}\n"
+        
+        lang = profile.get("lang", {})
+        if lang:
+            base_prompt += f"- 语言风格：{json.dumps(lang, ensure_ascii=False)}\n"
+        
+        vis = profile.get("vis", {})
+        if vis:
+            base_prompt += f"- 视觉风格：{json.dumps(vis, ensure_ascii=False)}\n"
+        
+        struct = profile.get("struct", {})
+        if struct:
+            base_prompt += f"- 内容结构：{json.dumps(struct, ensure_ascii=False)}\n"
+        
+        forbid = profile.get("forbid", [])
+        if forbid:
+            base_prompt += f"- 额外禁用：{'、'.join(forbid)}\n"
+    
+    return base_prompt
+
+
+SYSTEM_PROMPT = build_system_prompt()
 
 
 class PipelineError(Exception):
@@ -234,6 +294,8 @@ def run(job_dir: Path) -> int:
         result = normalize_final(job, context)
         validate_output(result)
         result["pipeline_log"] = pipeline_log
+        # 保留 step1_analyze 供下游（封面图生成）使用
+        result["step1_analyze"] = context.get("step1_analyze", {})
         write_json(job_dir / OUTPUT_NAME, result)
         return 0
     except Exception as exc:

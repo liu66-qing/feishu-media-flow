@@ -1,0 +1,88 @@
+2026-07-14 18:36:01,919 [INFO] Starting image-compose, job_dir: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_ai_test\case_01_学习
+2026-07-14 18:36:01,920 [INFO] Visual context from step1_analyze: scene=学习, keywords=['考研复习', '时间管理', '番茄工作法', '黄金时间段']
+2026-07-14 18:36:01,920 [INFO] Smart template match: scene=学习, template=xhs-cover-08, blank_area=全幅柔焦留白
+2026-07-14 18:36:01,921 [INFO] Calling DashScope multimodal-generation, model=wanx2.1-t2i-turbo, prompt=3:4竖版封面背景图，ins简约学习风，柔和书桌场景，笔记本、钢笔、咖啡元素，低饱和奶fufu色调，搭配考研复习时间规划元素，柔和漫反射自然光，完整场景构图，画..., api_key=sk-w***UDuM
+2026-07-14 18:36:02,320 [INFO] AI image task submitted: 3461e0fc-024c-483d-8970-3c05f9107a84, polling...
+2026-07-14 18:36:10,710 [INFO] AI image generated, downloading from https://dashscope-5859.oss-cn-wulanchabu-acdr-1.aliyuncs.com/1d/cb/20260714/77c9...
+2026-07-14 18:36:11,126 [INFO] AI background saved to: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_ai_test\case_01_学习\output\ai_bg.png
+2026-07-14 18:36:11,170 [INFO] AI background generated: scene=学习, blank_area=全幅柔焦留白
+2026-07-14 18:36:11,170 [INFO] Template: xhs-cover-08, Content ID: CNT-V2AI-001, Image Mode: ai_bg
+2026-07-14 18:36:11,180 [INFO] Capturing screenshot to Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_ai_test\case_01_学习\output\xhs-cover-08.png
+2026-07-14 18:36:12,684 [INFO] Image compose completed successfully: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_ai_test\case_01_学习\output\xhs-cover-08.png
+2026-07-14 18:36:12,692 [INFO] Starting image-compose, job_dir: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_ai_test\case_02_校园
+2026-07-14 18:36:12,692 [INFO] Visual context from step1_analyze: scene=活动, keywords=['社团招新', '校园活动', '摆摊转化', '新生季']
+2026-07-14 18:36:12,693 [INFO] Smart template match: scene=活动, template=xhs-cover-04, blank_area=中心
+2026-07-14 18:36:12,693 [INFO] Calling DashScope multimodal-generation, model=wanx2.1-t2i-turbo, prompt=3:4竖版封面背景图，明亮活泼风，浅彩色小元素点缀，画面干净不杂乱，青春有活力，搭配社团招新季来了元素，柔和漫反射自然光，完整场景构图，画面饱满丰富，无任何文字..., api_key=sk-w***UDuM
+2026-07-14 18:36:12,909 [INFO] AI image task submitted: 18c05306-70f0-4bda-9207-2bc58a401326, polling...
+2026-07-14 18:36:21,245 [INFO] AI image generated, downloading from https://dashscope-5859.oss-cn-wulanchabu-acdr-1.aliyuncs.com/1d/40/20260714/77c9...
+2026-07-14 18:36:21,473 [INFO] AI background saved to: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_ai_test\case_02_校园\output\ai_bg.png
+2026-07-14 18:36:21,476 [INFO] AI background generated: scene=活动, blank_area=中心
+2026-07-14 18:36:21,476 [INFO] Template: xhs-cover-04, Content ID: CNT-V2AI-002, Image Mode: ai_bg
+2026-07-14 18:36:21,483 [INFO] Capturing screenshot to Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_ai_test\case_02_校园\output\xhs-cover-04.png
+2026-07-14 18:36:22,827 [INFO] Image compose completed successfully: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_ai_test\case_02_校园\output\xhs-cover-04.png
+2026-07-14 18:36:22,834 [INFO] Starting image-compose, job_dir: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_ai_test\case_03_美食
+2026-07-14 18:36:22,835 [INFO] Visual context from step1_analyze: scene=美食, keywords=['食堂美食', '隐藏菜单', '学生党必吃', '性价比']
+2026-07-14 18:36:22,835 [INFO] Smart template match: scene=美食, template=xhs-cover-03, blank_area=下半部分
+2026-07-14 18:36:22,836 [INFO] Calling DashScope multimodal-generation, model=wanx2.1-t2i-turbo, prompt=3:4竖版封面背景图，美食特写背景，暖黄灯光，食物自然虚化，有食欲，浅景深，搭配食堂隐藏菜单大揭秘元素，柔和漫反射自然光，完整场景构图，画面饱满丰富，无任何文字..., api_key=sk-w***UDuM
+2026-07-14 18:36:23,094 [INFO] AI image task submitted: 59a93e2f-6a15-4370-a9b7-8ccd4f2f8363, polling...
+2026-07-14 18:36:33,531 [INFO] AI image generated, downloading from https://dashscope-5859.oss-cn-wulanchabu-acdr-1.aliyuncs.com/1d/43/20260714/77c9...
+2026-07-14 18:36:33,764 [INFO] AI background saved to: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_ai_test\case_03_美食\output\ai_bg.png
+2026-07-14 18:36:33,768 [INFO] AI background generated: scene=美食, blank_area=下半部分
+2026-07-14 18:36:33,768 [INFO] Template: xhs-cover-03, Content ID: CNT-V2AI-003, Image Mode: ai_bg
+2026-07-14 18:36:33,772 [INFO] Capturing screenshot to Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_ai_test\case_03_美食\output\xhs-cover-03.png
+2026-07-14 18:36:35,825 [INFO] Image compose completed successfully: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_ai_test\case_03_美食\output\xhs-cover-03.png
+2026-07-14 18:36:35,832 [INFO] Starting image-compose, job_dir: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_ai_test\case_04_生活
+2026-07-14 18:36:35,833 [INFO] Visual context from step1_analyze: scene=生活, keywords=['宿舍改造', 'ins风', '收纳神器', '平价好物']
+2026-07-14 18:36:35,833 [INFO] Smart template match: scene=生活, template=xhs-cover-06, blank_area=上半部分
+2026-07-14 18:36:35,834 [INFO] Calling DashScope multimodal-generation, model=wanx2.1-t2i-turbo, prompt=3:4竖版封面背景图，清新校园风，梧桐道光影，柔和阳光，青春明亮，浅景深背景虚化，搭配宿舍改造计划元素，柔和漫反射自然光，完整场景构图，画面饱满丰富，无任何文字..., api_key=sk-w***UDuM
+2026-07-14 18:36:36,052 [INFO] AI image task submitted: 63fc0be5-5cd4-4812-8598-43fa5e85b39f, polling...
+2026-07-14 18:36:44,459 [INFO] AI image generated, downloading from https://dashscope-5859.oss-cn-wulanchabu-acdr-1.aliyuncs.com/1d/74/20260714/77c9...
+2026-07-14 18:36:44,717 [INFO] AI background saved to: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_ai_test\case_04_生活\output\ai_bg.png
+2026-07-14 18:36:44,721 [INFO] AI background generated: scene=生活, blank_area=上半部分
+2026-07-14 18:36:44,722 [INFO] Template: xhs-cover-06, Content ID: CNT-V2AI-004, Image Mode: ai_bg
+2026-07-14 18:36:44,726 [INFO] Capturing screenshot to Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_ai_test\case_04_生活\output\xhs-cover-06.png
+2026-07-14 18:36:46,168 [INFO] Image compose completed successfully: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_ai_test\case_04_生活\output\xhs-cover-06.png
+2026-07-14 18:36:46,176 [INFO] Starting image-compose, job_dir: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_ai_test\case_05_穿搭
+2026-07-14 18:36:46,176 [INFO] Visual context from step1_analyze: scene=穿搭, keywords=['早秋穿搭', '学生党', '平价', '简约风']
+2026-07-14 18:36:46,176 [INFO] Smart template match: scene=穿搭, template=xhs-cover-07, blank_area=侧边
+2026-07-14 18:36:46,177 [INFO] Calling DashScope multimodal-generation, model=wanx2.1-t2i-turbo, prompt=3:4竖版封面背景图，简约穿搭背景，柔和光线，衣物元素边角虚化，干净ins风，搭配早秋穿搭公式元素，柔和漫反射自然光，完整场景构图，画面饱满丰富，无任何文字、字..., api_key=sk-w***UDuM
+2026-07-14 18:36:46,394 [INFO] AI image task submitted: bbb06253-f40d-4133-9628-b084306e836b, polling...
+2026-07-14 18:36:54,746 [INFO] AI image generated, downloading from https://dashscope-5859.oss-cn-wulanchabu-acdr-1.aliyuncs.com/1d/f1/20260714/77c9...
+2026-07-14 18:36:55,027 [INFO] AI background saved to: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_ai_test\case_05_穿搭\output\ai_bg.png
+2026-07-14 18:36:55,030 [INFO] AI background generated: scene=穿搭, blank_area=侧边
+2026-07-14 18:36:55,030 [INFO] Template: xhs-cover-07, Content ID: CNT-V2AI-005, Image Mode: ai_bg
+2026-07-14 18:36:55,032 [INFO] Capturing screenshot to Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_ai_test\case_05_穿搭\output\xhs-cover-07.png
+2026-07-14 18:36:56,353 [INFO] Image compose completed successfully: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_ai_test\case_05_穿搭\output\xhs-cover-07.png
+2026-07-14 18:36:56,360 [INFO] Starting image-compose, job_dir: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_ai_test\case_06_活动
+2026-07-14 18:36:56,361 [INFO] Visual context from step1_analyze: scene=活动, keywords=['歌手大赛', '校园活动', '报名', '才艺展示']
+2026-07-14 18:36:56,361 [INFO] Smart template match: scene=活动, template=xhs-cover-04, blank_area=中心
+2026-07-14 18:36:56,361 [INFO] Calling DashScope multimodal-generation, model=wanx2.1-t2i-turbo, prompt=3:4竖版封面背景图，明亮活泼风，浅彩色小元素点缀，画面干净不杂乱，青春有活力，搭配校园歌手大赛元素，柔和漫反射自然光，完整场景构图，画面饱满丰富，无任何文字、..., api_key=sk-w***UDuM
+2026-07-14 18:36:56,563 [INFO] AI image task submitted: a289eaac-b88d-4718-9171-eda83880649e, polling...
+2026-07-14 18:37:05,424 [INFO] AI image generated, downloading from https://dashscope-5859.oss-cn-wulanchabu-acdr-1.aliyuncs.com/1d/8c/20260714/77c9...
+2026-07-14 18:37:05,605 [INFO] AI background saved to: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_ai_test\case_06_活动\output\ai_bg.png
+2026-07-14 18:37:05,607 [INFO] AI background generated: scene=活动, blank_area=中心
+2026-07-14 18:37:05,607 [INFO] Template: xhs-cover-04, Content ID: CNT-V2AI-006, Image Mode: ai_bg
+2026-07-14 18:37:05,611 [INFO] Capturing screenshot to Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_ai_test\case_06_活动\output\xhs-cover-04.png
+2026-07-14 18:37:06,826 [INFO] Image compose completed successfully: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_ai_test\case_06_活动\output\xhs-cover-04.png
+2026-07-14 18:37:06,834 [INFO] Starting image-compose, job_dir: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_ai_test\case_07_通知
+2026-07-14 18:37:06,835 [INFO] Visual context from step1_analyze: scene=通知, keywords=['奖学金', '申请流程', '截止日期', '材料准备']
+2026-07-14 18:37:06,835 [INFO] Smart template match: scene=通知, template=xhs-cover-02, blank_area=中心
+2026-07-14 18:37:06,836 [INFO] Calling DashScope multimodal-generation, model=wanx2.1-t2i-turbo, prompt=3:4竖版封面背景图，柔和渐变背景，极简几何小装饰，干净正式，搭配奖学金申请指南元素，柔和漫反射自然光，完整场景构图，画面饱满丰富，无任何文字、字母、数字、水印..., api_key=sk-w***UDuM
+2026-07-14 18:37:07,058 [INFO] AI image task submitted: 04c67a8f-adb6-4100-80f1-a949d3c21893, polling...
+2026-07-14 18:37:15,472 [INFO] AI image generated, downloading from https://dashscope-5859.oss-cn-wulanchabu-acdr-1.aliyuncs.com/1d/34/20260714/77c9...
+2026-07-14 18:37:15,766 [INFO] AI background saved to: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_ai_test\case_07_通知\output\ai_bg.png
+2026-07-14 18:37:15,770 [INFO] AI background generated: scene=通知, blank_area=中心
+2026-07-14 18:37:15,770 [INFO] Template: xhs-cover-02, Content ID: CNT-V2AI-007, Image Mode: ai_bg
+2026-07-14 18:37:15,775 [INFO] Capturing screenshot to Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_ai_test\case_07_通知\output\xhs-cover-02.png
+2026-07-14 18:37:18,162 [INFO] Image compose completed successfully: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_ai_test\case_07_通知\output\xhs-cover-02.png
+2026-07-14 18:37:18,169 [INFO] Starting image-compose, job_dir: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_ai_test\case_08_情绪
+2026-07-14 18:37:18,170 [INFO] Visual context from step1_analyze: scene=情绪, keywords=['焦虑缓解', '心理学', '情绪管理', '自我疗愈']
+2026-07-14 18:37:18,170 [INFO] Smart template match: scene=情绪, template=xhs-cover-03, blank_area=上半部分
+2026-07-14 18:37:18,170 [INFO] Calling DashScope multimodal-generation, model=wanx2.1-t2i-turbo, prompt=3:4竖版封面背景图，治愈氛围感，柔和夕阳光影，低饱和色调，大光圈背景虚化，搭配焦虑时读这篇元素，柔和漫反射自然光，完整场景构图，画面饱满丰富，无任何文字、字母..., api_key=sk-w***UDuM
+2026-07-14 18:37:18,374 [INFO] AI image task submitted: b2dfe081-eb62-4557-b9a8-5aca7c05a2ed, polling...
+2026-07-14 18:37:28,804 [INFO] AI image generated, downloading from https://dashscope-5859.oss-cn-wulanchabu-acdr-1.aliyuncs.com/1d/af/20260714/77c9...
+2026-07-14 18:37:29,026 [INFO] AI background saved to: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_ai_test\case_08_情绪\output\ai_bg.png
+2026-07-14 18:37:29,029 [INFO] AI background generated: scene=情绪, blank_area=上半部分
+2026-07-14 18:37:29,029 [INFO] Template: xhs-cover-03, Content ID: CNT-V2AI-008, Image Mode: ai_bg
+2026-07-14 18:37:29,033 [INFO] Capturing screenshot to Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_ai_test\case_08_情绪\output\xhs-cover-03.png
+2026-07-14 18:37:31,026 [INFO] Image compose completed successfully: Y:\TYUT\creating learning club\feishu-media-flow-main\image-compose\test\results\v2_ai_test\case_08_情绪\output\xhs-cover-03.png

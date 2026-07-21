@@ -1,0 +1,13 @@
+{
+  "status": "success",
+  "timestamp": "2026-07-14T17:39:48.674867",
+  "data": {
+    "image_path": "Y:\\TYUT\\creating learning club\\feishu-media-flow-main\\image-compose\\test\\results\\v2_test\\case_05_穿搭\\output\\xhs-cover-07.png",
+    "width": 1080,
+    "height": 1350,
+    "template_used": "xhs-cover-07",
+    "image_mode_used": "template",
+    "ai_fallback_reason": null,
+    "ai_prompt_used": null
+  }
+}

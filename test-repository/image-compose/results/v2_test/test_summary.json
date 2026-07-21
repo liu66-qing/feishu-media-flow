@@ -1,0 +1,242 @@
+{
+  "timestamp": "2026-07-14T17:39:53.175586",
+  "total_cases": 8,
+  "passed": 8,
+  "failed": 0,
+  "template_matched": 8,
+  "template_mismatched": 0,
+  "results": [
+    {
+      "case_name": "case_01_学习",
+      "scene": "01",
+      "title": "考研复习时间规划",
+      "subtitle": "每天多学2小时的秘密",
+      "visual_context": {
+        "scene_hint": "",
+        "keywords": [
+          "考研复习",
+          "时间管理",
+          "番茄工作法",
+          "黄金时间段"
+        ],
+        "topic_summary": "大学生考研复习时间规划指南"
+      },
+      "success": true,
+      "duration_seconds": 1.2,
+      "output_images": [
+        {
+          "name": "xhs-cover-08.png",
+          "size_kb": 30.9
+        }
+      ],
+      "template_used": "xhs-cover-08",
+      "expected_template": "xhs-cover-08",
+      "template_match": true,
+      "image_mode_used": "template",
+      "error": null
+    },
+    {
+      "case_name": "case_02_校园",
+      "scene": "02",
+      "title": "社团招新季来了",
+      "subtitle": "3个方法让转化率翻倍",
+      "visual_context": {
+        "scene_hint": "",
+        "keywords": [
+          "社团招新",
+          "校园活动",
+          "摆摊转化",
+          "新生季"
+        ],
+        "topic_summary": "大学社团招新活动策划与转化提升"
+      },
+      "success": true,
+      "duration_seconds": 1.1,
+      "output_images": [
+        {
+          "name": "xhs-cover-04.png",
+          "size_kb": 209.8
+        }
+      ],
+      "template_used": "xhs-cover-04",
+      "expected_template": "xhs-cover-04",
+      "template_match": true,
+      "image_mode_used": "template",
+      "error": null
+    },
+    {
+      "case_name": "case_03_美食",
+      "scene": "03",
+      "title": "食堂隐藏菜单大揭秘",
+      "subtitle": "这5道菜绝了",
+      "visual_context": {
+        "scene_hint": "",
+        "keywords": [
+          "食堂美食",
+          "隐藏菜单",
+          "学生党必吃",
+          "性价比"
+        ],
+        "topic_summary": "大学食堂隐藏美食推荐"
+      },
+      "success": true,
+      "duration_seconds": 1.7,
+      "output_images": [
+        {
+          "name": "xhs-cover-03.png",
+          "size_kb": 74.2
+        }
+      ],
+      "template_used": "xhs-cover-03",
+      "expected_template": "xhs-cover-03",
+      "template_match": true,
+      "image_mode_used": "template",
+      "error": null
+    },
+    {
+      "case_name": "case_04_生活",
+      "scene": "04",
+      "title": "宿舍改造计划",
+      "subtitle": "500元打造ins风小窝",
+      "visual_context": {
+        "scene_hint": "",
+        "keywords": [
+          "宿舍改造",
+          "ins风",
+          "收纳神器",
+          "平价好物"
+        ],
+        "topic_summary": "大学宿舍低成本改造分享"
+      },
+      "success": true,
+      "duration_seconds": 1.1,
+      "output_images": [
+        {
+          "name": "xhs-cover-06.png",
+          "size_kb": 42.4
+        }
+      ],
+      "template_used": "xhs-cover-06",
+      "expected_template": "xhs-cover-06",
+      "template_match": true,
+      "image_mode_used": "template",
+      "error": null
+    },
+    {
+      "case_name": "case_05_穿搭",
+      "scene": "05",
+      "title": "早秋穿搭公式",
+      "subtitle": "学生党平价搭配",
+      "visual_context": {
+        "scene_hint": "",
+        "keywords": [
+          "早秋穿搭",
+          "学生党",
+          "平价",
+          "简约风"
+        ],
+        "topic_summary": "大学生秋季平价穿搭推荐"
+      },
+      "success": true,
+      "duration_seconds": 1.1,
+      "output_images": [
+        {
+          "name": "xhs-cover-07.png",
+          "size_kb": 122.8
+        }
+      ],
+      "template_used": "xhs-cover-07",
+      "expected_template": "xhs-cover-07",
+      "template_match": true,
+      "image_mode_used": "template",
+      "error": null
+    },
+    {
+      "case_name": "case_06_活动",
+      "scene": "06",
+      "title": "校园歌手大赛",
+      "subtitle": "报名倒计时3天",
+      "visual_context": {
+        "scene_hint": "",
+        "keywords": [
+          "歌手大赛",
+          "校园活动",
+          "报名",
+          "才艺展示"
+        ],
+        "topic_summary": "校园歌手大赛活动宣传"
+      },
+      "success": true,
+      "duration_seconds": 1.1,
+      "output_images": [
+        {
+          "name": "xhs-cover-04.png",
+          "size_kb": 209.4
+        }
+      ],
+      "template_used": "xhs-cover-04",
+      "expected_template": "xhs-cover-04",
+      "template_match": true,
+      "image_mode_used": "template",
+      "error": null
+    },
+    {
+      "case_name": "case_07_通知",
+      "scene": "07",
+      "title": "奖学金申请指南",
+      "subtitle": "截止日期本周五",
+      "visual_context": {
+        "scene_hint": "",
+        "keywords": [
+          "奖学金",
+          "申请流程",
+          "截止日期",
+          "材料准备"
+        ],
+        "topic_summary": "大学奖学金申请流程与注意事项"
+      },
+      "success": true,
+      "duration_seconds": 1.6,
+      "output_images": [
+        {
+          "name": "xhs-cover-02.png",
+          "size_kb": 31.3
+        }
+      ],
+      "template_used": "xhs-cover-02",
+      "expected_template": "xhs-cover-02",
+      "template_match": true,
+      "image_mode_used": "template",
+      "error": null
+    },
+    {
+      "case_name": "case_08_情绪",
+      "scene": "08",
+      "title": "焦虑时读这篇",
+      "subtitle": "5个心理学小技巧",
+      "visual_context": {
+        "scene_hint": "",
+        "keywords": [
+          "焦虑缓解",
+          "心理学",
+          "情绪管理",
+          "自我疗愈"
+        ],
+        "topic_summary": "大学生焦虑情绪缓解方法"
+      },
+      "success": true,
+      "duration_seconds": 1.7,
+      "output_images": [
+        {
+          "name": "xhs-cover-03.png",
+          "size_kb": 64.4
+        }
+      ],
+      "template_used": "xhs-cover-03",
+      "expected_template": "xhs-cover-03",
+      "template_match": true,
+      "image_mode_used": "template",
+      "error": null
+    }
+  ]
+}

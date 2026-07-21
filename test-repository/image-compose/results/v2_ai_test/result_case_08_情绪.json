@@ -1,0 +1,34 @@
+{
+  "case_name": "case_08_情绪",
+  "title": "焦虑时读这篇",
+  "subtitle": "5个心理学小技巧",
+  "visual_context": {
+    "scene_hint": "",
+    "keywords": [
+      "焦虑缓解",
+      "心理学",
+      "情绪管理",
+      "自我疗愈"
+    ],
+    "topic_summary": "大学生焦虑情绪缓解方法"
+  },
+  "success": true,
+  "duration_seconds": 12.9,
+  "output_images": [
+    {
+      "name": "ai_bg.png",
+      "size_kb": 594.5
+    },
+    {
+      "name": "xhs-cover-03.png",
+      "size_kb": 1081.6
+    }
+  ],
+  "template_used": "xhs-cover-03",
+  "expected_template": "xhs-cover-03",
+  "template_match": true,
+  "image_mode_used": "ai_bg",
+  "ai_prompt_used": "3:4竖版封面背景图，治愈氛围感，柔和夕阳光影，低饱和色调，大光圈背景虚化，搭配焦虑时读这篇元素，柔和漫反射自然光，完整场景构图，画面饱满丰富，无任何文字、字母、数字、水印、logo，绝对不要生成任何文字，高清8K细节真实，像博主随手拍的照片，低对比度不抢文字视线，不要清晰人物正脸",
+  "ai_fallback_reason": null,
+  "error": null
+}
