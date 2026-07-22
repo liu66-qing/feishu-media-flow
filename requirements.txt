@@ -6,3 +6,8 @@ pydantic-settings==2.7.1
 python-dotenv==1.0.1
 openai>=1.40.0,<3.0.0
 -r image-compose/requirements.txt
+-r hot-rewrite/requirements.txt
+-r platform-sample-collector/requirements.txt
+-r platform-preference-profiler/requirements.txt
+-r platform-metrics-collector/requirements.txt
+-r video-generate/requirements.txt

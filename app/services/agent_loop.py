@@ -9,6 +9,7 @@ callbacks advance individual items.
 """
 
 import asyncio
+import hashlib
 import json
 import logging
 from datetime import datetime, timedelta, timezone
@@ -25,6 +26,7 @@ from app.models import (
     TopicStatus,
 )
 from app.services.bitable import BitableClient
+from app.services.analytics import build_weekly_performance_report, render_weekly_report_markdown
 from app.services.cards import (
     build_publish_review_card,
     build_schedule_card,
@@ -228,7 +230,21 @@ class AgentLoop:
                 return {"status": "error", "detail": "unknown platform"}
             if not topic:
                 return {"status": "error", "detail": "missing topic_title"}
-            asyncio.create_task(self.create_content_from_topic(platform, topic))
+            material = {
+                "material_id": str(action_value.get("material_id", "")),
+                "title": topic,
+                "source": str(action_value.get("source", "")),
+                "source_url": str(action_value.get("source_url", "")),
+                "angle_suggestion": str(action_value.get("angle", "")),
+                "suggested_platform": platform.value,
+                "heat_score": action_value.get("heat_score", ""),
+                "relevance_score": action_value.get("relevance_score", ""),
+                "data_status": str(action_value.get("data_status", "unknown")),
+                "collected_at": str(action_value.get("collected_at", "")),
+            }
+            asyncio.create_task(
+                self.create_content_from_topic(platform, topic, materials=[material])
+            )
             return {"status": "accepted", "topic": topic, "platform": platform.value}
         if action in {
             "approve_all",
@@ -285,6 +301,9 @@ class AgentLoop:
             "advanced": await self.advance_due_items(),
             "expired": await self._expire_stale(),
             "weekly_material": await self._check_weekly_material_card(),
+            "metrics_collected": await self.collect_due_metrics(),
+            "preferences": await self.refresh_platform_preferences(),
+            "weekly_performance_report": await self.generate_weekly_performance_report(),
         }
         logger.info("Agent tick complete: %s", results)
         return results
@@ -598,7 +617,16 @@ class AgentLoop:
         result = await asyncio.to_thread(self.publisher.publish, payload)
 
         if result.success:
-            await self._update_item_status(record, DraftStatus.PUBLISHED.value)
+            published_at = result.published_at or datetime.now(timezone.utc).isoformat()
+            publish_fields = {
+                "post_id": result.post_id,
+                "post_url": result.post_url,
+                "published_at": _datetime_to_feishu_ms(_parse_feishu_datetime(published_at) or datetime.now(timezone.utc)),
+                "metrics_snapshots": "[]",
+                "metrics_attempts": "[]",
+            }
+            await self._update_item_status(record, DraftStatus.PUBLISHED.value, publish_fields)
+            await self._write_publish_log(record, payload, result, published_at)
             await self.notifier.notify_admins(
                 f"✅ 发布成功\n平台：{platform}\n标题：{payload.title}"
             )
@@ -607,6 +635,28 @@ class AgentLoop:
             await self._update_item_status(record, DraftStatus.FAILED.value)
             await self._notify_publish_failure(record, result.message)
             return {"action": "publish_failed", "reason": result.message}
+
+    async def _write_publish_log(self, record: dict, payload: PublishPayload, result, published_at: str) -> None:
+        if not self.settings.feishu_table_publish_logs:
+            return
+        fields = record.get("fields", {})
+        try:
+            await self.bitable.create_record(
+                "publish_logs",
+                {
+                    "content_id": fields.get("content_id", ""),
+                    "platform": payload.platform,
+                    "post_id": result.post_id,
+                    "post_url": result.post_url,
+                    "published_at": _datetime_to_feishu_ms(_parse_feishu_datetime(published_at) or datetime.now(timezone.utc)),
+                    "profile_version": fields.get("profile_version", "static"),
+                    "materials": fields.get("materials", "[]"),
+                    "event_type": "published",
+                    "payload": _safe_json_str({"title": payload.title, "tags": payload.tags}),
+                },
+            )
+        except Exception as exc:
+            logger.warning("Failed to write publish log: %s", exc)
 
     async def _get_account_for_platform(self, platform: str) -> str | None:
         """Look up configured account name from accounts table."""
@@ -652,12 +702,16 @@ class AgentLoop:
         """Call the appropriate generation skill."""
         from app.services.skill_runner import dry_run_skill_result
 
+        profile = _load_platform_profile(self.settings.data_dir, platform.value)
+        profile_version = _profile_version(profile)
         job = SkillJob(
             content_id=draft_id,
             job_id=f"JOB-{uuid4().hex[:8]}",
             platform=platform,
             topic=topic,
             materials=_parse_list_field(fields.get("materials", "[]")),
+            preference_profile=profile or {},
+            profile_version=profile_version,
         )
 
         skill_name = {
@@ -680,6 +734,8 @@ class AgentLoop:
                     await self.bitable.update_record("content", r["record_id"], {
                         "status": DraftStatus.CRITIQUING.value,
                         "content_payload": _safe_json_str(content),
+                        "profile_version": profile_version,
+                        "preference_profile": _safe_json_str(profile or {}),
                     })
                     break
         except Exception as e:
@@ -723,9 +779,16 @@ class AgentLoop:
         content = _parse_json_field(fields.get("content_payload", "{}"))
         title = str(content.get("title") or content.get("selected_title") or "")
 
+        platform = str(fields.get("platform", Platform.XHS.value))
+        profile = _parse_json_field(fields.get("preference_profile", "{}"))
+        if not profile:
+            profile = _load_platform_profile(self.settings.data_dir, platform) or {}
         job = SkillJob(
             content_id=fields.get("content_id", ""),
             job_id=f"JOB-{uuid4().hex[:8]}",
+            platform=Platform(platform),
+            preference_profile=profile,
+            profile_version=str(fields.get("profile_version") or _profile_version(profile)),
             template_name="",
             image_mode="ai_bg",
             variables={
@@ -852,24 +915,203 @@ class AgentLoop:
             job_id=f"JOB-WEEKLY-{uuid4().hex[:8]}",
             topic="weekly_hot_topics",
             materials=[],
+            keywords=["大学生", "社团", "运营", "校园", "新媒体"],
+            platforms=["weibo", "douyin", "xhs"],
+            max_topics=10,
         )
-        # Build input with keywords/platforms for hot-topic-collector
-        job_input = {
-            "keywords": ["大学生", "社团", "运营", "校园", "新媒体"],
-            "platforms": ["weibo", "douyin", "xhs"],
-            "max_topics": 10,
-        }
-        # SkillRunner writes job.model_dump_json() as input.json, but
-        # hot-topic-collector expects its own fields. We write a custom input.
         try:
-            result = self.runner.run("hot-topic-collector", job)
+            result = await asyncio.to_thread(self.runner.run, "hot-topic-collector", job)
             topics = result.get("topics", [])
             if topics:
-                return topics[:10]
+                normalized = [_normalize_material_topic(topic) for topic in topics[:10]]
+                await self._persist_material_topics(normalized)
+                return normalized
         except (FileNotFoundError, RuntimeError) as e:
             logger.warning("hot-topic-collector unavailable, using mock: %s", e)
 
         return _MOCK_WEEKLY_TOPICS
+
+    async def _persist_material_topics(self, topics: list[dict]) -> None:
+        """Persist traceable material records when the materials table is configured."""
+        if not self.settings.feishu_table_materials:
+            return
+        for topic in topics:
+            try:
+                await self.bitable.create_record(
+                    "materials",
+                    {
+                        "material_id": topic["material_id"],
+                        "title": topic.get("title", ""),
+                        "source": topic.get("source", ""),
+                        "source_url": topic.get("source_url", ""),
+                        "angle_suggestion": topic.get("angle_suggestion", ""),
+                        "suggested_platform": topic.get("suggested_platform", ""),
+                        "heat_score": topic.get("heat_score", 0),
+                        "relevance_score": topic.get("relevance_score", 0),
+                        "data_status": topic.get("data_status", "unknown"),
+                        "collected_at": topic.get("collected_at", ""),
+                        "payload": _safe_json_str(topic),
+                    },
+                )
+            except Exception as exc:
+                logger.warning("Failed to persist material %s: %s", topic["material_id"], exc)
+
+    async def refresh_platform_preferences(self) -> str:
+        """Refresh the sample library and profiles at most once per CST day."""
+        date_str = datetime.now(_CST).strftime("%Y-%m-%d")
+        flag_path = self.settings.data_dir / f"platform_preferences_refresh_{date_str}.flag"
+        if flag_path.exists():
+            return "already_refreshed"
+        try:
+            source_feeds = json.loads(self.settings.platform_sample_feeds_json or "{}")
+        except json.JSONDecodeError:
+            return "invalid_feed_config"
+
+        samples_dir = (self.settings.data_dir / "samples").resolve()
+        profiles_dir = (self.settings.data_dir / "profiles").resolve()
+        sample_job = SkillJob(
+            content_id="PLATFORM-SAMPLES",
+            job_id=f"JOB-SAMPLES-{uuid4().hex[:8]}",
+            platforms=["wechat", "douyin", "xhs"],
+            keywords=["大学生", "社团", "校园", "新媒体", "招新", "活动"],
+            max_samples=90,
+            source_feeds=source_feeds,
+            samples_dir=str(samples_dir),
+        )
+        try:
+            collected = await asyncio.to_thread(
+                self.runner.run, "platform-sample-collector", sample_job
+            )
+        except Exception as exc:
+            logger.warning("Platform sample refresh failed: %s", exc)
+            flag_path.write_text(f"collector_error: {exc}", encoding="utf-8")
+            return "collector_error"
+
+        counts = collected.get("by_platform") or collected.get("data", {}).get("by_platform") or {}
+        if not all(int(counts.get(platform, 0)) >= 3 for platform in ("wechat", "douyin", "xhs")):
+            flag_path.write_text(_safe_json_str({"status": "insufficient_samples", "counts": counts}), encoding="utf-8")
+            return "insufficient_samples"
+
+        profile_job = SkillJob(
+            content_id="PLATFORM-PROFILES",
+            job_id=f"JOB-PROFILES-{uuid4().hex[:8]}",
+            platforms=["wechat", "douyin", "xhs"],
+            samples_dir=str(samples_dir),
+            output_dir=str(profiles_dir),
+        )
+        try:
+            await asyncio.to_thread(self.runner.run, "platform-preference-profiler", profile_job)
+        except Exception as exc:
+            logger.warning("Platform preference profiling failed: %s", exc)
+            flag_path.write_text(f"profiler_error: {exc}", encoding="utf-8")
+            return "profiler_error"
+        flag_path.write_text("profiles_refreshed", encoding="utf-8")
+        return "profiles_refreshed"
+
+    async def collect_due_metrics(self) -> int:
+        """Collect the next due 1h/6h/24h/72h snapshot for published posts."""
+        collected = 0
+        try:
+            records = await self.bitable.list_records("content")
+        except Exception as exc:
+            logger.warning("Unable to list content for metrics collection: %s", exc)
+            return 0
+
+        for record in records:
+            fields = record.get("fields", {})
+            if fields.get("status") != DraftStatus.PUBLISHED.value:
+                continue
+            checkpoint = _next_due_checkpoint(fields)
+            if not checkpoint:
+                continue
+            job = SkillJob(
+                content_id=str(fields.get("content_id", "")),
+                job_id=f"JOB-METRICS-{uuid4().hex[:8]}",
+                platform=Platform(str(fields.get("platform", Platform.XHS.value))),
+                topic=str(fields.get("topic", "")),
+                checkpoint=checkpoint,
+                post_id=str(fields.get("post_id", "")),
+                post_url=str(fields.get("post_url", "")),
+                published_at=(
+                    (_parse_feishu_datetime(fields.get("published_at")) or datetime.now(timezone.utc)).isoformat()
+                ),
+                metrics_endpoint=str(fields.get("metrics_endpoint") or self.settings.platform_metrics_endpoint),
+                experiment=_parse_json_field(fields.get("experiment", "{}")),
+            )
+            try:
+                result = await asyncio.to_thread(self.runner.run, "platform-metrics-collector", job)
+                snapshot = result.get("snapshot") or result.get("data", {}).get("snapshot") or {}
+            except Exception as exc:
+                logger.warning("Metrics collection failed for %s: %s", fields.get("content_id"), exc)
+                continue
+            if not snapshot:
+                continue
+
+            if snapshot.get("data_status") == "unavailable":
+                attempts = _parse_list_field(fields.get("metrics_attempts", "[]"))
+                attempts.append(snapshot)
+                await self.bitable.update_record(
+                    "content", record["record_id"], {"metrics_attempts": _safe_json_str(attempts[-12:])}
+                )
+                await self._write_metrics_log(snapshot)
+                continue
+
+            snapshots = _parse_list_field(fields.get("metrics_snapshots", "[]"))
+            snapshots = [item for item in snapshots if item.get("checkpoint") != checkpoint]
+            snapshots.append(snapshot)
+            await self.bitable.update_record(
+                "content", record["record_id"], {"metrics_snapshots": _safe_json_str(snapshots)}
+            )
+            await self._write_metrics_log(snapshot)
+            collected += 1
+        return collected
+
+    async def generate_weekly_performance_report(self) -> str:
+        """Generate one evidence-first report every Monday in CST."""
+        now_cst = datetime.now(_CST)
+        if now_cst.weekday() != 0:
+            return "not_monday"
+        week_key = now_cst.strftime("%G-W%V")
+        report_dir = self.settings.data_dir / "reports"
+        report_path = report_dir / f"platform_performance_{week_key}.json"
+        markdown_path = report_dir / f"platform_performance_{week_key}.md"
+        if report_path.exists():
+            return "already_generated"
+        try:
+            records = await self.bitable.list_records("content")
+        except Exception as exc:
+            logger.warning("Unable to build weekly performance report: %s", exc)
+            return "content_unavailable"
+        report = build_weekly_performance_report(records, now=datetime.now(timezone.utc))
+        report_dir.mkdir(parents=True, exist_ok=True)
+        report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        markdown_path.write_text(render_weekly_report_markdown(report), encoding="utf-8")
+        await self.notifier.notify_admins(
+            f"每周流量复盘已生成：{markdown_path}\n"
+            f"有效观测分组：{len(report['observations'])}；待验证假设：{len(report['hypotheses'])}"
+        )
+        return str(markdown_path)
+
+    async def _write_metrics_log(self, snapshot: dict) -> None:
+        if not self.settings.feishu_table_publish_logs:
+            return
+        try:
+            await self.bitable.create_record(
+                "publish_logs",
+                {
+                    "content_id": snapshot.get("content_id", ""),
+                    "platform": snapshot.get("platform", ""),
+                    "post_id": snapshot.get("post_id", ""),
+                    "post_url": snapshot.get("post_url", ""),
+                    "event_type": "metrics_snapshot",
+                    "checkpoint": snapshot.get("checkpoint", ""),
+                    "observed_at": snapshot.get("observed_at", ""),
+                    "data_status": snapshot.get("data_status", "unknown"),
+                    "payload": _safe_json_str(snapshot),
+                },
+            )
+        except Exception as exc:
+            logger.warning("Failed to persist metrics snapshot: %s", exc)
 
     # ------------------------------------------------------------------
     # Housekeeping
@@ -1012,6 +1254,70 @@ def _parse_json_field(raw) -> dict:
         return json.loads(str(raw))
     except (json.JSONDecodeError, TypeError):
         return {}
+
+
+def _load_platform_profile(data_dir: Path, platform: str) -> dict | None:
+    profile_path = data_dir / "profiles" / f"{platform}_profile.json"
+    if not profile_path.exists():
+        return None
+    try:
+        profile = json.loads(profile_path.read_text(encoding="utf-8"))
+        generated_at = profile.get("gen_at")
+        if generated_at:
+            parsed = datetime.fromisoformat(str(generated_at).replace("Z", "+00:00"))
+            if parsed.tzinfo is None:
+                parsed = parsed.replace(tzinfo=timezone.utc)
+            if datetime.now(timezone.utc) - parsed.astimezone(timezone.utc) >= timedelta(days=7):
+                return None
+        return profile
+    except (OSError, ValueError, TypeError, json.JSONDecodeError):
+        return None
+
+
+def _profile_version(profile: dict | None) -> str:
+    if not profile:
+        return "static"
+    return str(profile.get("profile_version") or profile.get("v") or profile.get("gen_at") or "dynamic")
+
+
+def _normalize_material_topic(topic: dict) -> dict:
+    normalized = dict(topic)
+    fingerprint = str(topic.get("source_url") or topic.get("title") or uuid4().hex)
+    normalized.setdefault("material_id", f"MAT-{hashlib.sha256(fingerprint.encode('utf-8')).hexdigest()[:12]}")
+    normalized.setdefault("source", "unknown")
+    normalized.setdefault("source_url", "")
+    normalized.setdefault("angle_suggestion", "")
+    normalized.setdefault("suggested_platform", Platform.XHS.value)
+    normalized.setdefault("heat_score", 0)
+    normalized.setdefault("relevance_score", 0)
+    normalized.setdefault("data_status", "unknown")
+    normalized.setdefault("collected_at", datetime.now(timezone.utc).isoformat())
+    return normalized
+
+
+def _next_due_checkpoint(fields: dict, now: datetime | None = None) -> str:
+    published_at = _parse_feishu_datetime(fields.get("published_at"))
+    if not published_at:
+        return ""
+    current = now or datetime.now(timezone.utc)
+    elapsed_hours = (current - published_at).total_seconds() / 3600
+    completed = {
+        str(item.get("checkpoint"))
+        for item in _parse_list_field(fields.get("metrics_snapshots", "[]"))
+        if isinstance(item, dict)
+    }
+    recent_attempts = _parse_list_field(fields.get("metrics_attempts", "[]"))
+    for checkpoint, hours in (("1h", 1), ("6h", 6), ("24h", 24), ("72h", 72)):
+        recently_attempted = any(
+            isinstance(item, dict)
+            and item.get("checkpoint") == checkpoint
+            and (observed := _parse_feishu_datetime(item.get("observed_at"))) is not None
+            and current - observed < timedelta(hours=1)
+            for item in recent_attempts
+        )
+        if elapsed_hours >= hours and checkpoint not in completed and not recently_attempted:
+            return checkpoint
+    return ""
 
 
 def _safe_json_str(obj) -> str:

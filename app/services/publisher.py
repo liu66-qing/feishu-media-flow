@@ -6,9 +6,11 @@ WeChat Official Account uses separate API (not browser automation).
 
 import json
 import logging
+import re
 import subprocess
 import sys
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -38,6 +40,9 @@ class PublishResult:
     message: str = ""
     stdout: str = ""
     stderr: str = ""
+    post_id: str = ""
+    post_url: str = ""
+    published_at: str = ""
 
 
 class Publisher:
@@ -143,12 +148,16 @@ class Publisher:
         args.append("--headless")
 
         result = self._run_sau(args)
+        metadata = _extract_publish_metadata(result.stdout)
         return PublishResult(
             success=result.returncode == 0,
             platform="xiaohongshu",
             message="Published" if result.returncode == 0 else result.stderr[-500:],
             stdout=result.stdout,
             stderr=result.stderr,
+            post_id=metadata["post_id"],
+            post_url=metadata["post_url"],
+            published_at=metadata["published_at"] if result.returncode == 0 else "",
         )
 
     def _publish_douyin(self, payload: PublishPayload) -> PublishResult:
@@ -243,3 +252,30 @@ class Publisher:
             stdout=result.stdout,
             stderr=result.stderr,
         )
+
+
+def _extract_publish_metadata(stdout: str) -> dict[str, str]:
+    """Extract a post identifier/URL from structured or human CLI output."""
+    post_id = ""
+    post_url = ""
+    for line in reversed(str(stdout or "").splitlines()):
+        try:
+            payload = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(payload, dict):
+            post_id = str(payload.get("post_id") or payload.get("note_id") or payload.get("id") or "")
+            post_url = str(payload.get("post_url") or payload.get("url") or payload.get("share_url") or "")
+            if post_id or post_url:
+                break
+    if not post_url:
+        match = re.search(r"https?://[^\s\]\)\"']+", str(stdout or ""))
+        post_url = match.group(0) if match else ""
+    if not post_id and post_url:
+        match = re.search(r"(?:explore|discovery/item|video)/(\w+)", post_url)
+        post_id = match.group(1) if match else ""
+    return {
+        "post_id": post_id,
+        "post_url": post_url,
+        "published_at": datetime.now(timezone.utc).isoformat(),
+    }

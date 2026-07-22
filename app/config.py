@@ -37,8 +37,11 @@ class Settings(BaseSettings):
     llm_api_key: str = ""
     llm_base_url: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"
     llm_model: str = "qwen-plus"
+    llm_text_model: str = "qwen-plus"
     dashscope_api_key: str = ""
     social_auto_upload_default_account: str = "default"
+    platform_sample_feeds_json: str = "{}"
+    platform_metrics_endpoint: str = ""
 
     @property
     def admin_open_ids(self) -> list[str]:

@@ -39,7 +39,7 @@ def load_platform_profile() -> dict[str, Any] | None:
         return None
 
 
-def build_system_prompt() -> str:
+def build_system_prompt(injected_profile: dict[str, Any] | None = None) -> str:
     """Build system prompt with platform constraints and optional preference profile."""
     base_prompt = (
         "你是抖音图文内容创作者。风格成熟、真实、有信息增量，像一个有经验的人在复盘分享。\n"
@@ -64,7 +64,7 @@ def build_system_prompt() -> str:
     )
     
     # Inject platform preference profile if available
-    profile = load_platform_profile()
+    profile = injected_profile or load_platform_profile()
     if profile:
         base_prompt += "\n\n## 平台偏好画像（动态）\n"
         base_prompt += f"- 置信度：{profile.get('conf', 0)}\n"
@@ -288,10 +288,12 @@ def validate_output(result: dict[str, Any]) -> None:
 
 
 def run(job_dir: Path) -> int:
+    global SYSTEM_PROMPT
     error_path = job_dir / "error.json"
     try:
         job = read_json(job_dir / "input.json")
         require_fields(job)
+        SYSTEM_PROMPT = build_system_prompt(job.get("preference_profile") or None)
         client, model = build_client()
 
         context: dict[str, Any] = {}
@@ -309,6 +311,7 @@ def run(job_dir: Path) -> int:
         result = normalize_final(job, context)
         validate_output(result)
         result["pipeline_log"] = pipeline_log
+        result["profile_version"] = str(job.get("profile_version") or "static")
         write_json(job_dir / OUTPUT_NAME, result)
         return 0
     except Exception as exc:

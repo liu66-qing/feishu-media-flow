@@ -464,7 +464,7 @@ def generate_wechat_content_with_llm(input_data):
     system = read_text(SYSTEM_PROMPT_PATH)
     
     # Inject platform preference profile if available
-    profile = load_platform_profile()
+    profile = input_data.get("preference_profile") or load_platform_profile()
     if profile:
         system += "\n\n## 平台偏好画像（动态）\n"
         system += f"- 置信度：{profile.get('conf', 0)}\n"
@@ -532,6 +532,7 @@ def generate_wechat_content_with_llm(input_data):
     )
     data["llm_enabled"] = True
     data["llm_error"] = ""
+    data["profile_version"] = str(input_data.get("profile_version") or "static")
 
     return data
 
@@ -577,6 +578,7 @@ def run(job_dir):
             data = generate_wechat_content(input_data)
             data["llm_enabled"] = False
             data["llm_error"] = str(llm_error)
+        data.setdefault("profile_version", str(input_data.get("profile_version") or "static"))
 
         result = {
             "status": "success",

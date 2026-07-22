@@ -1,5 +1,7 @@
 import argparse
+import hashlib
 import json
+import os
 import re
 from datetime import datetime, timezone
 from pathlib import Path
@@ -83,7 +85,10 @@ def normalize_sample(raw: Dict[str, Any], default_platform: str = "") -> Sample:
     summary = str(raw.get("summary") or raw.get("excerpt") or summarize(body))
     title = str(raw.get("title") or raw.get("name") or "").strip()
 
+    source_url = str(raw.get("source_url") or raw.get("url") or raw.get("link") or "")
+    fingerprint = source_url or f"{platform}:{title}"
     return {
+        "sample_id": str(raw.get("sample_id") or f"SMP-{hashlib.sha256(fingerprint.encode('utf-8')).hexdigest()[:12]}"),
         "platform": platform,
         "title": title,
         "summary": summary.strip(),
@@ -91,7 +96,7 @@ def normalize_sample(raw: Dict[str, Any], default_platform: str = "") -> Sample:
         "hashtags": normalize_tags(raw.get("hashtags") or raw.get("tags") or raw.get("categories")),
         "published_at": str(raw.get("published_at") or raw.get("publish_time") or raw.get("pubDate") or ""),
         "source": str(raw.get("source") or platform),
-        "source_url": str(raw.get("source_url") or raw.get("url") or raw.get("link") or ""),
+        "source_url": source_url,
         "metrics": normalize_metrics(raw.get("metrics")),
         "quality_status": "unchecked",
         "quality_score": 0.0,
@@ -261,7 +266,7 @@ def clean_samples(samples: List[Sample], keywords: List[str], max_samples: int) 
         title = sample.get("title", "").strip()
         source_url = sample.get("source_url", "").strip()
         key = source_url or f"{sample.get('platform')}:{title}"
-        if not title or key in seen:
+        if not title or not source_url or key in seen:
             continue
         seen.add(key)
 
@@ -295,7 +300,7 @@ def generate_result(input_data: Dict[str, Any]) -> Dict[str, Any]:
         by_platform[platform] = len([item for item in samples if item.get("platform") == platform])
 
     return {
-        "status": "success",
+        "status": "success" if all(by_platform.get(item, 0) >= 3 for item in platforms) else "degraded",
         "collected_at": utc_now(),
         "platforms": platforms,
         "samples": samples,
@@ -329,6 +334,17 @@ def run(job_dir: str) -> int:
     try:
         input_data = load_json(input_path)
         result = generate_result(input_data)
+        library_dir = Path(
+            input_data.get("samples_dir")
+            or (Path(os.getenv("DATA_DIR", ".data")) / "samples")
+        ).resolve()
+        library_files = []
+        for sample in result["samples"]:
+            sample_path = library_dir / sample["platform"] / f"{sample['sample_id']}.json"
+            write_json(sample_path, sample)
+            library_files.append(str(sample_path))
+        result["sample_library_dir"] = str(library_dir)
+        result["sample_files"] = library_files
         write_json(output_path, result)
         logs_path.write_text(
             f"[success] platform-sample-collector finished. raw_count={result['raw_count']} valid_count={result['valid_count']}\n",

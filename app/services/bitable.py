@@ -36,6 +36,15 @@ class BitableClient:
             json={"fields": fields},
         )
 
+    async def list_fields(self, table_key: str) -> list[dict[str, Any]]:
+        """Return table field definitions for read-only deployment diagnostics."""
+        table_id = self._table_id(table_key)
+        response = await self._request(
+            "GET",
+            f"/bitable/v1/apps/{self.settings.feishu_bitable_app_token}/tables/{table_id}/fields?page_size=100",
+        )
+        return response.get("data", {}).get("items", [])
+
     def validate_schema_config(self) -> dict[str, bool]:
         return {
             "app_token": bool(self.settings.feishu_bitable_app_token),
@@ -90,4 +99,3 @@ class BitableClient:
         finally:
             if close_client:
                 await client.aclose()
-

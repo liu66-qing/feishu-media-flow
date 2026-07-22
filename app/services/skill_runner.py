@@ -26,9 +26,12 @@ class SkillRunner:
         env["LLM_API_KEY"] = self.settings.llm_api_key
         env["LLM_BASE_URL"] = self.settings.llm_base_url
         env["LLM_MODEL"] = self.settings.llm_model
+        env["LLM_TEXT_MODEL"] = self.settings.llm_text_model
         env["DATA_DIR"] = str(self.settings.data_dir)
         if self.settings.dashscope_api_key:
             env["DASHSCOPE_API_KEY"] = self.settings.dashscope_api_key
+        if self.settings.platform_metrics_endpoint:
+            env["PLATFORM_METRICS_ENDPOINT"] = self.settings.platform_metrics_endpoint
         timeout = (
             self.settings.image_skill_timeout_seconds
             if skill_name == "image-compose"

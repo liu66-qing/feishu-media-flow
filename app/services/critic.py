@@ -73,6 +73,16 @@ class Critic:
         user_msg = user_msg.replace("{{revision_round}}", str(draft.revision_count + 1))
         user_msg = user_msg.replace("{{previous_feedback}}", previous_feedback or "无（首轮评审）")
 
+        profile = load_platform_profile(draft.platform.value)
+        if profile:
+            user_msg += (
+                "\n\n## 当前平台动态偏好画像（仅作为有样本依据的评审补充）\n"
+                f"画像版本：{profile.get('v', '')}\n"
+                f"样本数：{profile.get('s_cnt', 0)}\n"
+                f"置信度：{profile.get('conf', 0)}\n"
+                f"偏好：{json.dumps(profile, ensure_ascii=False)}"
+            )
+
         raw = await call_llm(self._system_prompt, user_msg, response_json=True)
         return self._parse_response(raw)
 

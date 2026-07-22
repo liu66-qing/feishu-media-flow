@@ -16,12 +16,6 @@ USER_TEMPLATE_PATH = PROMPTS_DIR / "user_template.md"
 
 MAX_REWRITE_RETRIES = 2
 
-client = OpenAI(
-    api_key=os.getenv("LLM_API_KEY"),
-    base_url=os.getenv("LLM_BASE_URL", "https://api.openai.com/v1")
-)
-
-
 def load_json(path):
     with path.open("r", encoding="utf-8") as f:
         return json.load(f)
@@ -46,6 +40,13 @@ def render_template(template, values):
 
 def call_llm(prompt, system="", model=None):
     model = model or os.getenv("LLM_MODEL", "gpt-5.4-mini")
+    api_key = os.getenv("LLM_API_KEY", "").strip()
+    if not api_key:
+        raise RuntimeError("LLM_API_KEY is not set")
+    client = OpenAI(
+        api_key=api_key,
+        base_url=os.getenv("LLM_BASE_URL", "https://api.openai.com/v1"),
+    )
     resp = client.chat.completions.create(
         model=model,
         messages=[
@@ -175,8 +176,22 @@ def call_rewrite_llm(input_data, retry_hint=""):
 
 
 def generate_hot_rewrite(input_data):
-    source_text = input_data.get("source_text", "")
-    source_url = input_data.get("source_url", "")
+    source = input_data.get("source") if isinstance(input_data.get("source"), dict) else {}
+    source_text = str(
+        input_data.get("source_text")
+        or source.get("content")
+        or source.get("body")
+        or ""
+    ).strip()
+    source_title = str(input_data.get("source_title") or source.get("title") or "").strip()
+    if source_title and source_title not in source_text:
+        source_text = f"{source_title}\n{source_text}".strip()
+    source_url = str(input_data.get("source_url") or source.get("url") or "")
+    if len(source_text) < 50:
+        raise ValueError("source_text must contain at least 50 characters of verifiable source content")
+    input_data = dict(input_data)
+    input_data["source_text"] = source_text
+    input_data["source_url"] = source_url
 
     if not os.getenv("LLM_API_KEY"):
         raise RuntimeError("LLM_API_KEY is not set")

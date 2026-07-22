@@ -125,12 +125,19 @@ def build_material_review_card(topics: list[dict]) -> dict:
         angle = topic.get("angle_suggestion", "")
         platform = topic.get("suggested_platform", "xhs")
         platform_label = _PLATFORM_LABEL.get(platform, platform)
+        source_url = str(topic.get("source_url", ""))
+        heat_score = topic.get("heat_score", "")
+        data_status = str(topic.get("data_status", "unknown"))
+        material_id = str(topic.get("material_id", ""))
 
         content = (
             f"**{idx}. {title}**\n"
             f"来源：{source} | 建议平台：{platform_label}\n"
-            f"建议角度：{angle}"
+            f"建议角度：{angle}\n"
+            f"热度：{heat_score or '未提供'} | 数据状态：{data_status}"
         )
+        if source_url:
+            content += f"\n[查看原始来源]({source_url})"
         elements.append(
             {"tag": "div", "text": {"tag": "lark_md", "content": content}}
         )
@@ -147,6 +154,13 @@ def build_material_review_card(topics: list[dict]) -> dict:
                             "topic_title": title,
                             "platform": platform,
                             "angle": angle,
+                            "material_id": material_id,
+                            "source": source,
+                            "source_url": source_url,
+                            "heat_score": heat_score,
+                            "relevance_score": topic.get("relevance_score", ""),
+                            "data_status": data_status,
+                            "collected_at": topic.get("collected_at", ""),
                         },
                     }
                 ],
@@ -297,6 +311,74 @@ def build_publish_review_card(
         "header": {
             "template": "green",
             "title": {"tag": "plain_text", "content": "图文已就绪，等待发布审批"},
+        },
+        "elements": elements,
+    }
+
+
+def build_video_review_card(
+    content_id: str,
+    topic: str,
+    script: str,
+    cover_url: str,
+    video_url: str,
+    duration: int,
+) -> dict:
+    """Build a Feishu approval card for a generated video asset."""
+    elements: list[dict] = []
+    if cover_url:
+        elements.append(
+            {
+                "tag": "img",
+                "img_key": cover_url,
+                "alt": {"tag": "plain_text", "content": f"{topic} 视频封面"},
+            }
+        )
+    elements.extend(
+        [
+            {
+                "tag": "div",
+                "text": {
+                    "tag": "lark_md",
+                    "content": f"**内容 ID：**{content_id}\n**视频时长：**{duration} 秒",
+                },
+            },
+            {
+                "tag": "collapsible_panel",
+                "expanded": False,
+                "header": {"title": {"tag": "plain_text", "content": "展开查看完整脚本"}},
+                "elements": [{"tag": "div", "text": {"tag": "lark_md", "content": script}}],
+            },
+            {
+                "tag": "action",
+                "actions": [
+                    {
+                        "tag": "button",
+                        "text": {"tag": "plain_text", "content": "下载视频"},
+                        "url": video_url,
+                        "type": "default",
+                    },
+                    {
+                        "tag": "button",
+                        "text": {"tag": "plain_text", "content": "通过发布"},
+                        "type": "primary",
+                        "value": {"action": "approve_publish", "content_id": content_id},
+                    },
+                    {
+                        "tag": "button",
+                        "text": {"tag": "plain_text", "content": "打回重新生成"},
+                        "type": "danger",
+                        "value": {"action": "reject_regenerate", "content_id": content_id},
+                    },
+                ],
+            },
+        ]
+    )
+    return {
+        "config": {"wide_screen_mode": True},
+        "header": {
+            "template": "purple",
+            "title": {"tag": "plain_text", "content": f"🎬 视频生成完成：{topic}"},
         },
         "elements": elements,
     }

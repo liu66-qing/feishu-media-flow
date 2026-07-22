@@ -61,9 +61,9 @@ def load_platform_profile(platform: str) -> dict | None:
         return None
 
 
-def get_visual_style_hints(platform: str) -> dict:
+def get_visual_style_hints(platform: str, injected_profile: dict | None = None) -> dict:
     """Get visual style hints from platform preference profile for AI image generation."""
-    profile = load_platform_profile(platform)
+    profile = injected_profile or load_platform_profile(platform)
     if not profile:
         return {}
     
@@ -74,6 +74,24 @@ def get_visual_style_hints(platform: str) -> dict:
         "mood": vis.get("mood", ""),
         "decoration": vis.get("decoration", ""),
     }
+
+
+def _relative_luminance(color: str) -> float:
+    """Return WCAG relative luminance for a six-digit hex color."""
+    value = str(color or "").strip().lstrip("#")
+    if len(value) != 6:
+        return 0.5
+    try:
+        channels = [int(value[index:index + 2], 16) / 255 for index in (0, 2, 4)]
+    except ValueError:
+        return 0.5
+    linear = [channel / 12.92 if channel <= 0.04045 else ((channel + 0.055) / 1.055) ** 2.4 for channel in channels]
+    return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2]
+
+
+def _contrast_ratio(first: str, second: str) -> float:
+    high, low = sorted((_relative_luminance(first), _relative_luminance(second)), reverse=True)
+    return (high + 0.05) / (low + 0.05)
 
 
 # ---------------------------------------------------------------------------
@@ -705,6 +723,9 @@ def run_job(job_dir: Path) -> dict:
     variables = input_data.get("variables", {})
     output_size = input_data.get("output_size", {"width": 1080, "height": 1350})
     image_mode = input_data.get("image_mode", "template")
+    platform = str(input_data.get("platform") or "xhs")
+    profile = input_data.get("preference_profile") or {}
+    visual_hints = get_visual_style_hints(platform, profile)
 
     title = variables.get("title", "")
     subtitle = variables.get("subtitle", "")
@@ -740,6 +761,9 @@ def run_job(job_dir: Path) -> dict:
         combined_text = f"{title} {subtitle}"
     scene = infer_scene_from_text(combined_text)
     preferred_visual_style = str(variables.get("visual_style") or "auto")
+    profile_style = str((profile.get("vis") or {}).get("visual_style") or "")
+    if preferred_visual_style == "auto" and profile_style in CARD_TEMPLATE_SETS:
+        preferred_visual_style = profile_style
     template_role = str(variables.get("template_role") or "cover")
     template_config = select_template(
         scene,
@@ -764,6 +788,17 @@ def run_job(job_dir: Path) -> dict:
             variables["bg_color"] = template_config["bg_color"]
         if not variables.get("accent_color") or variables.get("accent_color") == "#FFFFFF":
             variables["accent_color"] = template_config["accent_color"]
+
+    palette = visual_hints.get("color_palette") or []
+    if palette and not variables.get("bg_color"):
+        variables["bg_color"] = str(palette[0])
+    if len(palette) > 1 and not variables.get("accent_color"):
+        variables["accent_color"] = str(palette[1])
+    variables.setdefault("bg_color", template_config["bg_color"])
+    variables.setdefault("accent_color", template_config["accent_color"])
+    if _contrast_ratio(variables["bg_color"], variables["accent_color"]) < 4.5:
+        variables["accent_color"] = "#1F2937" if _relative_luminance(variables["bg_color"]) > 0.45 else "#FFFFFF"
+        logging.warning("Adjusted accent color to meet readable contrast")
 
     logging.info(
         "Smart template match: scene=%s, visual_style=%s, role=%s, variant=%s, template=%s",

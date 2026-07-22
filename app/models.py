@@ -134,6 +134,12 @@ class SkillJob(BaseModel):
     column: str = ""
     materials: list[dict[str, Any]] = Field(default_factory=list)
     brand: dict[str, Any] = Field(default_factory=dict)
+    preference_profile: dict[str, Any] = Field(default_factory=dict)
+    profile_version: str = ""
+    keywords: list[str] = Field(default_factory=list)
+    platforms: list[str] = Field(default_factory=list)
+    max_topics: int = 10
+    max_samples: int = 30
     template_name: str = ""
     variables: dict[str, Any] = Field(default_factory=dict)
     output_size: dict[str, Any] = Field(default_factory=lambda: {"width": 1080, "height": 1350})
