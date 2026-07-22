@@ -15,7 +15,10 @@ SKILL_DIR = Path(__file__).resolve().parent
 CACHE_PATH = SKILL_DIR / "cache" / "samples.json"
 REQUEST_TIMEOUT = 12
 DEFAULT_PLATFORMS = ["wechat", "douyin", "xhs"]
-DEFAULT_KEYWORDS = ["大学生", "社团", "校园", "招新", "新媒体", "活动", "运营"]
+DEFAULT_KEYWORDS = ["准大一", "大学生", "人工智能", "AI", "科研", "项目", "社团", "校园", "招新"]
+TARGET_TERMS = ["准大一", "新生", "大一", "大学生", "高考", "开学"]
+AI_TERMS = ["AI", "人工智能", "大模型", "Agent", "智能体", "RAG", "科研", "项目", "论文"]
+PSYCHOLOGY_TERMS = ["焦虑", "替代", "淘汰", "差距", "后悔", "错过", "迷茫", "价值", "竞争力", "过时"]
 
 Sample = Dict[str, Any]
 
@@ -98,6 +101,12 @@ def normalize_sample(raw: Dict[str, Any], default_platform: str = "") -> Sample:
         "source": str(raw.get("source") or platform),
         "source_url": source_url,
         "metrics": normalize_metrics(raw.get("metrics")),
+        "account": str(raw.get("account") or raw.get("author") or ""),
+        "author_followers": safe_int(raw.get("author_followers") or raw.get("followers")),
+        "content_type": str(raw.get("content_type") or raw.get("carrier") or "unknown"),
+        "cover_analysis": raw.get("cover_analysis") if isinstance(raw.get("cover_analysis"), dict) else {},
+        "manual_review": str(raw.get("manual_review") or "pending"),
+        "promotion_signal": bool(raw.get("promotion_signal", False)),
         "quality_status": "unchecked",
         "quality_score": 0.0,
         "data_status": str(raw.get("data_status") or "unknown"),
@@ -241,21 +250,74 @@ def relevance_score(sample: Sample, keywords: List[str]) -> float:
     return round(min(1.0, score), 2)
 
 
+def _contains_any(text: str, terms: List[str]) -> bool:
+    lowered = text.lower()
+    return any(term.lower() in lowered for term in terms)
+
+
+def score_breakdown(sample: Sample, keywords: List[str]) -> Dict[str, float]:
+    """Score evidence, audience fit, engagement, visual value and transferability separately.
+
+    Raw totals are deliberately not treated as proof of a transferable pattern: a large
+    account, paid promotion or an unrelated celebrity topic can otherwise dominate the
+    profile and contaminate all downstream prompts.
+    """
+    text = f"{sample.get('title', '')} {sample.get('summary', '')} {' '.join(sample.get('hashtags', []))}"
+    metrics = sample.get("metrics", {})
+    interactions = sum(metrics.get(key, 0) for key in ("likes", "comments", "shares", "favorites"))
+    denominator = metrics.get("views") or sample.get("author_followers") or 0
+    engagement_rate = min(1.0, interactions / denominator) if denominator else 0.0
+
+    evidence = 0.0
+    evidence += 0.35 if sample.get("source_url") else 0.0
+    evidence += 0.20 if sample.get("published_at") else 0.0
+    evidence += 0.25 if any(value > 0 for value in metrics.values()) else 0.0
+    evidence += 0.20 if sample.get("data_status") in {"live", "manual_verified"} else 0.0
+
+    audience_fit = 0.45 if _contains_any(text, TARGET_TERMS) else 0.0
+    audience_fit += 0.40 if _contains_any(text, AI_TERMS) else 0.0
+    audience_fit += min(0.15, relevance_score(sample, keywords) * 0.15)
+
+    visual = 0.0
+    visual += 0.35 if sample.get("cover") else 0.0
+    cover = sample.get("cover_analysis") or {}
+    visual += 0.25 if cover.get("composition") else 0.0
+    visual += 0.20 if cover.get("headline") else 0.0
+    visual += 0.20 if cover.get("style") or cover.get("visual_metaphor") else 0.0
+
+    transferability = 0.45 if _contains_any(text, PSYCHOLOGY_TERMS) else 0.15
+    transferability += 0.35 if _contains_any(text, AI_TERMS) else 0.0
+    transferability += 0.20 if sample.get("content_type") in {"image_text", "carousel", "article", "unknown"} else 0.1
+
+    anomaly_penalty = 0.0
+    if sample.get("promotion_signal"):
+        anomaly_penalty += 0.45
+    if metrics.get("views", 0) and interactions > metrics.get("views", 0) * 1.2:
+        anomaly_penalty += 0.35
+    if sample.get("author_followers", 0) > 1_000_000 and engagement_rate < 0.003:
+        anomaly_penalty += 0.20
+
+    return {
+        "evidence": round(min(1.0, evidence), 3),
+        "audience_fit": round(min(1.0, audience_fit), 3),
+        "engagement": round(min(1.0, engagement_rate * 12), 3),
+        "visual": round(min(1.0, visual), 3),
+        "transferability": round(min(1.0, transferability), 3),
+        "anomaly_penalty": round(min(1.0, anomaly_penalty), 3),
+    }
+
+
 def quality_score(sample: Sample, keywords: List[str]) -> float:
-    score = relevance_score(sample, keywords)
-    if sample.get("title"):
-        score += 0.15
-    if sample.get("summary"):
-        score += 0.15
-    if sample.get("source_url"):
-        score += 0.15
-    if sample.get("published_at"):
-        score += 0.08
-    if sample.get("cover"):
-        score += 0.05
-    if any(value > 0 for value in sample.get("metrics", {}).values()):
-        score += 0.07
-    return round(min(1.0, score), 2)
+    parts = score_breakdown(sample, keywords)
+    score = (
+        parts["evidence"] * 0.20
+        + parts["audience_fit"] * 0.25
+        + parts["engagement"] * 0.20
+        + parts["visual"] * 0.20
+        + parts["transferability"] * 0.15
+        - parts["anomaly_penalty"]
+    )
+    return round(max(0.0, min(1.0, score)), 3)
 
 
 def clean_samples(samples: List[Sample], keywords: List[str], max_samples: int) -> List[Sample]:
@@ -270,11 +332,12 @@ def clean_samples(samples: List[Sample], keywords: List[str], max_samples: int) 
             continue
         seen.add(key)
 
+        sample["score_breakdown"] = score_breakdown(sample, keywords)
         sample["quality_score"] = quality_score(sample, keywords)
-        if sample["quality_score"] < 0.35:
+        if sample["quality_score"] < 0.42:
             sample["quality_status"] = "filtered_low_quality"
             continue
-        sample["quality_status"] = "valid"
+        sample["quality_status"] = "core" if sample.get("manual_review") == "approved" else "machine_shortlist"
         cleaned.append(sample)
 
     cleaned.sort(
@@ -290,14 +353,19 @@ def clean_samples(samples: List[Sample], keywords: List[str], max_samples: int) 
 def generate_result(input_data: Dict[str, Any]) -> Dict[str, Any]:
     platforms = [normalize_platform(item) for item in input_data.get("platforms", DEFAULT_PLATFORMS)]
     keywords = input_data.get("keywords") or DEFAULT_KEYWORDS
-    max_samples = int(input_data.get("max_samples") or 30)
+    max_samples = int(input_data.get("max_samples") or 100)
 
     raw_samples, fetch_errors, degraded_platforms = collect_samples(input_data, platforms)
     samples = clean_samples(raw_samples, keywords, max_samples)
 
     by_platform = {}
+    core_by_platform = {}
     for platform in platforms:
         by_platform[platform] = len([item for item in samples if item.get("platform") == platform])
+        core_by_platform[platform] = len([
+            item for item in samples
+            if item.get("platform") == platform and item.get("quality_status") == "core"
+        ])
 
     return {
         "status": "success" if all(by_platform.get(item, 0) >= 3 for item in platforms) else "degraded",
@@ -307,10 +375,15 @@ def generate_result(input_data: Dict[str, Any]) -> Dict[str, Any]:
         "raw_count": len(raw_samples),
         "valid_count": len(samples),
         "by_platform": by_platform,
+        "core_by_platform": core_by_platform,
+        "profile_eligible": all(core_by_platform.get(item, 0) >= 10 for item in platforms),
         "fetch_errors": fetch_errors,
         "degraded_platforms": degraded_platforms,
         "cache_used": any(item.get("data_status") == "cache" for item in samples),
-        "notes": build_notes(platforms, by_platform, degraded_platforms),
+        "notes": build_notes(platforms, by_platform, degraded_platforms) + [
+            "machine_shortlist 仅供人工复核；只有 manual_review=approved 的 core 样本可进入正式画像。",
+            "建议每个平台收集100条候选、机器筛选30条、人工确认10-15条核心样本，并按招新情绪类/AI技术类分层。",
+        ],
     }
 
 

@@ -1,0 +1,42 @@
+{
+  "brand": {
+    "name": "TYUT创新学社",
+    "school_tag": "#太原理工大学",
+    "positioning": "面向准大一与低年级学生的AI科研与应用实践共同体",
+    "audience": "对AI时代个人价值感到不确定、愿意通过交付证明态度的准大一新生",
+    "conversion": "进入招新群",
+    "qr_policy": "二维码仅在发布前7天内人工替换，不固化在生成资产中",
+    "colors": ["#080522", "#06A9DF", "#FFFFFF"]
+  },
+  "admission": {
+    "foundation_required": false,
+    "capacity_limit": null,
+    "promotion": "依据任务完成质量从L0晋级到L3",
+    "attitude_signals": ["按时提交", "保留过程记录", "根据反馈修改", "遇到问题主动说明", "不直接复制AI输出", "愿意连续完成任务"]
+  },
+  "content_tracks": {
+    "aspiration": ["AI时代个人价值", "被替代风险", "只走课程证书路线的不确定性", "真实项目能力", "大学四年的能力窗口"],
+    "technical": ["低门槛AI项目", "论文与工具拆解", "失败案例", "科研复现", "Agent与工作流"],
+    "results": "独立栏目，仅使用可核验成果，不在日常内容中反复硬广"
+  },
+  "psychology_model": {
+    "sequence": ["时代变化", "旧路线缺口", "自我差距识别", "可执行解决路径", "社团作为低门槛入口", "进群行动"],
+    "mechanisms": ["损失规避", "好奇缺口", "身份认同", "自我效能", "社会归属", "即时回报"],
+    "guardrails": ["不虚构淘汰后果", "不羞辱零基础", "不承诺保研就业", "焦虑必须对应可执行解法", "所有成果可追溯"]
+  },
+  "lines": [
+    {"id": "Line1", "name": "文档智能与知识库", "entry": "从复杂PDF和资料整理进入RAG、知识库与评测", "outcome": "论文与科研资产"},
+    {"id": "Line2", "name": "GUI Agent", "entry": "从人工操作轨迹进入让AI真正操作电脑的研究", "outcome": "论文与任务族研究"},
+    {"id": "Line3", "name": "Self-Research", "entry": "从信息源和论文摘要进入复现、Benchmark与Agent边界研究", "outcome": "论文与研究报告"},
+    {"id": "Line4", "name": "OSINT与多媒体运营Agent", "entry": "从需求信号进入内容Agent维护、评测与真实运营实验", "outcome": "实践系统与运营数据"}
+  ],
+  "visual_system": {
+    "style": "极简手绘简笔画，成人知识漫画而非儿童绘本",
+    "image_model_role": "只生成无文字底图",
+    "template_role": "确定性叠加中文标题、Logo、标签和可替换二维码",
+    "families": {
+      "anxiety": "深蓝背景、青色信号、单人物、处境冲突、明显视觉隐喻",
+      "technical": "浅色背景、流程隐喻、清晰对象关系、低装饰"
+    }
+  }
+}

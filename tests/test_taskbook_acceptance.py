@@ -296,15 +296,18 @@ def test_sample_collector_only_keeps_traceable_samples_and_writes_library(tmp_pa
     result = module.generate_result(
         {
             "platforms": ["xhs"],
-            "keywords": ["社团"],
+            "keywords": ["准大一", "AI"],
             "samples": [
                 {
                     "platform": "xhs",
-                    "title": "社团招新",
-                    "summary": "校园社团招新经验",
+                    "title": "准大一如何进入AI项目",
+                    "summary": "人工智能时代的项目能力与科研路线",
                     "source_url": "https://example.com/traceable",
                     "data_status": "live",
-                    "metrics": {"likes": 100},
+                    "published_at": "2026-07-22T00:00:00Z",
+                    "cover": "https://example.com/cover.png",
+                    "cover_analysis": {"composition": "单人物对照", "headline": "AI时代", "style": "手绘"},
+                    "metrics": {"views": 1000, "likes": 100, "comments": 20, "favorites": 40},
                 },
                 {
                     "platform": "xhs",
@@ -318,3 +321,29 @@ def test_sample_collector_only_keeps_traceable_samples_and_writes_library(tmp_pa
     assert result["valid_count"] == 1
     assert result["samples"][0]["sample_id"].startswith("SMP-")
     assert result["samples"][0]["source_url"]
+    assert result["samples"][0]["quality_status"] == "machine_shortlist"
+    assert set(result["samples"][0]["score_breakdown"]) == {
+        "evidence", "audience_fit", "engagement", "visual", "transferability", "anomaly_penalty"
+    }
+
+
+def test_sample_collector_requires_manual_core_pool_for_formal_profile(monkeypatch, tmp_path):
+    module = load_module("platform_sample_core_test", ROOT / "platform-sample-collector" / "main.py")
+    monkeypatch.setattr(module, "CACHE_PATH", tmp_path / "missing-cache.json")
+    sample = {
+        "platform": "xhs", "title": "准大一AI路线", "summary": "AI时代项目能力焦虑与解法",
+        "source_url": "https://example.com/core", "published_at": "2026-07-22", "data_status": "manual_verified",
+        "manual_review": "approved", "cover": "https://example.com/c.png",
+        "cover_analysis": {"composition": "冲突对照", "headline": "别只考证", "visual_metaphor": "路线分岔"},
+        "metrics": {"views": 10000, "likes": 800, "comments": 60, "favorites": 300, "shares": 80},
+    }
+    result = module.generate_result({"platforms": ["xhs"], "keywords": ["准大一", "AI"], "samples": [sample] * 12})
+    assert result["core_by_platform"]["xhs"] == 1  # duplicate URLs never inflate evidence
+    assert result["profile_eligible"] is False
+
+
+def test_tyut_strategy_has_four_lines_and_ethical_psychology_model():
+    strategy = json.loads((ROOT / "app" / "strategy" / "tyut_innovation.json").read_text(encoding="utf-8"))
+    assert [item["id"] for item in strategy["lines"]] == ["Line1", "Line2", "Line3", "Line4"]
+    assert strategy["brand"]["conversion"] == "进入招新群"
+    assert "不虚构淘汰后果" in strategy["psychology_model"]["guardrails"]

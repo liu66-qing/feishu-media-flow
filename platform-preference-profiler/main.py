@@ -110,6 +110,13 @@ def load_samples(samples_dir: Path, platform: str) -> list[dict[str, Any]]:
     for sample_file in sorted(platform_dir.glob("*.json")):
         try:
             sample = json.loads(sample_file.read_text(encoding="utf-8"))
+            # Formal profiles must not silently learn from an unreviewed machine shortlist.
+            # Backward-compatible fixtures without manual_review remain usable but are marked legacy.
+            if sample.get("manual_review") == "rejected":
+                continue
+            if sample.get("quality_status") == "machine_shortlist" and sample.get("manual_review") != "approved":
+                continue
+            sample.setdefault("sample_tier", "core" if sample.get("manual_review") == "approved" else "legacy")
             samples.append(sample)
         except Exception as e:
             print(f"Warning: failed to load {sample_file}: {e}")
@@ -197,10 +204,15 @@ def analyze_platform(
             # Add metadata
             profile["pf"] = platform
             profile["gen_at"] = now_iso()
-            profile["v"] = "1.0"
+            profile["v"] = "2.0"
             profile["s_cnt"] = len(samples)
             profile["s_ids"] = [s.get("sample_id", f"{platform.upper()}-{i+1}") for i, s in enumerate(samples)]
             profile["conf"] = calculate_confidence(samples)
+            profile["evidence"] = {
+                "core_sample_count": sum(1 for item in samples if item.get("sample_tier") == "core"),
+                "legacy_sample_count": sum(1 for item in samples if item.get("sample_tier") == "legacy"),
+                "rule": "正式运行只使用人工批准的core样本；legacy仅用于兼容历史评测夹具",
+            }
             
             return profile
         except Exception as e:

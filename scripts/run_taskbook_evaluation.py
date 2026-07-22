@@ -54,15 +54,17 @@ def base_input(platform: str, profile: dict[str, Any]) -> dict[str, Any]:
         "content_id": f"EVAL-{platform.upper()}-001",
         "job_id": f"JOB-EVAL-{platform.upper()}-001",
         "platform": platform,
-        "topic": "大学社团招新：如何让新生愿意停下来并留下联系方式",
-        "column": "校园新媒体运营",
+        "topic": "AI时代，只走课程和证书路线的准大一，如何建立不会被轻易替代的项目能力",
+        "column": "TYUT创新学社·AI成长路线",
         "materials": [
-            {"fact": "招新摊位不能只发传单，要设计一个30秒体验点", "source_url": "https://example.com/taskbook/material-1"},
-            {"fact": "新生最关心交友、技能和时间投入", "source_url": "https://example.com/taskbook/material-2"},
-            {"fact": "现场准备三个问题：想认识谁、想学什么、每周能投入多久", "source_url": "https://example.com/taskbook/material-3"},
-            {"fact": "扫码后立即提供活动清单和首次见面会时间", "source_url": "https://example.com/taskbook/material-4"},
+            {"fact": "TYUT创新学社面向太原理工大学准大一和低年级学生，聚焦AI科研与应用实践", "source_url": "local://app/strategy/tyut_innovation.json"},
+            {"fact": "不要求技术基础，但要求按时提交、保留过程记录、根据反馈修改并持续完成任务", "source_url": "local://app/strategy/tyut_innovation.json"},
+            {"fact": "成员依据任务完成质量从L0逐步晋级到L3，不设置人数上限", "source_url": "local://app/strategy/tyut_innovation.json"},
+            {"fact": "Line1文档智能与知识库、Line2 GUI Agent、Line3 Self-Research以论文与研究成果为主", "source_url": "local://app/strategy/tyut_innovation.json"},
+            {"fact": "Line4 OSINT与多媒体运营Agent以系统实践、运营实验和数据反馈为主", "source_url": "local://app/strategy/tyut_innovation.json"},
+            {"fact": "主要转化动作是进入招新群，二维码仅在发布前人工替换", "source_url": "local://app/strategy/tyut_innovation.json"},
         ],
-        "brand": {"tone": "真诚、年轻、实用", "audience": "新生与社团干部"},
+        "brand": {"name": "TYUT创新学社", "tone": "克制、有张力、技术可信、不给零基础贴标签", "audience": "对AI时代个人价值和能力路径感到不确定的准大一", "school_tag": "#太原理工大学"},
         "target_length": 1200,
         "preference_profile": profile,
         "profile_version": str(profile.get("v") or profile.get("gen_at") or "static"),
@@ -74,6 +76,36 @@ def output_payload(job_dir: Path, filename: str) -> dict[str, Any]:
     if not path.exists():
         return {}
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def build_reviewed_sample_fixture(seed_fixture: dict[str, Any]) -> dict[str, Any]:
+    """Expand repository seeds into a labeled schema fixture for the quality gate.
+
+    These are not presented as live platform observations. Their only purpose is to
+    prove that shortlist/core separation, visual fields and profile eligibility work.
+    """
+    seeds = seed_fixture.get("samples", [])
+    by_platform = {platform: [item for item in seeds if item.get("platform") == platform] for platform in PLATFORMS}
+    reviewed: list[dict[str, Any]] = []
+    for platform in PLATFORMS:
+        platform_seeds = by_platform.get(platform) or [{"title": f"{platform} AI成长路线", "summary": "准大一AI项目能力"}]
+        for index in range(10):
+            item = dict(platform_seeds[index % len(platform_seeds)])
+            item.update({
+                "sample_id": f"EVAL-{platform.upper()}-{index + 1:02d}",
+                "platform": platform,
+                "title": f"准大一AI项目能力：{item.get('title', '')}",
+                "summary": f"AI时代个人价值、科研与真实项目路径。{item.get('summary', '')}",
+                "source_url": f"https://example.com/evaluation-fixture/{platform}/{index + 1}",
+                "published_at": "2026-07-22T00:00:00Z",
+                "data_status": "fixture_not_real_traffic",
+                "manual_review": "approved",
+                "cover": f"https://example.com/evaluation-fixture/{platform}/{index + 1}.png",
+                "cover_analysis": {"composition": "单人物冲突对照", "headline": "AI时代能力差距", "style": "极简手绘", "visual_metaphor": "旧路线与项目路线分岔"},
+                "metrics": {"views": 10000 + index * 300, "likes": 700 + index * 20, "comments": 50 + index, "favorites": 260 + index * 8, "shares": 70 + index * 2},
+            })
+            reviewed.append(item)
+    return {**seed_fixture, "samples": reviewed, "keywords": ["准大一", "AI", "项目", "科研"], "max_samples": 100}
 
 
 def main() -> int:
@@ -100,15 +132,21 @@ def main() -> int:
         result = run_command(name, command, ROOT, logs_dir)
         checks.append(result)
 
-    fixture = json.loads(
+    fixture = build_reviewed_sample_fixture(json.loads(
         (ROOT / "platform-sample-collector" / "test" / "fixtures" / "job1" / "input.json").read_text(encoding="utf-8")
-    )
+    ))
     samples_dir = run_dir / "data" / "samples"
     fixture["samples_dir"] = str(samples_dir)
     sample_check, sample_job = run_skill(
         "platform_samples", "platform-sample-collector", fixture, outputs_dir, logs_dir
     )
     checks.append(sample_check)
+    sample_output = output_payload(sample_job, "platform-sample-collector.json")
+    checks.append({
+        "name": "sample_quality_gate",
+        "returncode": 0 if sample_output.get("profile_eligible") else 1,
+        "ok": bool(sample_output.get("profile_eligible")),
+    })
 
     profiles_dir = run_dir / "data" / "profiles"
     profiler_input = {
@@ -156,7 +194,9 @@ def main() -> int:
                 "subtitle": title,
                 "visual_style": "auto",
                 "template_role": "cover",
-                "ai_prompt": title,
+                "ai_prompt": f"{title}；极简手绘简笔画；AI时代个人价值的视觉隐喻；不生成文字；TYUT深蓝与青蓝品牌色",
+                "brand_name": "TYUT创新学社",
+                "series_name": "AI成长路线",
             },
             "output_size": {"width": 1080, "height": 1350},
             "preference_profile": profile,
@@ -171,12 +211,12 @@ def main() -> int:
         "content_id": "EVAL-REWRITE-001",
         "job_id": "JOB-EVAL-REWRITE-001",
         "target_platform": "xhs",
-        "target_column": "校园运营经验",
-        "rewrite_angle": "从新生决策成本切入",
+        "target_column": "AI成长路线",
+        "rewrite_angle": "从AI时代个人价值与被动成长路线的不确定性切入",
         "source": {
-            "title": "社团招新怎么让新生停下来",
+            "title": "准大一如何建立AI时代的项目能力",
             "url": "https://example.com/taskbook/source",
-            "content": "社团招新摊位如果只发传单，新生很难理解加入后的体验。可以设计三十秒互动，围绕交友、技能和时间投入提问，并在扫码后立即提供活动清单与首次见面会时间。表达应真实，不夸大收益。",
+            "content": "TYUT创新学社不要求新生已有技术基础，而是通过L0任务观察是否能按时提交、保留过程、根据反馈修改。成员可进入文档智能、GUI Agent、Self-Research或OSINT与多媒体运营Agent四条线路，并按交付质量逐级晋级。内容不得承诺保研就业，也不能虚构被AI淘汰的后果。",
         },
     }
     rewrite_check, _ = run_skill("hot_rewrite", "hot-rewrite", rewrite_input, outputs_dir, logs_dir)
@@ -209,6 +249,7 @@ def main() -> int:
         "notes": [
             "metrics_schema uses labeled fixture numbers only to validate the schema; it is not real publish performance.",
             "Live/cache/degraded state must be read from each collector output before drawing conclusions.",
+            "sample_quality_gate uses clearly labeled synthetic fixtures to validate 10 core samples per platform; it is not evidence of real traffic performance.",
         ],
     }
     write_json(meta_dir / "summary.json", summary)
